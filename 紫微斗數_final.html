@@ -37,7 +37,7 @@
             border: 2px solid black;
             grid-column: 2 / span 2;
             grid-row: 2 / span 2;
-            align-items:end;
+            align-items:flex-start;
             padding:5px;
         }
 
@@ -138,18 +138,29 @@
         }
 
         .center-text {
-            position: absolute;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            overflow-y: auto;
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: left;
         }
 
         .textareaContent {
             font-size: 20px;
             padding: 5px;
             border: 2px solid #ccc;
-            border-radius: 4px;
+            border-radius: 5px;
             resize: none;
+			width: 100%;
+            box-sizing: border-box;
+        }
+
+        .textarea-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
 
     </style>
@@ -158,7 +169,7 @@
 <body>
     <div id="app">
         <div class="container">
-            <div class="box" @dragover.prevent="dragOver('1')" @drop="dropCard('1')">巳(04月)
+            <div class="box" @dragover.prevent="dragOver('1')" @drop="dropCard('1')"><font size="7">巳</font>
                 <div v-for="(card, index) in cardsInBox('1')" :key="card.id" class="card" :style="cardStyle(card, index, '1')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -171,7 +182,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('2')" @drop="dropCard('2')">午(05月)
+            <div class="box" @dragover.prevent="dragOver('2')" @drop="dropCard('2')"><font size="7">午</font>
                 <div v-for="(card, index) in cardsInBox('2')" :key="card.id" class="card" :style="cardStyle(card, index, '2')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -184,7 +195,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('3')" @drop="dropCard('3')">未(06月)
+            <div class="box" @dragover.prevent="dragOver('3')" @drop="dropCard('3')"><font size="7">未</font>
                 <div v-for="(card, index) in cardsInBox('3')" :key="card.id" class="card" :style="cardStyle(card, index, '3')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -197,7 +208,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('4')" @drop="dropCard('4')">申(07月)
+            <div class="box" @dragover.prevent="dragOver('4')" @drop="dropCard('4')"><font size="7">申</font>
                 <div v-for="(card, index) in cardsInBox('4')" :key="card.id" class="card" :style="cardStyle(card, index, '4')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -210,7 +221,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('5')" @drop="dropCard('5')">辰(03月)
+            <div class="box" @dragover.prevent="dragOver('5')" @drop="dropCard('5')"><font size="7">辰</font>
                 <div v-for="(card, index) in cardsInBox('5')" :key="card.id" class="card" :style="cardStyle(card, index, '5')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -225,26 +236,41 @@
             </div>
             <div class="box center" @dragover.prevent="dragOver('center')" @drop="dropCard('center')">
                 <div class="center-text">
-                    <textarea id="textareaContent" name="textareaContent" class="textareaContent" required placeholder="請輸入內容"></textarea>
-                    <div style="display: flex;">
-                        <button style="margin-right: 10px;" @click="submitText()">提 交</button>
-                        <button style="margin-right: 10px;" @click="exportDatabase()">匯 出</button>
-                        <button style="margin-right: 10px;" @click="clearDatabase()">清 除</button>
-                    </div>
+                    <p>1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</p>
+                    <p>2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？</p>
+                    <p>3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）</p>
+                    <p>4. 健康、失物、賭博、代問，將不予回答。</p>
+                    <p>5. 不清楚不明確的問題，也將不予回答。</p>
+                    <p>6. 出國唸書和遊學打工，要先設定國家再問。</p>
+                    <p>7. 提問之前，自己最好先有想法，結果會更為精確。</p>
+                    <p>例如：</p>
+                    <p>●我XXX想知道是否可以在十月底前賣掉房子？</p>
+                    <p>●我XXX是否可以在三個月內和XXX發展感情？</p>
+                    <p>●我XXX在七月有XXX的考試，想知道考運如何？</p>
                 </div>
-                <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
+                <div class="textarea-container">
+                    <div style="margin-bottom:10px; width: 100%;">
+                        <textarea id="textareaContent" name="textareaContent" class="textareaContent" required placeholder="問題描述"></textarea>
+                        <div style="display: flex; margin-top: 10px;">
+                            <button style="margin-right: 10px;" @click="submitText()">確認</button>
+                            <button style="margin-right: 10px;" @click="exportDatabase()">匯出歷史紀錄</button>
+                            <button style="margin-right: 10px;" @click="clearDatabase()">清除歷史紀錄</button>
                         </div>
                     </div>
-                    <div class="card-number">{{ card.number }}</div>
+                    <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+                        <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                            <div class="card-front" :style="cardBgStyle(card,'front')">
+                                <h1>{{ card.frontText }}</h1>
+                            </div>
+                            <div class="card-back" :style="cardBgStyle(card,'back')">
+                                <h1>{{ card.backText }}</h1>
+                            </div>
+                        </div>
+                        <div class="card-number">{{ card.number }}</div>
+                    </div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('6')" @drop="dropCard('6')">酉(08月)
+            <div class="box" @dragover.prevent="dragOver('6')" @drop="dropCard('6')"><font size="7">酉</font>
                 <div v-for="(card, index) in cardsInBox('6')" :key="card.id" class="card" :style="cardStyle(card, index, '6')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -257,7 +283,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('7')" @drop="dropCard('7')">卯(02月)
+            <div class="box" @dragover.prevent="dragOver('7')" @drop="dropCard('7')"><font size="7">卯</font>
                 <div v-for="(card, index) in cardsInBox('7')" :key="card.id" class="card" :style="cardStyle(card, index, '7')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -270,7 +296,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('8')" @drop="dropCard('8')">戌(9月)
+            <div class="box" @dragover.prevent="dragOver('8')" @drop="dropCard('8')"><font size="7">戌</font>
                 <div v-for="(card, index) in cardsInBox('8')" :key="card.id" class="card" :style="cardStyle(card, index, '8')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -283,7 +309,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('9')" @drop="dropCard('9')">寅(01月)
+            <div class="box" @dragover.prevent="dragOver('9')" @drop="dropCard('9')"><font size="7">寅</font>
                 <div v-for="(card, index) in cardsInBox('9')" :key="card.id" class="card" :style="cardStyle(card, index, '9')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -296,7 +322,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('10')" @drop="dropCard('10')">丑(12月)
+            <div class="box" @dragover.prevent="dragOver('10')" @drop="dropCard('10')"><font size="7">丑</font>
                 <div v-for="(card, index) in cardsInBox('10')" :key="card.id" class="card" :style="cardStyle(card, index, '10')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -309,7 +335,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('11')" @drop="dropCard('11')">子(11月)
+            <div class="box" @dragover.prevent="dragOver('11')" @drop="dropCard('11')"><font size="7">子</font>
                 <div v-for="(card, index) in cardsInBox('11')" :key="card.id" class="card" :style="cardStyle(card, index, '11')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -322,7 +348,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('12')" @drop="dropCard('12')">亥(10月)
+            <div class="box" @dragover.prevent="dragOver('12')" @drop="dropCard('12')"><font size="7">亥</font>
                 <div v-for="(card, index) in cardsInBox('12')" :key="card.id" class="card" :style="cardStyle(card, index, '12')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
@@ -376,8 +402,25 @@
                 // 拖曳的卡片
                 const draggingCard = ref(null);
 
+                // 各自代表的區域
+                const locations = {
+                    '1': '巳',
+                    '2': '午',
+                    '3': '未',
+                    '4': '申',
+                    '5': '酉',
+                    '6': '戌',
+                    '7': '亥',
+                    '8': '子',
+                    '9': '丑',
+                    '10': '寅',
+                    '11': '卯',
+                    '12': '辰',
+                    'center': '中心區域'
+                };
+
                 const rounds = [
-                    { card_back_background_image:"cardback.png", card_face_background_image:"cardface.png", totalCards: 14, drawCount: 2, texts: [{ "front": "紫微", "back": "主星" }, 
+                    { card_back_background_image:"images/back3.jpg", card_face_background_image:"images/face10.jpg", totalCards: 14, drawCount: 2, texts: [{ "front": "紫微", "back": "主星" }, 
                                                             { "front": "天機", "back": "主星" }, 
                                                             { "front": "太陽", "back": "主星" }, 
                                                             { "front": "武曲", "back": "主星" },
@@ -392,7 +435,7 @@
                                                             { "front": "七殺", "back": "主星" }, 
                                                             { "front": "破軍", "back": "主星" }
                                                             ]},
-                    { card_back_background_image:"cardback2.png", card_face_background_image:"cardface2.png", totalCards: 14, drawCount: 2, texts: [{ "front": "文昌", "back": "副星" }, 
+                    { card_back_background_image:"images/back2.jpg", card_face_background_image:"images/face16.jpg", totalCards: 14, drawCount: 2, texts: [{ "front": "文昌", "back": "副星" }, 
                                                             { "front": "文曲", "back": "副星" }, 
                                                             { "front": "左輔", "back": "副星" }, 
                                                             { "front": "右弼", "back": "副星" },
@@ -407,7 +450,7 @@
                                                             { "front": "天馬", "back": "副星" }, 
                                                             { "front": "祿存", "back": "副星" }
                                                         ]},
-                    { card_back_background_image:"cardback.png", card_face_background_image:"cardface.png", totalCards: 32, drawCount: 3, texts: [{ "front": "天官", "back": "乙級星" },
+                    { card_back_background_image:"images/back1.jpg", card_face_background_image:"images/face17.jpg", totalCards: 32, drawCount: 3, texts: [{ "front": "天官", "back": "乙級星" },
                                                             { "front": "天福", "back": "乙級星" },
                                                             { "front": "天廚", "back": "乙級星" },
                                                             { "front": "天刑", "back": "乙級星" },
@@ -440,7 +483,7 @@
                                                             { "front": "恩光", "back": "乙級星" },
                                                             { "front": "天貴", "back": "乙級星" }
                                                             ]},
-                    { card_back_background_image:"cardback.png", card_face_background_image:"cardface.png", totalCards: 12, drawCount: 1, texts: [{ "front": "長生", "back": "宮位" }, 
+                    { card_back_background_image:"images/back4.jpg", card_face_background_image:"images/face9.jpg", totalCards: 12, drawCount: 1, texts: [{ "front": "長生", "back": "宮位" }, 
                                                             { "front": "沐浴", "back": "宮位" }, 
                                                             { "front": "冠帶", "back": "宮位" }, 
                                                             { "front": "臨官", "back": "宮位" },
@@ -485,14 +528,14 @@
                         }
 
                         if ((currentRound.value + 1) != rounds.length) {
-                            roundStatus.value = `第 ${currentRound.value + 1} 回合: 請移動 ${round.drawCount} 張卡片到其他區塊`;
+                            roundStatus.value = `第 ${currentRound.value + 1} 輪: 請選擇 ${round.drawCount} 張卡片到上方區塊`;
                         }else{
-                            roundStatus.value = `第 ${currentRound.value + 1} 回合: 請移動 ${round.drawCount} 張卡片放到中間位子`;
+                            roundStatus.value = `第 ${currentRound.value + 1} 輪: 請選擇 ${round.drawCount} 張卡片放到中間位子`;
                         }
 
                         draggedCount.value = 0; // 重設拖曳計數
                     } else {
-                        roundStatus.value = "流程結束!";
+                        roundStatus.value = "抽牌結束";
                     }
                 };
 
@@ -583,14 +626,14 @@
                                 initRound();
                             } else {
                                 roundStatus.value = "流程結束!";
-                                setTimeout(() => alert("流程結束!"), 100); // 在最後一張卡片被移動後顯示提示
+                                setTimeout(() => alert("請耐心等候30~40分!"), 100); // 在最後一張卡片被移動後顯示提示
 
                                 var ResponseJson = cards.value
                                                     .filter(item => item.isFlipped === false)
                                                     .map(item => {
                                                         return {
                                                             "number": item.number,
-                                                            "location": item.location,
+                                                            "location": locations[item.location],
                                                             "frontText": item.frontText
                                                         }
                                                     }).sort((a, b) => a.number - b.number);
@@ -655,6 +698,12 @@
 
                 //點擊卡片
                 const clickCard = (card) => {
+                    //判斷問題描述填寫,是否已按確認
+                    if(document.getElementById("textareaContent").value == "" || !document.getElementById("textareaContent").readOnly){
+                        alert("請先填寫問題描述,按下確認後,再選取卡片");
+                        return;
+                    }
+
                     //一次只能有一張彈出
                     if(isClickedCount.value != 0){
                         if(card.isClicked){
