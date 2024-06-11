@@ -137,32 +137,6 @@
             cursor: not-allowed;
         }
 
-        .center-text {
-            width: 100%;
-            max-width: 100%;
-            max-height: 100%;
-            overflow-y: auto;
-            font-size: 16px;
-            line-height: 1.5;
-            text-align: left;
-        }
-
-        .textareaContent {
-            font-size: 20px;
-            padding: 5px;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            resize: none;
-			width: 100%;
-            box-sizing: border-box;
-        }
-
-        .textarea-container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
     </style>
     <title>紫微斗數</title>
 </head>
@@ -235,39 +209,35 @@
                 </div>
             </div>
             <div class="box center" @dragover.prevent="dragOver('center')" @drop="dropCard('center')">
+1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。<br />
+2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？<br />
+3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）<br /> 
+4. 健康、失物、賭博、代問，將不予回答。 <br />
+5. 不清楚不明確的問題，也將不予回答。 <br />
+6. 出國唸書和遊學打工，要先設定國家再問。<br />
+7. 提問之前，自己最好先有想法，結果會更為精確。<br />
+例如： <br />
+●我XXX想知道是否可以在十月底前賣掉房子？ <br />
+●我XXX是否可以在三個月內和XXX發展感情？ <br />
+●我XXX在七月有XXX的考試，想知道考運如何？<br />
                 <div class="center-text">
-                    <p>1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</p>
-                    <p>2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？</p>
-                    <p>3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）</p>
-                    <p>4. 健康、失物、賭博、代問，將不予回答。</p>
-                    <p>5. 不清楚不明確的問題，也將不予回答。</p>
-                    <p>6. 出國唸書和遊學打工，要先設定國家再問。</p>
-                    <p>7. 提問之前，自己最好先有想法，結果會更為精確。</p>
-                    <p>例如：</p>
-                    <p>●我XXX想知道是否可以在十月底前賣掉房子？</p>
-                    <p>●我XXX是否可以在三個月內和XXX發展感情？</p>
-                    <p>●我XXX在七月有XXX的考試，想知道考運如何？</p>
+                    <textarea id="textareaContent" name="textareaContent" class="textareaContent" required placeholder="問題描述"></textarea>
+                    <div style="display: flex;">
+                        <button style="margin-right: 10px;" @click="submitText()">確認</button>
+                        <!-- <button style="margin-right: 10px;" @click="exportDatabase()">匯出</button> -->
+                        <button style="margin-right: 10px;" @click="clearDatabase()">清除</button>
+                    </div>
                 </div>
-                <div class="textarea-container">
-                    <div style="margin-bottom:10px; width: 100%;">
-                        <textarea id="textareaContent" name="textareaContent" class="textareaContent" required placeholder="問題描述"></textarea>
-                        <div style="display: flex; margin-top: 10px;">
-                            <button style="margin-right: 10px;" @click="submitText()">確認</button>
-                            <button style="margin-right: 10px;" @click="exportDatabase()">匯出歷史紀錄</button>
-                            <button style="margin-right: 10px;" @click="clearDatabase()">清除歷史紀錄</button>
+                <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
                         </div>
                     </div>
-                    <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
-                        <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                            <div class="card-front" :style="cardBgStyle(card,'front')">
-                                <h1>{{ card.frontText }}</h1>
-                            </div>
-                            <div class="card-back" :style="cardBgStyle(card,'back')">
-                                <h1>{{ card.backText }}</h1>
-                            </div>
-                        </div>
-                        <div class="card-number">{{ card.number }}</div>
-                    </div>
+                    <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
             <div class="box" @dragover.prevent="dragOver('6')" @drop="dropCard('6')"><font size="7">酉</font>
