@@ -7,6 +7,13 @@
         body {
             margin: 10px;
             font-family: Arial, sans-serif;
+
+            color: #fff;
+            /* 背景圖 */
+            background-image: url("images/background.jpg");
+            background-size: cover;
+            background-repeat: no-repeat; 
+            background-position: center;
         }
 
         .header {
@@ -37,7 +44,7 @@
             border: 2px solid black;
             grid-column: 2 / span 2;
             grid-row: 2 / span 2;
-            align-items:flex-start;
+            align-items:end;
             padding:5px;
         }
 
@@ -135,6 +142,22 @@
 
         .forbidden-drop {
             cursor: not-allowed;
+        }
+
+        .center-text {
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            transform: translate(-50%, -50%);
+        }
+
+        .textareaContent {
+            font-size: 20px;
+            padding: 5px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+			width: 320%;
         }
 
     </style>
