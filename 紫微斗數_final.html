@@ -262,8 +262,9 @@
                 <div class="center-text">
                     <textarea id="textareaContent" name="textareaContent" class="textareaContent" required placeholder="問題描述"></textarea>
                     <div style="display: flex;margin-top: 10px;">
-                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="submitText()">確認</button>
-                         <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()">確認</button>
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="ModifySubmitText()">修改問題內容</button>
+                        <!-- Button trigger modal -->
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#DirectionsModal">用法說明</button>
                     </div>
                     <!-- Modal -->
@@ -805,7 +806,7 @@
                     }
                 };
 
-                const submitText = () => {
+                const SubmitText = () => {
                     let text = document.getElementById("textareaContent").value;
                     //如有文字則將輸入框readonly
                     if(text != ""){
@@ -815,6 +816,11 @@
                     }
                     console.log('text->'+ text);
 
+                };
+
+                const ModifySubmitText = () => {
+                    document.getElementById("textareaContent").readOnly = false;
+                    document.getElementById("textareaContent").style.backgroundColor = "#FFFFFF";
                 };
 
                 /* 資料庫 */
@@ -956,32 +962,7 @@
                     };
                 };
 
-                const OpenDirections = () => {
-                    let newWindow = window.open("", "_blank", "width=600,height=400");
-                    let htmlContent = `
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <title>用法說明</title>
-                        </head>
-                        <body>
-                            1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。<br />
-                            2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？<br />
-                            3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）<br /> 
-                            4. 健康、失物、賭博、代問，將不予回答。 <br />
-                            5. 不清楚不明確的問題，也將不予回答。 <br />
-                            6. 出國唸書和遊學打工，要先設定國家再問。<br />
-                            7. 提問之前，自己最好先有想法，結果會更為精確。<br />
-                            例如： <br />
-                            ●我XXX想知道是否可以在十月底前賣掉房子？ <br />
-                            ●我XXX是否可以在三個月內和XXX發展感情？ <br />
-                            ●我XXX在七月有XXX的考試，想知道考運如何？<br />
-                        </body>
-                        </html>
-                    `;
-                    newWindow.document.write(htmlContent);
-                }
-
+        
                 onMounted(() => {
                     openDatabase();
                     initRound();
@@ -1002,11 +983,11 @@
                     touchStart,
                     touchMove,
                     touchEnd,
-                    submitText,
+                    SubmitText,
+                    ModifySubmitText, 
                     exportDatabase,
                     clearDatabase,
                     cardBgStyle,
-                    OpenDirections
                 };
             }
         }).mount('#app');
