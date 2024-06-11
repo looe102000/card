@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            margin: 10px;
-            font-family: Arial, sans-serif;
-
-            color: #fff;
+            margin-top: 50px;
+            font-family: Arial, sans-serif !important;
+            color: #fff !important;
             /* 背景圖 */
-            background-image: url("images/background.jpg");
+            background-image: url("images/background.jpg") !important;
             background-size: cover;
             background-repeat: no-repeat; 
             background-position: center;
@@ -28,6 +27,7 @@
             grid-template-rows: 1fr 1fr 1fr 1fr;
             gap: 10px;
             height: 90vh;
+            margin-top: 2%;
         }
 
         .box {
@@ -165,7 +165,7 @@
             border-radius: 5px;
             resize: none;
             width: 100%;
-            height: 60%; /* 調整高度以適應 RWD */
+            height: 100%; /* 調整高度以適應 RWD */
             box-sizing: border-box; /* 確保 padding 和 border 不會影響元素的總大小 */
         }
 
@@ -176,7 +176,18 @@
             transform: translateX(-50%);
         }
 
+        .modal-title{
+            color: #000; /* 設置文字顏色為黑色 */
+        }
+
+        .modal-body p {
+            color: #000; /* 設置文字顏色為黑色 */
+        }
+
     </style>
+    <!--Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
     <title>紫微斗數</title>
 </head>
 <body>
@@ -251,11 +262,36 @@
                 <div class="center-text">
                     <textarea id="textareaContent" name="textareaContent" class="textareaContent" required placeholder="問題描述"></textarea>
                     <div style="display: flex;margin-top: 10px;">
-                        <button style="margin-right: 10px;" @click="submitText()">確認</button>
-                        <button style="margin-right: 10px;" @click="OpenDirections()">用法說明</button>
-
-                        <!-- <button style="margin-right: 10px;" @click="exportDatabase()">匯出歷史資料</button> -->
-                        <!-- <button style="margin-right: 10px;" @click="clearDatabase()">清除歷史資料</button> -->
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="submitText()">確認</button>
+                         <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#DirectionsModal">用法說明</button>
+                    </div>
+                    <!-- Modal -->
+                    <div class="modal fade" id="DirectionsModal" tabindex="-1" aria-labelledby="DirectionsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="DirectionsModalLabel">用法說明</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                            <P>1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</P>
+                            <P>2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？</P>
+                            <P>3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）</P>
+                            <P>4. 健康、失物、賭博、代問，將不予回答。</P>
+                            <P>5. 不清楚不明確的問題，也將不予回答。</P>
+                            <P>6. 出國唸書和遊學打工，要先設定國家再問。</P>
+                            <P>7. 提問之前，自己最好先有想法，結果會更為精確。</P>
+                            <P>例如：</P>
+                            <P>●我XXX想知道是否可以在十月底前賣掉房子？</P>
+                            <P>●我XXX是否可以在三個月內和XXX發展感情？</P>
+                            <P>●我XXX在七月有XXX的考試，想知道考運如何？</P>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                        </div>
                     </div>
                 </div>
                 <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
@@ -377,7 +413,10 @@
             <div class="round-display">{{ roundStatus }}</div>
         </div>
     </div>
+    <!-- Vue3 -->
     <script src="https://cdn.jsdelivr.net/npm/vue@3.4.27/dist/vue.global.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script>
 
         const { createApp, ref, onMounted } = Vue;
