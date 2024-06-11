@@ -26,7 +26,7 @@
             grid-template-columns: 1fr 1fr 1fr 1fr;
             grid-template-rows: 1fr 1fr 1fr 1fr;
             gap: 10px;
-            height: 90vh;
+            height: 100%;
             margin-top: 2%;
         }
 
@@ -48,13 +48,16 @@
         }
 
         .bottom {
+            display: flex;
+            flex-wrap: wrap; /* 允許內容換行 */
             border: 2px dashed rgb(134, 9, 3);
             grid-column: 1 / span 4;
-            height: 150px; /* 可調整高度 */
-            position: relative; /* 為卡片的絕對定位提供參考 */
-            display: flex;
+            min-height: 150px; /* 最小高度 */
+            position: relative;
             align-items: center;
             justify-content: center;
+            padding: 10px; /* 內間距，確保內容不緊貼邊界 */
+            gap: 10px; /* 卡片之間的間距 */
         }
 
         .card {
@@ -184,6 +187,9 @@
             color: #000; /* 設置文字顏色為黑色 */
         }
 
+        .modal-dialog.custom-width {
+            max-width: 80%; /* 設置模態框寬度為 80% */
+        }
     </style>
     <!--Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -713,7 +719,7 @@
 
                 const bottomCardStyle = (card, index) => {
                     const aspectRatio = 2 / 3; // 卡片比例 2:3
-                    const boxHeight = 100; // 固定高度
+                    const boxHeight = 90; // 固定高度
                     const cardHeight = boxHeight - 4; // 扣除邊框的寬度
                     const cardWidth = cardHeight * aspectRatio;
 
