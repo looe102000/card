@@ -398,7 +398,10 @@
                 <input type="file" @change="handleFileUpload" class="form-control mt-2" ref="fileInput"/>
                 <!-- 存放json 內容用的 textarea  -->
                 <textarea ref="jsonTextarea" class="form-control mt-2" placeholder="在此處粘貼或輸入JSON數據..." @input="importCards" hidden></textarea>
-                <span><button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="refreshPage()">清空畫面</button></span>
+                <div>
+                    <span><button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="explorerNow()">匯出紀錄</button></span>
+                    <span><button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="refreshPage()">清空畫面</button></span>
+                </div>
             </div>
         </div>
     </div>
@@ -561,6 +564,15 @@
                         backgroundRepeat: 'no-repeat'
                     };
                 };
+
+                /* 匯出本次操作紀錄為 JSON 檔案 */
+                const explorerNow = () => {
+                    if(sessionKey.value != ''){
+                        exportDatabase(sessionKey.value);
+                    }else{
+                        alert("請選擇匯出的紀錄");
+                    }
+                };
                 
                 //重新整理畫面
                 const refreshPage = () => {
@@ -571,7 +583,7 @@
                 const db = ref(null);
                 const operations = ref([]);
                 const content = ref('');
-                const sessionKey = ref(new Date().toISOString());
+                const sessionKey = ref('');
                 const retentionDays = ref(7);
 
                 const openDatabase = () => {
@@ -764,6 +776,8 @@
                             selectSubject.value.value = record.subject;
                             textareaContent.value.value = record.content;
 
+                            sessionKey.value = record.sessionKey;
+
                         }
 
                         //console.log('歷史紀錄載入成功');
@@ -812,6 +826,8 @@
                         selectSubject.value.value = data.subject;
                         textareaContent.value.value = data.content;
 
+                        sessionKey.value = data.sessionKey;
+
                     } catch (error) {
                         console.error(error)
 
@@ -842,7 +858,8 @@
                     jsonTextarea,
                     fileInput,
                     handleFileUpload,
-                    importCards
+                    importCards,
+                    explorerNow
                 };
             }
         }).mount('#app');
