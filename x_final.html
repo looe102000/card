@@ -425,7 +425,7 @@
                             <h1>{{ card.frontText }}</h1>
                         </div>
                         <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
+                            <!--<h1>{{ card.backText }}</h1>-->
                         </div>
                     </div>
                     <div class="card-number" style="color:#730083;">{{card.number}}</div>
@@ -588,7 +588,7 @@
                                 isFlipped: true, // 是否顯示卡面
                                 location: 'bottom', // 初始位置設為 bottom
                                 frontText: round.texts[i].front, // 前面文字
-                                //backText: round.texts[i].back // 背面文字
+                                backText: round.texts[i].back, // 背面文字
                                 touchX: null, // 用於觸控移動的 X 坐標
                                 touchY: null,  // 用於觸控移動的 Y 坐標
                                 isDragging: false, // 是否正在拖曳
@@ -723,13 +723,14 @@
                                                             "number": item.number,
                                                             "location": item.location,
                                                             "location_name": locations[item.location],
-                                                            "frontText": item.frontText
+                                                            "frontText": item.frontText,
+                                                            "backText": item.backText,
                                                         }
                                                     }).sort((a, b) => a.number - b.number);
 
                                 addOperation(ResponseJson);
 
-                                console.log(JSON.stringify(ResponseJson));
+                                //console.log(JSON.stringify(ResponseJson));
                             }
                         }
                     }
@@ -907,7 +908,7 @@
                 const db = ref(null);
                 const operations = ref([]);
                 const content = ref('');
-                const sessionKey = ref(new Date().toISOString());
+                const sessionKey = ref('');
                 const retentionDays = ref(7);
 
                 const openDatabase = () => {
@@ -923,11 +924,45 @@
                     request.onsuccess = function(event) {
                         db.value = event.target.result;
                         console.log('資料庫開啟成功');
+                        generateSessionKey();  // 產生新的 session key
                         deleteOldRecords();
                     };
 
                     request.onerror = function(event) {
                         console.error('資料庫錯誤: ' + event.target.errorCode);
+                    };
+                };
+
+                // 生成新的 session key
+                const generateSessionKey = () => {
+                    let transaction = db.value.transaction(['Records'], 'readonly');
+                    let objectStore = transaction.objectStore('Records');
+
+                    let today = new Date();
+                    let yyyyMMdd = today.toISOString().slice(0, 10).replace(/-/g, '');
+                    let prefix = yyyyMMdd;
+                    let maxIndex = 0;
+
+                    objectStore.openCursor().onsuccess = function(event) {
+                        let cursor = event.target.result;
+                        if (cursor) {
+                            let key = cursor.key;
+                            if (key.startsWith(prefix)) {
+                                let index = parseInt(key.slice(-4));
+                                if (index > maxIndex) {
+                                    maxIndex = index;
+                                }
+                            }
+                            cursor.continue();
+                        } else {
+                            let newIndex = (maxIndex + 1).toString().padStart(4, '0');
+                            sessionKey.value = `${prefix}${newIndex}`;
+                            //console.log('新的 session key:', sessionKey.value);
+                        }
+                    };
+
+                    objectStore.openCursor().onerror = function(event) {
+                        console.error('生成 session key 錯誤: ' + event.target.errorCode);
                     };
                 };
 
