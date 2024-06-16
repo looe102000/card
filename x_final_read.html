@@ -54,7 +54,7 @@
             grid-column: 1 / span 4;
             min-height: 150px; /* 最小高度 */
             position: relative;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
             padding: 10px; /* 內間距，確保內容不緊貼邊界 */
             gap: 10px; /* 卡片之間的間距 */
@@ -198,7 +198,7 @@
         }
 
         /* 下方匯入區塊 */
-        .bottom_import_area {
+        .bottom_other_area {
             display: flex;
             flex-wrap: wrap; /* 允許內容換行 */
             grid-column: 1 / span 4;
@@ -219,7 +219,7 @@
     <div id="app">
         <div class="container">
             <div class="box"><span style="font-size: 2em;">巳</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('1')" :key="card.id" class="card" :style="cardStyle(card, index, '1')">
+                <div v-for="(card, index) in cardsInBox('1')" :key="card.id" class="card" :style="cardStyle(card, index, '1')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -232,7 +232,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">午</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('2')" :key="card.id" class="card" :style="cardStyle(card, index, '2')">
+                <div v-for="(card, index) in cardsInBox('2')" :key="card.id" class="card" :style="cardStyle(card, index, '2')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -245,7 +245,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">未</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('3')" :key="card.id" class="card" :style="cardStyle(card, index, '3')">
+                <div v-for="(card, index) in cardsInBox('3')" :key="card.id" class="card" :style="cardStyle(card, index, '3')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -258,7 +258,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">申</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('4')" :key="card.id" class="card" :style="cardStyle(card, index, '4')">
+                <div v-for="(card, index) in cardsInBox('4')" :key="card.id" class="card" :style="cardStyle(card, index, '4')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -271,7 +271,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">辰</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('5')" :key="card.id" class="card" :style="cardStyle(card, index, '5')">
+                <div v-for="(card, index) in cardsInBox('5')" :key="card.id" class="card" :style="cardStyle(card, index, '5')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -294,7 +294,7 @@
                     </select>
                     <textarea id="textareaContent" ref="textareaContent" name="textareaContent" class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。" disabled></textarea>
                 </div>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')">
+                <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -307,7 +307,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">酉</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('6')" :key="card.id" class="card" :style="cardStyle(card, index, '6')">
+                <div v-for="(card, index) in cardsInBox('6')" :key="card.id" class="card" :style="cardStyle(card, index, '6')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -320,7 +320,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">卯</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('7')" :key="card.id" class="card" :style="cardStyle(card, index, '7')">
+                <div v-for="(card, index) in cardsInBox('7')" :key="card.id" class="card" :style="cardStyle(card, index, '7')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -333,7 +333,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">戌</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('8')" :key="card.id" class="card" :style="cardStyle(card, index, '8')">
+                <div v-for="(card, index) in cardsInBox('8')" :key="card.id" class="card" :style="cardStyle(card, index, '8')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -346,7 +346,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">寅</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('9')" :key="card.id" class="card" :style="cardStyle(card, index, '9')">
+                <div v-for="(card, index) in cardsInBox('9')" :key="card.id" class="card" :style="cardStyle(card, index, '9')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -359,7 +359,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">丑</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('10')" :key="card.id" class="card" :style="cardStyle(card, index, '10')">
+                <div v-for="(card, index) in cardsInBox('10')" :key="card.id" class="card" :style="cardStyle(card, index, '10')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -372,7 +372,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">子</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('11')" :key="card.id" class="card" :style="cardStyle(card, index, '11')">
+                <div v-for="(card, index) in cardsInBox('11')" :key="card.id" class="card" :style="cardStyle(card, index, '11')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -385,7 +385,7 @@
                 </div>
             </div>
             <div class="box"><span style="font-size: 2em;">亥</span>
-                <div v-if="cards && cards.length > 0" v-for="(card, index) in cardsInBox('12')" :key="card.id" class="card" :style="cardStyle(card, index, '12')">
+                <div v-for="(card, index) in cardsInBox('12')" :key="card.id" class="card" :style="cardStyle(card, index, '12')">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -402,7 +402,7 @@
                     {{ isBottomVisible ? '隱藏' : '顯示' }} 匯入功能
                 </button>
             </div>
-            <div class="bottom_import_area" v-if="isBottomVisible">
+            <div class="bottom_other_area" v-if="isBottomVisible">
                 <!-- 新增的歷史紀錄下拉選單 -->
                 <select id="historyRecords" class="form-select mt-2" v-if="historyOptions.length > 0" v-model="selectedHistory" @change="loadHistory">
                     <option value="" hidden selected>選擇歷史紀錄</option>
