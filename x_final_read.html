@@ -50,7 +50,7 @@
         .bottom {
             display: flex;
             flex-wrap: wrap; /* 允許內容換行 */
-            /*border: 2px dashed rgb(134, 9, 3);*/
+            border: 2px dashed rgb(134, 9, 3);
             grid-column: 1 / span 4;
             min-height: 150px; /* 最小高度 */
             position: relative;
@@ -195,6 +195,18 @@
         /* 用於隱藏卡片 */
         .card[style*="opacity: 0"] {
             visibility: hidden;
+        }
+
+        /* 下方匯入區塊 */
+        .bottom_import_area {
+            display: flex;
+            flex-wrap: wrap; /* 允許內容換行 */
+            grid-column: 1 / span 4;
+            position: relative;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 10px; /* 內間距，確保內容不緊貼邊界 */
+            gap: 10px;
         }
 
     </style>
@@ -385,7 +397,12 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="bottom">
+            <div>
+                <button type="button" class="btn btn-secondary" @click="isBottomVisible = !isBottomVisible">
+                    {{ isBottomVisible ? '隱藏' : '顯示' }} 匯入功能
+                </button>
+            </div>
+            <div class="bottom_import_area" v-if="isBottomVisible">
                 <!-- 新增的歷史紀錄下拉選單 -->
                 <select id="historyRecords" class="form-select mt-2" v-if="historyOptions.length > 0" v-model="selectedHistory" @change="loadHistory">
                     <option value="" hidden selected>選擇歷史紀錄</option>
@@ -427,6 +444,8 @@
                 const selectedHistory = ref('');
                 const jsonTextarea = ref(null);
                 const fileInput = ref(null);
+
+                const isBottomVisible = ref(false); // 默認隱藏
 
 
                 // 各自代表的區域
@@ -859,7 +878,8 @@
                     fileInput,
                     handleFileUpload,
                     importCards,
-                    explorerNow
+                    explorerNow,
+                    isBottomVisible
                 };
             }
         }).mount('#app');
