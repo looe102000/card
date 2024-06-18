@@ -284,6 +284,11 @@
             </div>
             <div class="box center" @dragover.prevent="dragOver('center')" @drop="dropCard('center')">
                 <div class="center-text">
+                    <div style="display: flex;margin: 5px;">
+					    <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
+                        <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal" >規則說明</button>
+                        <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal">抽牌說明</button>	
+                    </div>
                     <select id="selectSubject" ref="selectSubject" class="form-select">
                         <option value="" hidden>主題</option>
                         <option value="工作">工作</option>
@@ -295,10 +300,9 @@
                     <div style="display: flex;margin-top: 10px;">
                         <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()">確認</button>
                         <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="ModifySubmitText()">編輯</button>
-                        <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#DirectionsModal">規則說明</button>
                     </div>
                     <!-- Modal -->
+                    <!-- 規則說明 -->
                     <div class="modal fade" id="DirectionsModal" tabindex="-1" aria-labelledby="DirectionsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
@@ -318,6 +322,31 @@
                                 <P>●我XXX想知道是否可以在十月底前賣掉房子？</P>
                                 <P>●我XXX是否可以在三個月內和XXX發展感情？</P>
                                 <P>●我XXX在七月有XXX的考試，想知道考運如何？</P>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <!-- 抽牌說明 -->
+					<div class="modal fade" id="CardsModal" tabindex="-1" aria-labelledby="CardsModal" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="CardsModal">抽牌說明</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <P>1. 總共4副牌，共抽8張牌。</P>
+                                <P>2. 第1輪共14張，抽2張，並選12宮位則一放。如1放酉，8放亥。</P>
+                                <P>3. 卡片放置位置可以重覆。</P>
+                                <P>4. 第2輪共14張，抽2張，並選12宮位則一放，與第1輪相同。如3放酉，12放申。</P>
+								<P>5. 第3輪共32張，抽3張，並選12宮位則一放，放置位置可以重覆，與前二輪相同。</P>
+								<P>6. 最後1輪‧，數字1-12擇1即可。</P>
+								<P></P>
+								<P></P>
+								<P></P>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -751,7 +780,7 @@
                     }
                 };
 
-                const cardStyle = (card, index, box) => {
+                const cardStyle = (card, index, box) => { //卡片正面
                     const aspectRatio = 2 / 3; // 卡片比例 2:3
                     const boxHeight = 100; // 固定高度
                     const cardHeight = boxHeight - 4; // 扣除邊框的寬度
@@ -776,15 +805,15 @@
                     return style;
                 };
 
-                const bottomCardStyle = (card, index) => {
+                const bottomCardStyle = (card, index) => { //卡片背面
                     const aspectRatio = 2 / 3; // 卡片比例 2:3
-                    const boxHeight = 90; // 固定高度
+                    const boxHeight = 100; // 固定高度
                     const cardHeight = boxHeight - 4; // 扣除邊框的寬度
                     const cardWidth = cardHeight * aspectRatio;
 
                     return {
                         position: 'relative',
-                        margin: '0 5px', // 卡片之間的空隙
+                        margin: '0 3px', // 卡片之間的空隙
                         width: `${cardWidth}px`,
                         height: `${cardHeight}px`,
                         zIndex: card.zIndex || 0, // 根據 zIndex 設定疊加順序
