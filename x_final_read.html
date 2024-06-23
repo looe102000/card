@@ -397,27 +397,48 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div>
-                <button type="button" class="btn btn-secondary" @click="isBottomVisible = !isBottomVisible">
-                    {{ isBottomVisible ? '隱藏' : '顯示' }} 匯入功能
-                </button>
+            <div class="bottom_other_area" class="mt-2">
+                <span> 
+                    <button type="button" class="btn btn-secondary" @click="isBottomVisible = !isBottomVisible">
+                        {{ isBottomVisible ? '隱藏' : '顯示' }} 匯入功能
+                    </button>
+                </span>
+                <!-- 匯出和清空按鈕 -->
+                <span>
+                    <button v-if="cards.length > 0" type="button" class="btn btn-primary" @click="explorerNow()">匯出紀錄</button>
+                </span>
+                <span>
+                    <button v-if="cards.length > 0" type="button" class="btn btn-primary" @click="refreshPage()">清空畫面</button>
+                </span>
             </div>
             <div class="bottom_other_area" v-if="isBottomVisible">
-                <!-- 新增的歷史紀錄下拉選單 -->
-                <select id="historyRecords" class="form-select mt-2" v-if="historyOptions.length > 0" v-model="selectedHistory" @change="loadHistory">
-                    <option value="" hidden selected>選擇歷史紀錄</option>
-                    <option v-for="record in historyOptions" :key="record.sessionKey" :value="record.sessionKey">
-                        {{ formatRecord(record) }}
-                    </option>
+                <!-- 顯眼的標示文字說明 -->
+                <div class="w-100 text-center mb-2">
+                    <span style="font-size: 1.5em; font-weight: bold; color: #ffffff;">請選擇匯入方式</span>
+                </div>
+            
+                <!-- 匯入方式選擇 -->
+                <select v-model="importOption" class="form-select mt-2 mb-2">
+                    <option value="" disabled hidden>選擇匯入方式</option>
+                    <option value="history">歷史紀錄</option>
+                    <option value="file">檔案匯入</option>
                 </select>
-                <!-- 新增的清除歷史紀錄按鈕 -->
-                <span>選擇需要匯入的json檔案</span>
-                <input type="file" @change="handleFileUpload" class="form-control mt-2" ref="fileInput"/>
-                <!-- 存放json 內容用的 textarea  -->
-                <textarea ref="jsonTextarea" class="form-control mt-2" placeholder="在此處粘貼或輸入JSON數據..." @input="importCards" hidden></textarea>
-                <div>
-                    <span><button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="explorerNow()">匯出紀錄</button></span>
-                    <span><button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="refreshPage()">清空畫面</button></span>
+            
+                <!-- 歷史紀錄選擇 -->
+                <div v-if="importOption === 'history'" class="mt-2">
+                    <select id="historyRecords" class="form-select" v-if="historyOptions.length > 0" v-model="selectedHistory" @change="loadHistory">
+                        <option value="" hidden selected>選擇歷史紀錄</option>
+                        <option v-for="record in historyOptions" :key="record.sessionKey" :value="record.sessionKey">
+                            {{ formatRecord(record) }}
+                        </option>
+                    </select>
+                </div>
+            
+                <!-- 檔案匯入 -->
+                <div v-if="importOption === 'file'" class="mt-2">
+                    <span style="font-size: 1em; font-weight: bold; color: #ffffff;">選擇需要匯入的json檔案</span>
+                    <input type="file" @change="handleFileUpload" class="form-control mt-2" ref="fileInput"/>
+                    <textarea ref="jsonTextarea" class="form-control mt-2" placeholder="在此處粘貼或輸入JSON數據..." @input="importCards" hidden></textarea>
                 </div>
             </div>
         </div>
@@ -446,6 +467,8 @@
                 const fileInput = ref(null);
 
                 const isBottomVisible = ref(false); // 默認隱藏
+
+                const importOption = ref(''); // 匯入方式選擇
 
 
                 // 各自代表的區域
@@ -879,7 +902,8 @@
                     handleFileUpload,
                     importCards,
                     explorerNow,
-                    isBottomVisible
+                    isBottomVisible,
+                    importOption
                 };
             }
         }).mount('#app');
