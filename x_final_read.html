@@ -291,15 +291,15 @@
                             <option value="男">男</option>
                             <option value="女">女</option>
                         </select>
-                        <input type="text" class="form-control" style="width: 70%;" v-model="cus_name" placeholder="姓名" disabled>
+                        <input type="text" class="form-control" style="width: 40%; margin-right: 10px;" v-model="cus_name" placeholder="姓名" disabled>
+                        <select id="selectSubject" ref="selectSubject" class="form-select"  style="width: 30%; margin-right: 10px;" disabled>
+                            <option value="" hidden>主題</option>
+                            <option value="工作">工作</option>
+                            <option value="感情">感情</option>
+                            <option value="財運">財運</option>
+                            <option value="其他">其他</option>
+                        </select>
                     </div>
-                    <select id="selectSubject" ref="selectSubject" class="form-select" disabled>
-                        <option value="" hidden>主題</option>
-                        <option value="工作">工作</option>
-                        <option value="感情">感情</option>
-                        <option value="財運">財運</option>
-						<option value="其他">其他</option>
-                    </select>
                     <textarea id="textareaContent" ref="textareaContent" name="textareaContent" class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。" disabled></textarea>
                 </div>
                 <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')">

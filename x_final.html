@@ -296,15 +296,15 @@
                             <option value="男">男</option>
                             <option value="女">女</option>
                         </select>
-                        <input type="text" class="form-control" style="width: 70%;" v-model="cus_name" placeholder="姓名">
+                        <input type="text" class="form-control" style="width: 40%; margin-right: 10px;" v-model="cus_name" placeholder="姓名">
+                        <select id="selectSubject" ref="selectSubject" class="form-select" style="width: 30%; margin-right: 10px;" >
+                            <option value="" hidden>主題</option>
+                            <option value="工作">工作</option>
+                            <option value="感情">感情</option>
+                            <option value="財運">財運</option>
+                            <option value="其他">其他</option>
+                        </select>
                     </div>
-                    <select id="selectSubject" ref="selectSubject" class="form-select">
-                        <option value="" hidden>主題</option>
-                        <option value="工作">工作</option>
-                        <option value="感情">感情</option>
-                        <option value="財運">財運</option>
-						<option value="其他">其他</option>
-                    </select>
                     <textarea id="textareaContent" ref="textareaContent" name="textareaContent" class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。"></textarea>
                     <div style="display: flex;margin-top: 10px;">
                         <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()">確認</button>
@@ -844,13 +844,7 @@
                 };
 
                 //點擊卡片
-                const clickCard = (card) => {
-
-                    //判斷填寫類型(主題)是否已選取
-                    if(selectSubject.value.value == ""){
-                        alert("請先選擇主題並填寫問題內容後確定，確定完畢後抽牌");
-                        return;
-                    }
+                const clickCard = (card) => {                
 
                     //判斷問題描述填寫,是否已按確認
                     if(textareaContent.value.value == "" || !textareaContent.value.readOnly){
@@ -921,13 +915,6 @@
                 };
 
                 const SubmitText = () => {
-
-                    //判斷填寫類型是否已選取
-                    if(selectSubject.value.value == ""){
-                        alert("請先選擇選取類型");
-                        return;
-                    }
-
                     let text = textareaContent.value.value;
                     //如有文字則將輸入框readonly
                     if(text != ""){
