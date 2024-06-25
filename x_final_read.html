@@ -285,6 +285,14 @@
             </div>
             <div class="box center">
                 <div class="center-text">
+                    <div style="display: flex; margin-bottom: 10px;">
+                        <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender" disabled>
+                            <option value="" hidden>性別</option>
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                        </select>
+                        <input type="text" class="form-control" style="width: 70%;" v-model="cus_name" placeholder="姓名" disabled>
+                    </div>
                     <select id="selectSubject" ref="selectSubject" class="form-select" disabled>
                         <option value="" hidden>主題</option>
                         <option value="工作">工作</option>
@@ -469,6 +477,9 @@
                 const isBottomVisible = ref(false); // 默認隱藏
 
                 const importOption = ref(''); // 匯入方式選擇
+
+                const gender = ref('');
+                const cus_name = ref('');
 
 
                 // 各自代表的區域
@@ -661,6 +672,8 @@
                             sessionKey: sessionKey.value, 
                             content: textareaContent.value.value,
                             subject: selectSubject.value.value,
+                            gender:gender.value,
+                            cus_name:cus_name.value,
                             operations: [] 
                         };
 
@@ -753,9 +766,10 @@
                             let dataBlob = new Blob([dataStr], { type: 'application/json' });
                             let url = URL.createObjectURL(dataBlob);
 
+                            let fileName = `Explorer_${key}_${gender.value}_${cus_name.value}.json`;
                             let link = document.createElement('a');
                             link.href = url;
-                            link.download = 'Explorer_'+ key +'.json';
+                            link.download = fileName;
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
@@ -804,7 +818,7 @@
                                 for (let round of rounds) {
                                     for (let text of round.texts) {
                                         if (card.frontText === text.front && card.backText === text.back) {
-                                            console.log('找到匹配的卡片');
+                                            //console.log('找到匹配的卡片');
                                             card.card_back_background_image = round.card_back_background_image;
                                             card.card_face_background_image = round.card_face_background_image;
                                             break;
@@ -819,7 +833,10 @@
                             textareaContent.value.value = record.content;
 
                             sessionKey.value = record.sessionKey;
+                            gender.value = record.gender;
+                            cus_name.value = record.cus_name;
 
+                            isBottomVisible.value = false;
                         }
 
                         //console.log('歷史紀錄載入成功');
@@ -828,6 +845,8 @@
                     getRequest.onerror = function(event) {
                         console.error('載入歷史紀錄錯誤: ' + event.target.errorCode);
                     };
+
+
                 };
 
                 // 處理文件上傳
@@ -903,7 +922,9 @@
                     importCards,
                     explorerNow,
                     isBottomVisible,
-                    importOption
+                    importOption,
+                    gender,
+                    cus_name
                 };
             }
         }).mount('#app');

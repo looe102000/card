@@ -45,6 +45,7 @@
             grid-row: 2 / span 2;
             align-items:end;
             padding:5px;
+            min-height:35vh;
         }
 
         .bottom {
@@ -289,6 +290,14 @@
                         <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal" >規則說明</button>
                         <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal">抽牌說明</button>	
                     </div>
+                    <div style="display: flex; margin-bottom: 10px;">
+                        <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender">
+                            <option value="" hidden>性別</option>
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                        </select>
+                        <input type="text" class="form-control" style="width: 70%;" v-model="cus_name" placeholder="姓名">
+                    </div>
                     <select id="selectSubject" ref="selectSubject" class="form-select">
                         <option value="" hidden>主題</option>
                         <option value="工作">工作</option>
@@ -514,6 +523,9 @@
                 const selectSubject = ref(null);
                 //問題描述
                 const textareaContent = ref(null);
+
+                const gender = ref('');
+                const cus_name = ref('');
 
                 // 各自代表的區域
                 const locations = {
@@ -1021,6 +1033,8 @@
                             sessionKey: sessionKey.value, 
                             content: textareaContent.value.value,
                             subject: selectSubject.value.value,
+                            gender:gender.value,
+                            cus_name:cus_name.value,
                             operations: [] 
                         };
 
@@ -1113,9 +1127,10 @@
                             let dataBlob = new Blob([dataStr], { type: 'application/json' });
                             let url = URL.createObjectURL(dataBlob);
 
+                            let fileName = `Explorer_${key}_${gender.value}_${cus_name.value}.json`;
                             let link = document.createElement('a');
                             link.href = url;
-                            link.download = 'Explorer_'+ key +'.json';
+                            link.download = fileName;
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
@@ -1159,7 +1174,9 @@
                     refreshPage,
                     isExplorerNowVisible,
                     selectSubject,
-                    textareaContent
+                    textareaContent,
+                    gender,
+                    cus_name
                 };
             }
         }).mount('#app');
