@@ -1114,7 +1114,7 @@
                             let dataBlob = new Blob([dataStr], { type: 'application/json' });
                             let url = URL.createObjectURL(dataBlob);
 
-                            let fileName = `Explorer_${key}_${gender.value}_${cus_name.value}.json`;
+                            let fileName = `${key}_${selectSubject.value.value}_${gender.value}_${cus_name.value}.json`;
                             let link = document.createElement('a');
                             link.href = url;
                             link.download = fileName;
