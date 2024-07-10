@@ -290,14 +290,14 @@
                         <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal" >規則說明</button>
                         <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal">抽牌說明</button>	
                     </div>
-                    <div style="display: flex; margin-bottom: 10px;">
+                    <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;">
                         <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender">
                             <option value="" hidden>性別</option>
                             <option value="男">男</option>
                             <option value="女">女</option>
                         </select>
                         <input type="text" class="form-control" style="width: 40%; margin-right: 10px;" v-model="cus_name" placeholder="姓名">
-                        <select id="selectSubject" ref="selectSubject" class="form-select" style="width: 30%; margin-right: 10px;" >
+                        <select id="selectSubject" ref="selectSubject" class="form-select" style="width: 30%;" >
                             <option value="" hidden>主題</option>
                             <option value="工作">工作</option>
                             <option value="感情">感情</option>
@@ -467,7 +467,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="bottom">
+            <div class="bottom" :style="{ minHeight: area_grid_heigh + 'px' }">
                 <div v-for="(card, index) in cardsInBox('bottom')" :key="card.id" class="card" :style="bottomCardStyle(card, index)" draggable="true" @dragstart="dragCard(card)" @click="clickCard(card)" :class="{ 'is-clicked': card.isClicked }" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :class="{ 'hidden-front': card.isDragging }" :style="cardBgStyle(card,'front')">
@@ -527,6 +527,8 @@
                 const gender = ref('');
                 const cus_name = ref('');
 
+                const area_grid_heigh = ref(0); // 初始高度設置為 150px
+
                 // 各自代表的區域
                 const locations = {
                     '1': '巳',
@@ -545,7 +547,7 @@
                 };
 
                 const rounds = [
-                    { card_back_background_image:"images/back3.jpg", card_face_background_image:"images/face10.jpg", totalCards: 14, drawCount: 2, texts: [{ "front": "紫微", "back": "主星" }, 
+                    { area_grid_heigh:"150", card_back_background_image:"images/back3.jpg", card_face_background_image:"images/face10.jpg", totalCards: 14, drawCount: 2, texts: [{ "front": "紫微", "back": "主星" }, 
                                                             { "front": "天機", "back": "主星" }, 
                                                             { "front": "太陽", "back": "主星" }, 
                                                             { "front": "武曲", "back": "主星" },
@@ -560,7 +562,7 @@
                                                             { "front": "七殺", "back": "主星" }, 
                                                             { "front": "破軍", "back": "主星" }
                                                             ]},
-                    { card_back_background_image:"images/back2.jpg", card_face_background_image:"images/face16.jpg", totalCards: 14, drawCount: 2, texts: [{ "front": "文昌", "back": "副星" }, 
+                    { area_grid_heigh:"150", card_back_background_image:"images/back2.jpg", card_face_background_image:"images/face16.jpg", totalCards: 14, drawCount: 2, texts: [{ "front": "文昌", "back": "副星" }, 
                                                             { "front": "文曲", "back": "副星" }, 
                                                             { "front": "左輔", "back": "副星" }, 
                                                             { "front": "右弼", "back": "副星" },
@@ -575,7 +577,7 @@
                                                             { "front": "天馬", "back": "副星" }, 
                                                             { "front": "祿存", "back": "副星" }
                                                         ]},
-                    { card_back_background_image:"images/back1.jpg", card_face_background_image:"images/face17.jpg", totalCards: 32, drawCount: 3, texts: [{ "front": "天官", "back": "乙級星" },
+                    { area_grid_heigh:"250", card_back_background_image:"images/back1.jpg", card_face_background_image:"images/face17.jpg", totalCards: 32, drawCount: 3, texts: [{ "front": "天官", "back": "乙級星" },
                                                             { "front": "天福", "back": "乙級星" },
                                                             { "front": "天廚", "back": "乙級星" },
                                                             { "front": "天刑", "back": "乙級星" },
@@ -608,7 +610,7 @@
                                                             { "front": "恩光", "back": "乙級星" },
                                                             { "front": "天貴", "back": "乙級星" }
                                                             ]},
-                    { card_back_background_image:"images/back4.jpg", card_face_background_image:"images/face9.jpg", totalCards: 12, drawCount: 1, texts: [{ "front": "長生", "back": "宮位" }, 
+                    { area_grid_heigh:"150", card_back_background_image:"images/back4.jpg", card_face_background_image:"images/face9.jpg", totalCards: 12, drawCount: 1, texts: [{ "front": "長生", "back": "宮位" }, 
                                                             { "front": "沐浴", "back": "宮位" }, 
                                                             { "front": "冠帶", "back": "宮位" }, 
                                                             { "front": "臨官", "back": "宮位" },
@@ -659,6 +661,8 @@
                         }
 
                         draggedCount.value = 0; // 重設拖曳計數
+
+                        area_grid_heigh.value = round.area_grid_heigh;
                     }
                 };
 
@@ -1163,7 +1167,8 @@
                     selectSubject,
                     textareaContent,
                     gender,
-                    cus_name
+                    cus_name,
+                    area_grid_heigh
                 };
             }
         }).mount('#app');
