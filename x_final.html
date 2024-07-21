@@ -218,8 +218,8 @@
 <body>
     <div id="app">
         <div class="container">
-            <div class="box" @dragover.prevent="dragOver('1')" @drop="dropCard('1')"><span style="font-size: 2em;">巳</span>
-                <div v-for="(card, index) in cardsInBox('1')" :key="card.id" class="card" :style="cardStyle(card, index, '1')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('1')" @drop="dropCard('1')" @click="boxClickSelectCard('1')"><span style="font-size: 2em;">巳</span>
+                <div v-for="(card, index) in cardsInBox('1')" :key="card.id" class="card" :style="cardStyle(card, index, '1')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -231,8 +231,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('2')" @drop="dropCard('2')"><span style="font-size: 2em;">午</span>
-                <div v-for="(card, index) in cardsInBox('2')" :key="card.id" class="card" :style="cardStyle(card, index, '2')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('2')" @drop="dropCard('2')" @click="boxClickSelectCard('2')"><span style="font-size: 2em;">午</span>
+                <div v-for="(card, index) in cardsInBox('2')" :key="card.id" class="card" :style="cardStyle(card, index, '2')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -244,8 +244,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('3')" @drop="dropCard('3')"><span style="font-size: 2em;">未</span>
-                <div v-for="(card, index) in cardsInBox('3')" :key="card.id" class="card" :style="cardStyle(card, index, '3')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('3')" @drop="dropCard('3')" @click="boxClickSelectCard('3')"><span style="font-size: 2em;">未</span>
+                <div v-for="(card, index) in cardsInBox('3')" :key="card.id" class="card" :style="cardStyle(card, index, '3')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -257,8 +257,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('4')" @drop="dropCard('4')"><span style="font-size: 2em;">申</span>
-                <div v-for="(card, index) in cardsInBox('4')" :key="card.id" class="card" :style="cardStyle(card, index, '4')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('4')" @drop="dropCard('4')" @click="boxClickSelectCard('4')"><span style="font-size: 2em;">申</span>
+                <div v-for="(card, index) in cardsInBox('4')" :key="card.id" class="card" :style="cardStyle(card, index, '4')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -270,8 +270,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('5')" @drop="dropCard('5')"><span style="font-size: 2em;">辰</span>
-                <div v-for="(card, index) in cardsInBox('5')" :key="card.id" class="card" :style="cardStyle(card, index, '5')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('5')" @drop="dropCard('5')" @click="boxClickSelectCard('5')"><span style="font-size: 2em;">辰</span>
+                <div v-for="(card, index) in cardsInBox('5')" :key="card.id" class="card" :style="cardStyle(card, index, '5')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -283,11 +283,11 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box center" @dragover.prevent="dragOver('center')" @drop="dropCard('center')">
+            <div class="box center" @dragover.prevent="dragOver('center')" @drop="dropCard('center')"  @click="boxClickSelectCard('center')">
                 <div class="center-text">
                     <div style="display: flex;margin: 5px;">
 					    <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
-                        <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal" >規則說明</button>
+                        <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal">規則說明</button>
                         <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal">抽牌說明</button>	
                     </div>
                     <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;">
@@ -297,7 +297,7 @@
                             <option value="女">女</option>
                         </select>
                         <input type="text" class="form-control" style="width: 40%; margin-right: 10px;" v-model="cus_name" placeholder="姓名">
-                        <select id="selectSubject" ref="selectSubject" class="form-select" style="width: 30%;" >
+                        <select id="selectSubject" ref="selectSubject" class="form-select" style="width: 30%;">
                             <option value="" hidden>主題</option>
                             <option value="工作">工作</option>
                             <option value="感情">感情</option>
@@ -364,7 +364,7 @@
                         </div>
                     </div>
                 </div>
-                <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+                <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -376,8 +376,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('6')" @drop="dropCard('6')"><span style="font-size: 2em;">酉</span>
-                <div v-for="(card, index) in cardsInBox('6')" :key="card.id" class="card" :style="cardStyle(card, index, '6')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('6')" @drop="dropCard('6')" @click="boxClickSelectCard('6')"><span style="font-size: 2em;">酉</span>
+                <div v-for="(card, index) in cardsInBox('6')" :key="card.id" class="card" :style="cardStyle(card, index, '6')" draggable="false" @dragstart="dragCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -389,8 +389,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('7')" @drop="dropCard('7')"><span style="font-size: 2em;">卯</span>
-                <div v-for="(card, index) in cardsInBox('7')" :key="card.id" class="card" :style="cardStyle(card, index, '7')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('7')" @drop="dropCard('7')" @click="boxClickSelectCard('7')"><span style="font-size: 2em;">卯</span>
+                <div v-for="(card, index) in cardsInBox('7')" :key="card.id" class="card" :style="cardStyle(card, index, '7')" draggable="false" @dragstart="dragCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -402,8 +402,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('8')" @drop="dropCard('8')"><span style="font-size: 2em;">戌</span>
-                <div v-for="(card, index) in cardsInBox('8')" :key="card.id" class="card" :style="cardStyle(card, index, '8')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('8')" @drop="dropCard('8')" @click="boxClickSelectCard('8')"><span style="font-size: 2em;">戌</span>
+                <div v-for="(card, index) in cardsInBox('8')" :key="card.id" class="card" :style="cardStyle(card, index, '8')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -415,8 +415,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('9')" @drop="dropCard('9')"><span style="font-size: 2em;">寅</span>
-                <div v-for="(card, index) in cardsInBox('9')" :key="card.id" class="card" :style="cardStyle(card, index, '9')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('9')" @drop="dropCard('9')" @click="boxClickSelectCard('9')"><span style="font-size: 2em;">寅</span>
+                <div v-for="(card, index) in cardsInBox('9')" :key="card.id" class="card" :style="cardStyle(card, index, '9')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -428,8 +428,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('10')" @drop="dropCard('10')"><span style="font-size: 2em;">丑</span>
-                <div v-for="(card, index) in cardsInBox('10')" :key="card.id" class="card" :style="cardStyle(card, index, '10')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('10')" @drop="dropCard('10')" @click="boxClickSelectCard('10')"><span style="font-size: 2em;">丑</span>
+                <div v-for="(card, index) in cardsInBox('10')" :key="card.id" class="card" :style="cardStyle(card, index, '10')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -441,8 +441,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('11')" @drop="dropCard('11')"><span style="font-size: 2em;">子</span>
-                <div v-for="(card, index) in cardsInBox('11')" :key="card.id" class="card" :style="cardStyle(card, index, '11')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('11')" @drop="dropCard('11')" @click="boxClickSelectCard('11')"><span style="font-size: 2em;">子</span>
+                <div v-for="(card, index) in cardsInBox('11')" :key="card.id" class="card" :style="cardStyle(card, index, '11')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -454,8 +454,8 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('12')" @drop="dropCard('12')"><span style="font-size: 2em;">亥</span>
-                <div v-for="(card, index) in cardsInBox('12')" :key="card.id" class="card" :style="cardStyle(card, index, '12')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+            <div class="box" @dragover.prevent="dragOver('12')" @drop="dropCard('12')" @click="boxClickSelectCard('12')"><span style="font-size: 2em;">亥</span>
+                <div v-for="(card, index) in cardsInBox('12')" :key="card.id" class="card" :style="cardStyle(card, index, '12')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -468,7 +468,7 @@
                 </div>
             </div>
             <div class="bottom" :style="{ minHeight: area_grid_heigh + 'px' }">
-                <div v-for="(card, index) in cardsInBox('bottom')" :key="card.id" class="card" :style="bottomCardStyle(card, index)" draggable="true" @dragstart="dragCard(card)" @click="clickCard(card)" :class="{ 'is-clicked': card.isClicked }" @touchstart="touchStart(card)" @touchmove="touchMove(card)" @touchend="touchEnd(card)">
+                <div v-for="(card, index) in cardsInBox('bottom')" :key="card.id" class="card" :style="bottomCardStyle(card, index)" draggable="true" @dragstart="dragCard(card)" @click="clickCard(card)" :class="{ 'is-clicked': card.isClicked }">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :class="{ 'hidden-front': card.isDragging }" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -693,6 +693,20 @@
                     */
                 };
 
+                //用點擊區塊選取卡牌
+                const boxClickSelectCard = (box) => {
+                    const cardNumber = prompt(`[${roundStatus.value}] \n\n 請輸入卡片號碼(1~${rounds[currentRound.value].totalCards})`);
+                    if (cardNumber !== null) {
+                        const card = cards.value.find(c => c.number === parseInt(cardNumber) && c.location === 'bottom');
+                        if (card) {
+                            draggingCard.value = card;
+                            dropCard(box);
+                        } else {
+                            alert("找不到該卡片號碼");
+                        }
+                    }
+                };
+
                 const dragCard = (card) => {
 
                     if(!card.isClicked){
@@ -881,40 +895,6 @@
                     } else {
                         event.dataTransfer.dropEffect = 'move';
                         event.target.classList.remove('forbidden-drop');
-                    }
-                };
-
-                const touchStart = (card) => {
-                    event.preventDefault();
-                    card.isDragging = true;
-
-                    draggingCard.value = card; // 設置當前拖曳的卡片
-
-                    // 設置卡片的初始位置為觸摸點的位置
-                    const touch = event.touches[0];
-                    card.touchX = touch.clientX;
-                    card.touchY = touch.clientY;
-
-                    clickCard(card);
-                };
-
-                const touchMove = (card) => {
-                    event.preventDefault();
-                    if (draggingCard.value) {
-                        const touch = event.touches[0];
-                        draggingCard.value.touchX = touch.clientX;
-                        draggingCard.value.touchY = touch.clientY;
-                    }
-                };
-
-                const touchEnd = (card) => {
-                    event.preventDefault();
-                    if (draggingCard.value) {
-                        dropCard(draggingCard.value.location);
-                        draggingCard.value.isDragging = false;
-                        draggingCard.value.touchX = null;
-                        draggingCard.value.touchY = null;
-                        draggingCard.value = null;
                     }
                 };
 
@@ -1153,9 +1133,6 @@
                     dragEndCard,
                     clickCard,
                     dragOver,
-                    touchStart,
-                    touchMove,
-                    touchEnd,
                     SubmitText,
                     ModifySubmitText, 
                     exportDatabase,
@@ -1168,7 +1145,8 @@
                     textareaContent,
                     gender,
                     cus_name,
-                    area_grid_heigh
+                    area_grid_heigh,
+                    boxClickSelectCard
                 };
             }
         }).mount('#app');
