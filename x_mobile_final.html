@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>小學堂</title>
     <style>
 
@@ -603,10 +603,6 @@
                     </div>
                 </div>
             </div>
-            <div class="indicator" id="indicator">
-                <div class="dot" data-index="0"></div>
-                <div class="dot" data-index="1"></div>
-            </div>
         </div>
     </div>
     <!-- Vue3 -->
@@ -617,10 +613,8 @@
         crossorigin="anonymous"></script>
     <script>
         class SectionScroller {
-            constructor(contentId, indicatorId) {
+            constructor(contentId) {
                 this.content = document.getElementById(contentId);
-                this.dots = document.querySelectorAll(`#${indicatorId} .dot`);
-                this.initialize();
             }
 
             scrollToSection(index) {
@@ -629,27 +623,6 @@
                     left: section.offsetLeft,
                     behavior: 'smooth'
                 });
-                this.updateDots(index);
-            }
-
-            updateDots(activeIndex) {
-                this.dots.forEach((dot, index) => {
-                    if (index === activeIndex) {
-                        dot.classList.add('active');
-                    } else {
-                        dot.classList.remove('active');
-                    }
-                });
-            }
-
-            initialize() {
-                this.dots.forEach(dot => {
-                    dot.addEventListener('click', (event) => {
-                        const index = parseInt(event.target.getAttribute('data-index'));
-                        this.scrollToSection(index);
-                    });
-                });
-                this.updateDots(0);
             }
         }
     </script>
@@ -1325,7 +1298,7 @@
                 onMounted(() => {
                     openDatabase();
                     initRound();
-                    sectionScroller = new SectionScroller('content', 'indicator');
+                    sectionScroller = new SectionScroller('content');
                 });
 
                 return {
