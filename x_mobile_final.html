@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>小學堂</title>
     <style>
 
@@ -263,8 +263,14 @@
             gap: 10px;
         }
 
-        /* 手機板 */
-        @media (min-width:768px) and (max-width: 992px) {
+
+        /*https://stackoverflow.com/questions/58087446/all-media-queries-for-iphone-15-pro-max-plus-mini-and-older-ones*/
+
+        @media only screen 
+         and ( (width: 428px) and (height: 926px) and (-webkit-device-pixel-ratio: 3) ), 
+             ( (width: 390px) and (height: 844px) and (-webkit-device-pixel-ratio: 3) ), 
+             ( (width: 393px) and (height: 852px) and (-webkit-device-pixel-ratio: 3)) 
+        {
             .container {
                 margin-top: 0px;
             }
@@ -292,6 +298,7 @@
                 align-items: center;
             }
         }
+
 
     </style>
     <!--Bootstrap CSS -->
@@ -335,6 +342,8 @@
                                 @click="SubmitText()">確認</button>
                             <button type="button" class="btn btn-primary" style="margin-right: 10px;"
                                 @click="ModifySubmitText()">編輯</button>
+                            <button type="button" class="btn btn-primary" style="margin-right: 10px;"
+                                @click=scrollToSection(1)>下一步選牌</button>
                         </div>
                         <!-- Modal -->
                         <!-- 規則說明 -->
@@ -397,7 +406,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="section">
+                <div class="section" style="position: relative;">
+                    <div style="position: absolute; top: 10px; left: 5%; transform: translateX(-50%); z-index: 1;">
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="scrollToSection(0)">查看題目內容</button>
+                    </div>
                     <div class="container">
                         <div class="box" @dragover.prevent="dragOver('1')" @drop="dropCard('1')" @click="boxClickSelectCard('1')"><span>巳</span>
                             <div v-for="(card, index) in cardsInBox('1')" :key="card.id" class="card" :style="cardStyle(card, index, '1')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
@@ -603,6 +615,44 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
+    <script>
+        class SectionScroller {
+            constructor(contentId, indicatorId) {
+                this.content = document.getElementById(contentId);
+                this.dots = document.querySelectorAll(`#${indicatorId} .dot`);
+                this.initialize();
+            }
+
+            scrollToSection(index) {
+                const section = this.content.children[index];
+                this.content.scrollTo({
+                    left: section.offsetLeft,
+                    behavior: 'smooth'
+                });
+                this.updateDots(index);
+            }
+
+            updateDots(activeIndex) {
+                this.dots.forEach((dot, index) => {
+                    if (index === activeIndex) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+
+            initialize() {
+                this.dots.forEach(dot => {
+                    dot.addEventListener('click', (event) => {
+                        const index = parseInt(event.target.getAttribute('data-index'));
+                        this.scrollToSection(index);
+                    });
+                });
+                this.updateDots(0);
+            }
+        }
+    </script>
     <!-- Card JS -->
     <script>
         
@@ -639,6 +689,8 @@
                 const cus_name = ref('');
 
                 const area_grid_heigh = ref(0); // 初始高度設置為 150px
+
+                let sectionScroller = ref(null);
 
                 // 各自代表的區域
                 const locations = {
@@ -942,7 +994,7 @@
 
                     let boxHeight = 100; // 固定高度
 
-                    const mediaQuery = window.matchMedia('(min-width:768px) and (max-width: 992px)');
+                    const mediaQuery = window.matchMedia('(max-width:768px)');
 
                     if (mediaQuery.matches) {
                         boxHeight = 50; // 固定高度
@@ -977,7 +1029,11 @@
 
                     let boxHeight = 100; // 固定高度
 
-                    const mediaQuery = window.matchMedia('(min-width:768px) and (max-width: 992px)');
+                    const mediaQuery = window.matchMedia(
+                        "only screen and ((width: 428px) and (height: 926px) and (-webkit-device-pixel-ratio: 3)), " +
+                        "((width: 390px) and (height: 844px) and (-webkit-device-pixel-ratio: 3)), " +
+                        "((width: 393px) and (height: 852px) and (-webkit-device-pixel-ratio: 3))"
+                    );
 
                     if (mediaQuery.matches) {
                         boxHeight = 50; // 固定高度
@@ -1262,10 +1318,14 @@
                     };
                 };
 
+                const scrollToSection = (index) => {
+                    sectionScroller.scrollToSection(index);
+                };
 
                 onMounted(() => {
                     openDatabase();
                     initRound();
+                    sectionScroller = new SectionScroller('content', 'indicator');
                 });
 
                 return {
@@ -1293,88 +1353,11 @@
                     gender,
                     cus_name,
                     area_grid_heigh,
-                    boxClickSelectCard
+                    boxClickSelectCard,
+                    scrollToSection
                 };
             }
         }).mount('#app');
-    </script>
-
-    <script>
-        // 初始化 ScrollHandler
-        document.addEventListener('DOMContentLoaded', () => {
-            const scrollHandler = new ScrollHandler('content', 'indicator');
-        });
-
-        class ScrollHandler {
-            constructor(contentId, indicatorId) {
-                this.content = document.getElementById(contentId);
-                this.indicator = document.getElementById(indicatorId);
-                this.dots = this.indicator.getElementsByClassName('dot');
-                this.startX = 0;
-                this.scrollLeft = 0;
-                this.init();
-            }
-
-            init() {
-                //this.content.addEventListener('wheel', (event) => this.handleWheel(event));
-                this.content.addEventListener('touchstart', (event) => this.handleTouchStart(event));
-                this.content.addEventListener('touchmove', (event) => this.handleTouchMove(event));
-                this.content.addEventListener('touchend', (event) => this.handleTouchEnd(event));
-                this.content.addEventListener('scroll', () => this.updateIndicator());
-
-                Array.from(this.dots).forEach(dot => {
-                    dot.addEventListener('click', (event) => this.scrollToSection(event));
-                });
-
-                this.updateIndicator();
-            }
-
-            handleWheel(event) {
-                const scrollAmount = window.innerWidth;
-                if (event.deltaY > 0) {
-                    this.content.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-                } else {
-                    this.content.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-                }
-            }
-
-            handleTouchStart(event) {
-                this.startX = event.touches[0].pageX;
-                this.scrollLeft = this.content.scrollLeft;
-            }
-
-            handleTouchMove(event) {
-                const moveX = event.touches[0].pageX - this.startX;
-                this.content.scrollLeft = this.scrollLeft - moveX;
-            }
-
-            handleTouchEnd(event) {
-                const scrollAmount = window.innerWidth;
-                const threshold = scrollAmount / 10; // 調整閾值
-
-                if (this.content.scrollLeft % scrollAmount > threshold) {
-                    this.content.scrollBy({ left: scrollAmount - (this.content.scrollLeft % scrollAmount), behavior: 'smooth' });
-                } else {
-                    this.content.scrollBy({ left: -(this.content.scrollLeft % scrollAmount), behavior: 'smooth' });
-                }
-            }
-
-            updateIndicator() {
-                const index = Math.round(this.content.scrollLeft / window.innerWidth);
-                Array.from(this.dots).forEach((dot, i) => {
-                    if (i === index) {
-                        dot.classList.add('active');
-                    } else {
-                        dot.classList.remove('active');
-                    }
-                });
-            }
-
-            scrollToSection(event) {
-                const index = event.target.getAttribute('data-index');
-                this.content.scrollTo({ left: index * window.innerWidth, behavior: 'smooth' });
-            }
-        }
     </script>
 </body>
 
