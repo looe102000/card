@@ -1350,7 +1350,7 @@
 
             handleTouchEnd(event) {
                 const scrollAmount = window.innerWidth;
-                const threshold = scrollAmount / 20; // 調整閾值
+                const threshold = scrollAmount / 10; // 調整閾值
 
                 if (this.content.scrollLeft % scrollAmount > threshold) {
                     this.content.scrollBy({ left: scrollAmount - (this.content.scrollLeft % scrollAmount), behavior: 'smooth' });
