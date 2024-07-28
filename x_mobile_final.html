@@ -26,27 +26,16 @@
             flex: 1;
             display: flex;
             overflow-x: hidden;
-            scroll-snap-type: x mandatory;
-            position: relative;
         }
 
         .section {
             min-width: 100%;
-            scroll-snap-align: start;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
             height: 100%;
-        }
-
-        .section:nth-child(1) {
-            /* 自訂義區塊樣式 */
-        }
-
-        .section:nth-child(2) {
-            /* 自訂義區塊樣式 */
-            color: white;
+            color:white;
         }
 
         .indicator {
@@ -57,19 +46,6 @@
             display: flex;
             gap: 10px;
         }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            background-color: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .dot.active {
-            background-color: rgba(255, 255, 255, 1);
-        }
-
 
         .center-text {
             position: absolute;
@@ -310,7 +286,7 @@
     <div id="app">
         <div class="container-fluid">
             <div class="content" id="content">
-                <div class="section">
+                <div class="section" v-if="currentSection === 0">
                     <div class="center-text">
                         <div style="display: flex;margin: 5px;">
                             <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
@@ -342,8 +318,7 @@
                                 @click="SubmitText()">確認</button>
                             <button type="button" class="btn btn-primary" style="margin-right: 10px;"
                                 @click="ModifySubmitText()">編輯</button>
-                            <button type="button" class="btn btn-primary" style="margin-right: 10px;"
-                                @click=scrollToSection(1)>下一步選牌</button>
+                            <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="showSection(1)">下一步選牌</button>
                         </div>
                         <!-- Modal -->
                         <!-- 規則說明 -->
@@ -406,9 +381,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="section" style="position: relative;">
+                <div class="section" v-if="currentSection === 1">
                     <div style="position: absolute; top: 10px; left: 5%; transform: translateX(-50%); z-index: 1;">
-                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="scrollToSection(0)">查看題目內容</button>
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="showSection(0)">查看題目內容</button>
                     </div>
                     <div class="container">
                         <div class="box" @dragover.prevent="dragOver('1')" @drop="dropCard('1')" @click="boxClickSelectCard('1')"><span>巳</span>
@@ -611,21 +586,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
-    <script>
-        class SectionScroller {
-            constructor(contentId) {
-                this.content = document.getElementById(contentId);
-            }
-
-            scrollToSection(index) {
-                const section = this.content.children[index];
-                this.content.scrollTo({
-                    left: section.offsetLeft,
-                    behavior: 'smooth'
-                });
-            }
-        }
-    </script>
     <!-- Card JS -->
     <script>
         
@@ -663,7 +623,8 @@
 
                 const area_grid_heigh = ref(0); // 初始高度設置為 150px
 
-                let sectionScroller = ref(null);
+                // 新增一個變量來存儲當前顯示的 section
+                const currentSection = ref(0);
 
                 // 各自代表的區域
                 const locations = {
@@ -1291,14 +1252,14 @@
                     };
                 };
 
-                const scrollToSection = (index) => {
-                    sectionScroller.scrollToSection(index);
+                // 創建一個方法切換顯示的 section
+                const showSection = (sectionIndex) => {
+                    currentSection.value = sectionIndex;
                 };
 
                 onMounted(() => {
                     openDatabase();
                     initRound();
-                    sectionScroller = new SectionScroller('content');
                 });
 
                 return {
@@ -1327,7 +1288,8 @@
                     cus_name,
                     area_grid_heigh,
                     boxClickSelectCard,
-                    scrollToSection
+                    currentSection,
+                    showSection,
                 };
             }
         }).mount('#app');
