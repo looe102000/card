@@ -290,7 +290,7 @@
                         <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal">規則說明</button>
                         <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal">抽牌說明</button>	
                     </div>
-                    <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;">
+                    <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;" @click.stop>
                         <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender">
                             <option value="" hidden>性別</option>
                             <option value="男">男</option>
@@ -305,10 +305,10 @@
                             <option value="其他">其他</option>
                         </select>
                     </div>
-                    <textarea id="textareaContent" ref="textareaContent" name="textareaContent" class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。"></textarea>
+                    <textarea id="textareaContent" ref="textareaContent" name="textareaContent" class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。" @click.stop ></textarea>
                     <div style="display: flex;margin-top: 10px;">
-                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()">確認</button>
-                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="ModifySubmitText()">編輯</button>
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()" @click.stop>確認</button>
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="ModifySubmitText()" @click.stop>編輯</button>
                     </div>
                     <!-- Modal -->
                     <!-- 規則說明 -->
@@ -695,9 +695,16 @@
 
                 //用點擊區塊選取卡牌
                 const boxClickSelectCard = (box) => {
+
+                    //判斷問題描述填寫,是否已按確認
+                    if(textareaContent.value.value == "" || !textareaContent.value.readOnly){
+                        alert("請填寫問題內容後確定，確定完畢後抽牌");
+                        return;
+                    }
+
                     const cardNumber = prompt(`[${roundStatus.value}] \n\n 請輸入卡片號碼(1~${rounds[currentRound.value].totalCards})`);
                     if (cardNumber !== null) {
-                        const card = cards.value.find(c => c.number === parseInt(cardNumber) && c.location === 'bottom');
+                        const card = cards.value.find(c => c.number === parseInt(cardNumber) && c.location === 'bottom' && c.frontText !== '');
                         if (card) {
                             draggingCard.value = card;
                             dropCard(box);
@@ -705,6 +712,7 @@
                             alert("找不到該卡片號碼");
                         }
                     }
+
                 };
 
                 const dragCard = (card) => {
