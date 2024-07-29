@@ -17,13 +17,12 @@
         }
 
         .container-fluid {
-            margin-top: 10%;
+            margin-top: 5%;
         }
 
         .content {
             flex: 1;
             display: flex;
-            overflow-x: hidden;
         }
 
         .section {
@@ -269,7 +268,10 @@
                 justify-content:flex-start;
                 align-items: center;
             }
-            
+
+            .container-fluid {
+                margin-top: 5%;
+            }
         }
     </style>
     <!--Bootstrap CSS -->
@@ -281,7 +283,7 @@
     <div id="app">
         <div class="container-fluid">
             <div class="content" id="content">
-                <div class="section" v-if="currentSection === 0">
+                <div class="section" v-show="currentSection === 0">
                     <div class="center-text">
                         <div style="display: flex;margin: 5px;">
                             <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
@@ -376,8 +378,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="section" v-if="currentSection === 1">
-                    <div style="position: absolute; top: 10px; left: 10%; transform: translateX(-50%); z-index: 1;">
+                <div class="section" v-show="currentSection === 1">
+                    <div style="position: absolute; top: 10px; left: 10%; z-index: 1;">
                         <button type="button" class="btn btn-primary" @click="showSection(0)">查看題目內容</button>
                     </div>
                     <div class="container">
