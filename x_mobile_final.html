@@ -628,14 +628,14 @@
                     '2': '午',
                     '3': '未',
                     '4': '申',
-                    '5': '酉',
-                    '6': '戌',
-                    '7': '亥',
-                    '8': '子',
-                    '9': '丑',
-                    '10': '寅',
-                    '11': '卯',
-                    '12': '辰',
+                    '5': '辰',
+                    '6': '酉',
+                    '7': '卯',
+                    '8': '戌',
+                    '9': '寅',
+                    '10': '丑',
+                    '11': '子',
+                    '12': '亥',
                     'center': '中心區域'
                 };
 
@@ -796,7 +796,13 @@
 
                 //用點擊區塊選取卡牌
                 const boxClickSelectCard = (box) => {
-                    const cardNumber = prompt(`[${roundStatus.value}] \n\n 請輸入卡片號碼(1~${rounds[currentRound.value].totalCards})`);
+                    //判斷問題描述填寫,是否已按確認
+                    if(textareaContent.value.value == "" || !textareaContent.value.readOnly){
+                        alert("請填寫問題內容後確定，確定完畢後抽牌");
+                        return;
+                    }
+
+                    const cardNumber = prompt(`目前所在的宮位為「${locations[box]}」\n\n [${roundStatus.value}] \n\n 請輸入卡片號碼(1~${rounds[currentRound.value].totalCards})`);
                     if (cardNumber !== null) {
                         const card = cards.value.find(c => c.number === parseInt(cardNumber) && c.location === 'bottom' && c.frontText !== '');
                         if (card) {
@@ -806,7 +812,6 @@
                             alert("找不到該卡片號碼");
                         }
                     }
-
                 };
 
                 const dragCard = (card) => {
