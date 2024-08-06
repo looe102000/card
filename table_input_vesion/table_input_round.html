@@ -3,6 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
     <title>表格</title>
     <style>
         /* 樣式設置 */
@@ -49,6 +51,16 @@
             margin-left: 1%;
             margin-top: 20px;
             font-size: 18px;
+        }
+
+        @media (min-width: 600px) and (max-width: 932px) {
+            table {
+                width: 100%;
+            }
+
+            .images img {
+                max-width: 70%;
+            }
         }
     </style>
 </head>
