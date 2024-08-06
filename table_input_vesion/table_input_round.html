@@ -75,12 +75,12 @@
                             <td>
                                 <!-- 數字輸入框 -->
                                 <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
-                                    :disabled="!canEdit(index)">
+                                    :disabled="!canEdit(index) || isNextFilled(index) ">
                                 <div class="number-range">可填數字: 1-{{ getMaxNumber(row.currentRound) }}</div>
                             </td>
                             <td>
                                 <!-- 區域選擇框 -->
-                                <select v-model="row.box" :disabled="!canEdit(index)">
+                                <select v-model="row.box" :disabled="!canEdit(index) || isNextFilled(index)">
                                     <option v-for="option in boxOptions" :key="option" :value="option">
                                         {{ option }}
                                     </option>
@@ -359,6 +359,11 @@
 
                 const debouncedHandleInput = debounce(handleInput, 100);
 
+                const isNextFilled = (index) => {
+                    const nextRow = rows.value[index];
+                    return nextRow ? (nextRow.card !== '' && nextRow.box !== '') : false;
+                };
+
                 return {
                     rows,
                     boxOptions,
@@ -373,7 +378,8 @@
                     allRoundsCompleted,
                     results,
                     getMaxNumber,
-                    canShow
+                    canShow,
+                    isNextFilled
                 };
             }
         }).mount('#app');
