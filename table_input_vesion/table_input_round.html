@@ -49,6 +49,12 @@
             margin-top: 20px;
             font-size: 18px;
         }
+
+        .number-range {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
     </style>
 </head>
 
@@ -63,22 +69,25 @@
                         <th>數字</th>
                         <th>區域</th>
                     </tr>
-                    <tr v-for="(row, index) in rows" :key="index">
-                        <td>{{ row.currentRound }}</td>
-                        <td>
-                            <!-- 數字輸入框 -->
-                            <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
-                                :disabled="!canEdit(index)">
-                        </td>
-                        <td>
-                            <!-- 區域選擇框 -->
-                            <select v-model="row.box" :disabled="!canEdit(index)">
-                                <option v-for="option in boxOptions" :key="option" :value="option">
-                                    {{ option }}
-                                </option>
-                            </select>
-                        </td>
-                    </tr>
+                    <template v-for="(row, index) in rows" :key="index">
+                        <tr v-if="canShow(index)">
+                            <td>{{ row.currentRound }}</td>
+                            <td>
+                                <!-- 數字輸入框 -->
+                                <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
+                                    :disabled="!canEdit(index)">
+                                <div class="number-range">可填數字: 1-{{ getMaxNumber(row.currentRound) }}</div>
+                            </td>
+                            <td>
+                                <!-- 區域選擇框 -->
+                                <select v-model="row.box" :disabled="!canEdit(index)">
+                                    <option v-for="option in boxOptions" :key="option" :value="option">
+                                        {{ option }}
+                                    </option>
+                                </select>
+                            </td>
+                        </tr>
+                    </template>
                 </table>
             </div>
             <!-- 圖片區域，當前回合尚未完成時顯示 -->
@@ -140,6 +149,14 @@
                     return prevRow.card !== '' && prevRow.box !== '';
                 };
 
+                // 定義是否顯示該行
+                const canShow = (index) => {
+                    console.log('canShow', index);
+                    if (index === 0) return true;
+                    const prevRow = rows.value[index - 1];
+                    return prevRow.card !== '' && prevRow.box !== '';
+                };
+
                 // 根據當前回合顯示相應圖片
                 const currentRoundImages = computed(() => {
                     const currentRound = rows.value.find(row => row.card === '' || row.box === '')?.currentRound;
@@ -149,10 +166,20 @@
                 // 驗證輸入的數字
                 const validateNumber = (index) => {
                     const value = rows.value[index].card;
+                    const currentRound = rows.value[index].currentRound;
+                    const maxNumber = rounds.find(round => round.round === currentRound).texts.length;
+
                     if (!/^\d*$/.test(value)) {
                         rows.value[index].card = value.replace(/\D/g, '');
                         return false;
                     }
+
+                    if(value < 1 || value > maxNumber) {
+                        alert(`請輸入 1 到 ${maxNumber} 之間的數字！`);
+                        rows.value[index].card = '';
+                        return false;
+                    }
+
                     return true;
                 };
 
@@ -295,6 +322,11 @@
                     return texts[card - 1].front;
                 };
 
+                const getMaxNumber = (round) => {
+                    const roundData = rounds.find(r => r.round === round);
+                    return roundData ? roundData.texts.length : 0;
+                };
+
                 const allRoundsCompleted = computed(() => {
                     return rows.value.every(row => row.card !== '' && row.box !== '');
                 });
@@ -339,7 +371,9 @@
                     checkDuplicate,
                     debouncedHandleInput,
                     allRoundsCompleted,
-                    results
+                    results,
+                    getMaxNumber,
+                    canShow
                 };
             }
         }).mount('#app');
