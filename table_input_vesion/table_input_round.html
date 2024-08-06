@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <title>表格</title>
+    <style>
+        /* 樣式設置 */
+        table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 18px;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 18px;
+            border: 1px solid #ddd;
+        }
+
+        .table-container {
+            display: flex;
+        }
+
+        .images {
+            margin-left: 1%;
+        }
+
+        .images img {
+            max-width: 100%;
+        }
+
+        .results {
+            margin-left: 1%;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="table-container">
+            <!-- 表格區域 -->
+            <table>
+                <tr>
+                    <th>回合</th>
+                    <th>數字</th>
+                    <th>區域</th>
+                </tr>
+                <tr v-for="(row, index) in rows" :key="index">
+                    <td>{{ row.currentRound }}</td>
+                    <td>
+                        <!-- 數字輸入框 -->
+                        <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
+                            :disabled="!canEdit(index)">
+                    </td>
+                    <td>
+                        <!-- 區域選擇框 -->
+                        <select v-model="row.box" :disabled="!canEdit(index)">
+                            <option v-for="option in boxOptions" :key="option" :value="option">
+                                {{ option }}
+                            </option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <!-- 圖片區域，當前回合尚未完成時顯示 -->
+            <div class="images" v-if="!allRoundsCompleted">
+                <img v-for="(image, index) in currentRoundImages" :src="image" :key="index">
+            </div>
+            <!-- 結果區域，所有回合完成後顯示 -->
+            <div class="results" v-if="allRoundsCompleted">
+                <h3>所有回合結果</h3>
+                <ul>
+                    <li v-for="(result, index) in results" :key="index">
+                        回合 {{ result.round }}: {{ result.box }} - {{ result.front }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 Vue 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.27/dist/vue.global.min.js"></script>
+
+    <script>
+        // 使用 Vue 3 創建應用
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                // 定義回合資料
+                const rows = ref([
+                    { currentRound: '一', card: '', box: '' },
+                    { currentRound: '一', card: '', box: '' },
+                    { currentRound: '二', card: '', box: '' },
+                    { currentRound: '二', card: '', box: '' },
+                    { currentRound: '三', card: '', box: '' },
+                    { currentRound: '三', card: '', box: '' },
+                    { currentRound: '三', card: '', box: '' },
+                    { currentRound: '四', card: '', box: '' }
+                ]);
+
+                // 定義區域選項
+                const boxOptions = ref(['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']);
+
+                // 定義每回合的圖片
+                const roundImages = ref({
+                    '一': ['images/round_1.png'],
+                    '二': ['images/round_2.png'],
+                    '三': ['images/round_3.png'],
+                    '四': ['images/round_4.png'],
+                    'final': []
+                });
+
+                // 定義是否可以編輯輸入框和選擇框
+                const canEdit = (index) => {
+                    if (allRoundsCompleted.value) return false;
+                    if (index === 0) return true;
+                    const prevRow = rows.value[index - 1];
+                    return prevRow.card !== '' && prevRow.box !== '';
+                };
+
+                // 根據當前回合顯示相應圖片
+                const currentRoundImages = computed(() => {
+                    const currentRound = rows.value.find(row => row.card === '' || row.box === '')?.currentRound;
+                    return roundImages.value[currentRound] || roundImages.value['final'];
+                });
+
+                // 驗證輸入的數字
+                const validateNumber = (index) => {
+                    const value = rows.value[index].card;
+                    if (!/^\d*$/.test(value)) {
+                        rows.value[index].card = value.replace(/\D/g, '');
+                        return false;
+                    }
+                    return true;
+                };
+
+                // 檢查是否有重複的數字
+                const checkDuplicate = (index) => {
+                    const currentRow = rows.value[index];
+                    const currentRound = currentRow.currentRound;
+                    const currentCard = currentRow.card;
+                    if (currentCard === '') return;
+                    const duplicate = rows.value.some((row, i) => i !== index && row.currentRound === currentRound && row.card === currentCard);
+                    if (duplicate) {
+                        alert("同一回合不能輸入相同的數字！");
+                        rows.value[index].card = '';
+                        return false;
+                    }
+                    return true;
+                };
+
+                // 定義各回合的星星資料
+                const rounds = [
+                    {
+                        round: "一",
+                        texts: [{ "front": "紫微", "back": "主星" },
+                                { "front": "天機", "back": "主星" },
+                                { "front": "太陽", "back": "主星" },
+                                { "front": "武曲", "back": "主星" },
+                                { "front": "天同", "back": "主星" },
+                                { "front": "廉貞", "back": "主星" },
+                                { "front": "天府", "back": "主星" },
+                                { "front": "太陰", "back": "主星" },
+                                { "front": "貪狼", "back": "主星" },
+                                { "front": "巨門", "back": "主星" },
+                                { "front": "天相", "back": "主星" },
+                                { "front": "天梁", "back": "主星" },
+                                { "front": "七殺", "back": "主星" },
+                                { "front": "破軍", "back": "主星" }
+                        ]
+                    },
+                    {
+                        round: "二",
+                        texts: [{ "front": "文昌", "back": "副星" },
+                                { "front": "文曲", "back": "副星" },
+                                { "front": "左輔", "back": "副星" },
+                                { "front": "右弼", "back": "副星" },
+                                { "front": "天魁", "back": "副星" },
+                                { "front": "天鉞", "back": "副星" },
+                                { "front": "地空", "back": "副星" },
+                                { "front": "地劫", "back": "副星" },
+                                { "front": "火星", "back": "副星" },
+                                { "front": "鈴星", "back": "副星" },
+                                { "front": "擎羊", "back": "副星" },
+                                { "front": "陀羅", "back": "副星" },
+                                { "front": "天馬", "back": "副星" },
+                                { "front": "祿存", "back": "副星" }
+                        ]
+                    },
+                    {
+                        round: "三",
+                        texts: [{ "front": "天官", "back": "乙級星" },
+                            { "front": "天福", "back": "乙級星" },
+                            { "front": "天廚", "back": "乙級星" },
+                            { "front": "天刑", "back": "乙級星" },
+                            { "front": "天姚", "back": "乙級星" },
+                            { "front": "解神", "back": "乙級星" },
+                            { "front": "天巫", "back": "乙級星" },
+                            { "front": "天月", "back": "乙級星" },
+                            { "front": "陰煞", "back": "乙級星" },
+                            { "front": "台輔", "back": "乙級星" },
+                            { "front": "封誥", "back": "乙級星" },
+                            { "front": "天空", "back": "乙級星" },
+                            { "front": "天哭", "back": "乙級星" },
+                            { "front": "天虛", "back": "乙級星" },
+                            { "front": "龍池", "back": "乙級星" },
+                            { "front": "鳳閣", "back": "乙級星" },
+                            { "front": "紅鸞", "back": "乙級星" },
+                            { "front": "天喜", "back": "乙級星" },
+                            { "front": "孤辰", "back": "乙級星" },
+                            { "front": "寡宿", "back": "乙級星" },
+                            { "front": "蜚廉", "back": "乙級星" },
+                            { "front": "破碎", "back": "乙級星" },
+                            { "front": "華蓋", "back": "乙級星" },
+                            { "front": "咸池", "back": "乙級星" },
+                            { "front": "天德", "back": "乙級星" },
+                            { "front": "月德", "back": "乙級星" },
+                            { "front": "天才", "back": "乙級星" },
+                            { "front": "天壽", "back": "乙級星" },
+                            { "front": "三台", "back": "乙級星" },
+                            { "front": "八座", "back": "乙級星" },
+                            { "front": "恩光", "back": "乙級星" },
+                            { "front": "天貴", "back": "乙級星" }
+                        ]
+                    },
+                    {
+                        round: "四",
+                        texts: [{ "front": "長生", "back": "宮位" },
+                                { "front": "沐浴", "back": "宮位" },
+                                { "front": "冠帶", "back": "宮位" },
+                                { "front": "臨官", "back": "宮位" },
+                                { "front": "帝旺", "back": "宮位" },
+                                { "front": "衰", "back": "宮位" },
+                                { "front": "病", "back": "宮位" },
+                                { "front": "死", "back": "宮位" },
+                                { "front": "墓", "back": "宮位" },
+                                { "front": "絕", "back": "宮位" },
+                                { "front": "胎", "back": "宮位" },
+                                { "front": "養", "back": "宮位" }
+                        ]
+                    }
+                ];
+
+                const randomTexts = ref({});
+                const getRandomTexts = (round) => {
+                    if (!randomTexts.value[round]) {
+                        const roundData = rounds.find(r => r.round === round);
+                        if (roundData) {
+                            randomTexts.value[round] = shuffleArray(roundData.texts);
+                        } else {
+                            console.error(`Round ${round} not found.`);
+                            return [];
+                        }
+                    }
+                    return randomTexts.value[round];
+                };
+
+                // 隨機排列數組的函數
+                const shuffleArray = (array) => {
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
+                    }
+                    return array;
+                };
+
+                rounds.forEach(round => {
+                    getRandomTexts(round.round);
+                });
+
+                const getCardText = (round, card) => {
+                    const texts = getRandomTexts(round);
+                    return texts[card - 1].front;
+                };
+
+                const allRoundsCompleted = computed(() => {
+                    return rows.value.every(row => row.card !== '' && row.box !== '');
+                });
+
+                const results = computed(() => {
+                    if (!allRoundsCompleted.value) return [];
+                    return rows.value.map(row => {
+                        return {
+                            round: row.currentRound,
+                            front: getCardText(row.currentRound, row.card),
+                            box: row.box
+                        };
+                    });
+                });
+
+                // 防抖函數，用於延遲處理輸入事件
+                const debounce = (func, delay) => {
+                    let timeout;
+                    return function (...args) {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => func.apply(this, args), delay);
+                    };
+                };
+
+                const handleInput = (index, row) => {
+                    if (validateNumber(index) && checkDuplicate(index)) {
+                        row.cardText = getCardText(row.currentRound, row.card);
+                    }
+                };
+
+                const debouncedHandleInput = debounce(handleInput, 100);
+
+                return {
+                    rows,
+                    boxOptions,
+                    roundImages,
+                    canEdit,
+                    currentRoundImages,
+                    validateNumber,
+                    randomTexts,
+                    getCardText,
+                    checkDuplicate,
+                    debouncedHandleInput,
+                    allRoundsCompleted,
+                    results
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
