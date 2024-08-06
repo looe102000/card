@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>表格</title>
     <style>
@@ -11,7 +11,7 @@
         table {
             width: 50%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 20px 0 0 3%;
             font-size: 18px;
             text-align: left;
         }
@@ -37,6 +37,8 @@
 
         .table-container {
             display: flex;
+            flex-direction: column;
+            align-items: flex-start;
         }
 
         .images {
@@ -55,11 +57,22 @@
 
         @media (min-width: 600px) and (max-width: 932px) {
             table {
-                width: 100%;
+                width: 150%;
+            }
+        }
+
+        @media (min-width: 932px) {
+            .table-container {
+                flex-direction: row;
+                justify-content: center;
             }
 
-            .images img {
-                max-width: 70%;
+            .images {
+                margin-left: 1%;
+            }
+
+            .results {
+                margin-left: 1%;
             }
         }
     </style>
