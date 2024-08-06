@@ -359,6 +359,7 @@
 
                 const debouncedHandleInput = debounce(handleInput, 100);
 
+                /* 禁用下一格 */
                 const isNextFilled = (index) => {
                     const nextRow = rows.value[index];
                     return nextRow ? (nextRow.card !== '' && nextRow.box !== '') : false;
