@@ -75,7 +75,7 @@
                             <td>
                                 <!-- 數字輸入框 -->
                                 <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
-                                    :disabled="!canEdit(index) || isNextFilled(index) ">
+                                    :disabled="!canEdit(index) || isNextFilled(index)">
                                 <div class="number-range">可填數字: 1-{{ getMaxNumber(row.currentRound) }}</div>
                             </td>
                             <td>
@@ -97,11 +97,16 @@
             <!-- 結果區域，所有回合完成後顯示 -->
             <div class="results col-12" v-if="allRoundsCompleted">
                 <h3>所有回合結果</h3>
-                <ul>
-                    <li v-for="(result, index) in results" :key="index">
-                        回合 {{ result.round }}: {{ result.box }} - {{ result.front }}
-                    </li>
-                </ul>
+                <div v-if="false">
+                    <ul>
+                        <li v-for="(result, index) in results" :key="index">
+                            回合 {{ result.round }}: {{ result.box }} - {{ result.front }} ({{ result.key }})
+                        </li>
+                    </ul>
+                </div>
+                <p>輸出: {{ formattedResults }}</p>
+                <p>Base64輸出: {{ base64Output }}</p>
+                <p>解碼: {{ decodedBase64 }}</p>
             </div>
         </div>
     </div>
@@ -151,7 +156,6 @@
 
                 // 定義是否顯示該行
                 const canShow = (index) => {
-                    console.log('canShow', index);
                     if (index === 0) return true;
                     const prevRow = rows.value[index - 1];
                     return prevRow.card !== '' && prevRow.box !== '';
@@ -174,7 +178,7 @@
                         return false;
                     }
 
-                    if(value < 1 || value > maxNumber) {
+                    if (value < 1 || value > maxNumber) {
                         alert(`請輸入 1 到 ${maxNumber} 之間的數字！`);
                         rows.value[index].card = '';
                         return false;
@@ -198,94 +202,99 @@
                     return true;
                 };
 
-                // 定義各回合的星星資料
+                const ver = "1.0";
+
                 const rounds = [
                     {
                         round: "一",
-                        texts: [{ "front": "紫微", "back": "主星" },
-                                { "front": "天機", "back": "主星" },
-                                { "front": "太陽", "back": "主星" },
-                                { "front": "武曲", "back": "主星" },
-                                { "front": "天同", "back": "主星" },
-                                { "front": "廉貞", "back": "主星" },
-                                { "front": "天府", "back": "主星" },
-                                { "front": "太陰", "back": "主星" },
-                                { "front": "貪狼", "back": "主星" },
-                                { "front": "巨門", "back": "主星" },
-                                { "front": "天相", "back": "主星" },
-                                { "front": "天梁", "back": "主星" },
-                                { "front": "七殺", "back": "主星" },
-                                { "front": "破軍", "back": "主星" }
+                        texts: [
+                            { key: "AA", "front": "紫微", "back": "主星" },
+                            { key: "AB", "front": "天機", "back": "主星" },
+                            { key: "AC", "front": "太陽", "back": "主星" },
+                            { key: "AD", "front": "武曲", "back": "主星" },
+                            { key: "AE", "front": "天同", "back": "主星" },
+                            { key: "AF", "front": "廉貞", "back": "主星" },
+                            { key: "AG", "front": "天府", "back": "主星" },
+                            { key: "AH", "front": "太陰", "back": "主星" },
+                            { key: "AI", "front": "貪狼", "back": "主星" },
+                            { key: "AJ", "front": "巨門", "back": "主星" },
+                            { key: "AK", "front": "天相", "back": "主星" },
+                            { key: "AL", "front": "天梁", "back": "主星" },
+                            { key: "AM", "front": "七殺", "back": "主星" },
+                            { key: "AN", "front": "破軍", "back": "主星" }
                         ]
                     },
                     {
                         round: "二",
-                        texts: [{ "front": "文昌", "back": "副星" },
-                                { "front": "文曲", "back": "副星" },
-                                { "front": "左輔", "back": "副星" },
-                                { "front": "右弼", "back": "副星" },
-                                { "front": "天魁", "back": "副星" },
-                                { "front": "天鉞", "back": "副星" },
-                                { "front": "地空", "back": "副星" },
-                                { "front": "地劫", "back": "副星" },
-                                { "front": "火星", "back": "副星" },
-                                { "front": "鈴星", "back": "副星" },
-                                { "front": "擎羊", "back": "副星" },
-                                { "front": "陀羅", "back": "副星" },
-                                { "front": "天馬", "back": "副星" },
-                                { "front": "祿存", "back": "副星" }
+                        texts: [
+                            { key: "BA", "front": "文昌", "back": "副星" },
+                            { key: "BB", "front": "文曲", "back": "副星" },
+                            { key: "BC", "front": "左輔", "back": "副星" },
+                            { key: "BD", "front": "右弼", "back": "副星" },
+                            { key: "BE", "front": "天魁", "back": "副星" },
+                            { key: "BF", "front": "天鉞", "back": "副星" },
+                            { key: "BG", "front": "地空", "back": "副星" },
+                            { key: "BH", "front": "地劫", "back": "副星" },
+                            { key: "BI", "front": "火星", "back": "副星" },
+                            { key: "BJ", "front": "鈴星", "back": "副星" },
+                            { key: "BK", "front": "擎羊", "back": "副星" },
+                            { key: "BL", "front": "陀羅", "back": "副星" },
+                            { key: "BM", "front": "天馬", "back": "副星" },
+                            { key: "BN", "front": "祿存", "back": "副星" }
                         ]
                     },
                     {
                         round: "三",
-                        texts: [{ "front": "天官", "back": "乙級星" },
-                            { "front": "天福", "back": "乙級星" },
-                            { "front": "天廚", "back": "乙級星" },
-                            { "front": "天刑", "back": "乙級星" },
-                            { "front": "天姚", "back": "乙級星" },
-                            { "front": "解神", "back": "乙級星" },
-                            { "front": "天巫", "back": "乙級星" },
-                            { "front": "天月", "back": "乙級星" },
-                            { "front": "陰煞", "back": "乙級星" },
-                            { "front": "台輔", "back": "乙級星" },
-                            { "front": "封誥", "back": "乙級星" },
-                            { "front": "天空", "back": "乙級星" },
-                            { "front": "天哭", "back": "乙級星" },
-                            { "front": "天虛", "back": "乙級星" },
-                            { "front": "龍池", "back": "乙級星" },
-                            { "front": "鳳閣", "back": "乙級星" },
-                            { "front": "紅鸞", "back": "乙級星" },
-                            { "front": "天喜", "back": "乙級星" },
-                            { "front": "孤辰", "back": "乙級星" },
-                            { "front": "寡宿", "back": "乙級星" },
-                            { "front": "蜚廉", "back": "乙級星" },
-                            { "front": "破碎", "back": "乙級星" },
-                            { "front": "華蓋", "back": "乙級星" },
-                            { "front": "咸池", "back": "乙級星" },
-                            { "front": "天德", "back": "乙級星" },
-                            { "front": "月德", "back": "乙級星" },
-                            { "front": "天才", "back": "乙級星" },
-                            { "front": "天壽", "back": "乙級星" },
-                            { "front": "三台", "back": "乙級星" },
-                            { "front": "八座", "back": "乙級星" },
-                            { "front": "恩光", "back": "乙級星" },
-                            { "front": "天貴", "back": "乙級星" }
+                        texts: [
+                            { key: "CA", "front": "天官", "back": "乙級星" },
+                            { key: "CB", "front": "天福", "back": "乙級星" },
+                            { key: "CC", "front": "天廚", "back": "乙級星" },
+                            { key: "CD", "front": "天刑", "back": "乙級星" },
+                            { key: "CE", "front": "天姚", "back": "乙級星" },
+                            { key: "CF", "front": "解神", "back": "乙級星" },
+                            { key: "CG", "front": "天巫", "back": "乙級星" },
+                            { key: "CH", "front": "天月", "back": "乙級星" },
+                            { key: "CI", "front": "陰煞", "back": "乙級星" },
+                            { key: "CJ", "front": "台輔", "back": "乙級星" },
+                            { key: "CK", "front": "封誥", "back": "乙級星" },
+                            { key: "CL", "front": "天空", "back": "乙級星" },
+                            { key: "CM", "front": "天哭", "back": "乙級星" },
+                            { key: "CN", "front": "天虛", "back": "乙級星" },
+                            { key: "CO", "front": "龍池", "back": "乙級星" },
+                            { key: "CP", "front": "鳳閣", "back": "乙級星" },
+                            { key: "CQ", "front": "紅鸞", "back": "乙級星" },
+                            { key: "CR", "front": "天喜", "back": "乙級星" },
+                            { key: "CS", "front": "孤辰", "back": "乙級星" },
+                            { key: "CT", "front": "寡宿", "back": "乙級星" },
+                            { key: "CU", "front": "蜚廉", "back": "乙級星" },
+                            { key: "CV", "front": "破碎", "back": "乙級星" },
+                            { key: "CW", "front": "華蓋", "back": "乙級星" },
+                            { key: "CX", "front": "咸池", "back": "乙級星" },
+                            { key: "CY", "front": "天德", "back": "乙級星" },
+                            { key: "CZ", "front": "月德", "back": "乙級星" },
+                            { key: "DA", "front": "天才", "back": "乙級星" },
+                            { key: "DB", "front": "天壽", "back": "乙級星" },
+                            { key: "DC", "front": "三台", "back": "乙級星" },
+                            { key: "DD", "front": "八座", "back": "乙級星" },
+                            { key: "DE", "front": "恩光", "back": "乙級星" },
+                            { key: "DF", "front": "天貴", "back": "乙級星" }
                         ]
                     },
                     {
                         round: "四",
-                        texts: [{ "front": "長生", "back": "宮位" },
-                                { "front": "沐浴", "back": "宮位" },
-                                { "front": "冠帶", "back": "宮位" },
-                                { "front": "臨官", "back": "宮位" },
-                                { "front": "帝旺", "back": "宮位" },
-                                { "front": "衰", "back": "宮位" },
-                                { "front": "病", "back": "宮位" },
-                                { "front": "死", "back": "宮位" },
-                                { "front": "墓", "back": "宮位" },
-                                { "front": "絕", "back": "宮位" },
-                                { "front": "胎", "back": "宮位" },
-                                { "front": "養", "back": "宮位" }
+                        texts: [
+                            { key: "EA", "front": "長生", "back": "宮位" },
+                            { key: "EB", "front": "沐浴", "back": "宮位" },
+                            { key: "EC", "front": "冠帶", "back": "宮位" },
+                            { key: "ED", "front": "臨官", "back": "宮位" },
+                            { key: "EE", "front": "帝旺", "back": "宮位" },
+                            { key: "EF", "front": "衰", "back": "宮位" },
+                            { key: "EG", "front": "病", "back": "宮位" },
+                            { key: "EH", "front": "死", "back": "宮位" },
+                            { key: "EI", "front": "墓", "back": "宮位" },
+                            { key: "EJ", "front": "絕", "back": "宮位" },
+                            { key: "EK", "front": "胎", "back": "宮位" },
+                            { key: "EL", "front": "養", "back": "宮位" }
                         ]
                     }
                 ];
@@ -322,6 +331,11 @@
                     return texts[card - 1].front;
                 };
 
+                const getCardKey = (round, card) => {
+                    const texts = getRandomTexts(round);
+                    return texts[card - 1].key;
+                };
+
                 const getMaxNumber = (round) => {
                     const roundData = rounds.find(r => r.round === round);
                     return roundData ? roundData.texts.length : 0;
@@ -337,9 +351,39 @@
                         return {
                             round: row.currentRound,
                             front: getCardText(row.currentRound, row.card),
+                            key: getCardKey(row.currentRound, row.card),
                             box: row.box
                         };
                     });
+                });
+
+                const roundMap = {
+                    '一': 1,
+                    '二': 2,
+                    '三': 3,
+                    '四': 4
+                };
+
+                const formattedResults = computed(() => {
+                    const version = `${ver}`;
+                    const resultStr = results.value.map(result => `${roundMap[result.round]}-${result.key}`).join('-');
+                    return `${version}-${resultStr}`;
+                });
+
+                const base64Output = computed(() => {
+                    const utf8String = new TextEncoder().encode(formattedResults.value);
+                    const base64String = btoa(String.fromCharCode.apply(null, utf8String));
+                    return base64String;
+                });
+
+                const decodedBase64 = computed(() => {
+                    const binaryString = atob(base64Output.value);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    const decodedString = new TextDecoder().decode(bytes);
+                    return decodedString;
                 });
 
                 // 防抖函數，用於延遲處理輸入事件
@@ -374,10 +418,14 @@
                     validateNumber,
                     randomTexts,
                     getCardText,
+                    getCardKey,
                     checkDuplicate,
                     debouncedHandleInput,
                     allRoundsCompleted,
                     results,
+                    formattedResults,
+                    base64Output,
+                    decodedBase64,
                     getMaxNumber,
                     canShow,
                     isNextFilled
