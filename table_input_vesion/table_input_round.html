@@ -81,7 +81,7 @@
                             <td>
                                 <!-- 區域選擇框 -->
                                 <select v-model="row.box" :disabled="!canEdit(index) || isNextFilled(index)">
-                                    <option v-for="option in boxOptions" :key="option" :value="option">
+                                    <option v-for="(option, index) in getOptions(row.currentRound)" :value="index">
                                         {{ option }}
                                     </option>
                                 </select>
@@ -135,7 +135,21 @@
                 ]);
 
                 // 定義區域選項
-                const boxOptions = ref(['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']);
+                const locations = {
+                    '1': '巳',
+                    '2': '午',
+                    '3': '未',
+                    '4': '申',
+                    '5': '辰',
+                    '6': '酉',
+                    '7': '卯',
+                    '8': '戌',
+                    '9': '寅',
+                    '10': '丑',
+                    '11': '子',
+                    '12': '亥',
+                    'center': '中心區域'
+                };
 
                 // 定義每回合的圖片
                 const roundImages = ref({
@@ -366,7 +380,7 @@
 
                 const formattedResults = computed(() => {
                     const version = `${ver}`;
-                    const resultStr = results.value.map(result => `${roundMap[result.round]}-${result.key}`).join('-');
+                    const resultStr = results.value.map(result => `${roundMap[result.round]}-${result.box}-${result.key}`).join('-');
                     return `${version}-${resultStr}`;
                 });
 
@@ -409,9 +423,15 @@
                     return nextRow ? (nextRow.card !== '' && nextRow.box !== '') : false;
                 };
 
+                const getOptions = (currentRound) => {
+                    if (currentRound === '四') {
+                        return ['center','中心區域'];
+                    }
+                    return Object.values(locations).filter(option => option !== '中心區域');
+                };
+
                 return {
                     rows,
-                    boxOptions,
                     roundImages,
                     canEdit,
                     currentRoundImages,
@@ -428,7 +448,8 @@
                     decodedBase64,
                     getMaxNumber,
                     canShow,
-                    isNextFilled
+                    isNextFilled,
+                    getOptions
                 };
             }
         }).mount('#app');
