@@ -392,7 +392,7 @@
                 const formattedResults = computed(() => {
                     const version = `${round_data.ver}`;
                     const resultStr = results.value.map(result => `${result.box}-${result.key}`).join('-');
-                    return `${version}-${resultStr}`;
+                    return `${version};${resultStr}`;
                 });
 
                 const base64Output = computed(() => {
