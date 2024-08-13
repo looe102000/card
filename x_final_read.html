@@ -430,6 +430,7 @@
                     <option value="" disabled hidden>選擇匯入方式</option>
                     <option value="history">歷史紀錄</option>
                     <option value="file">檔案匯入</option>
+                    <option value="key_in">輸入序號</option>
                 </select>
             
                 <!-- 歷史紀錄選擇 -->
@@ -447,6 +448,13 @@
                     <span style="font-size: 1em; font-weight: bold; color: #ffffff;">選擇需要匯入的json檔案</span>
                     <input type="file" @change="handleFileUpload" class="form-control mt-2" ref="fileInput"/>
                     <textarea ref="jsonTextarea" class="form-control mt-2" placeholder="在此處粘貼或輸入JSON數據..." @input="importCards" hidden></textarea>
+                </div>
+
+                <!-- 輸入序號 -->
+                <div v-if="importOption === 'key_in'" class="mt-2 mb-2 col-12">
+                    <span style="font-size: 1em; font-weight: bold; color: #ffffff;">請輸入序號</span>
+                    <input v-model="base64Input" type="text" class="form-control mt-2 mb-2 col-12" placeholder="請輸入序號" />
+                    <button class="btn btn-primary" @click="show_key_in_card">顯示卡片</button>
                 </div>
             </div>
         </div>
@@ -481,6 +489,7 @@
                 const gender = ref('');
                 const cus_name = ref('');
 
+                const base64Input = ref('');
 
                 // 各自代表的區域
                 const locations = {
@@ -931,6 +940,43 @@
                     }
                 };
 
+                const parseBase64Input = (input) => {
+
+                    const base64Decoded = atob(input);
+                    const [ver, locationString] = base64Decoded.split(';');
+                    const locationData = locationString.split('-');
+                    const parsedCards = [];
+
+                    for (let i = 0; i < locationData.length; i += 2) {
+                        const location = locationData[i];
+                        const key = locationData[i + 1];
+                        const round = round_data.rounds.find(r => r.texts.some(t => t.key === key));
+
+                        if (round) {
+                            const textData = round.texts.find(t => t.key === key);
+                            parsedCards.push({
+                                id: `card-${i / 2 + 1}`,
+                                location,
+                                number: i / 2 + 1,
+                                frontText: textData.front,
+                                backText: textData.back,
+                                card_back_background_image: round.card_back_background_image,
+                                card_face_background_image: round.card_face_background_image
+                            });
+                        }
+                    }
+
+                    return parsedCards;
+                };
+
+                const show_key_in_card = () => {
+                    if(base64Input.value != ""){
+                        cards.value = parseBase64Input(base64Input.value);
+                    }else{
+                        alert("請輸入序號");
+                    }
+                };
+
                 onMounted(() => {
                     openDatabase();
                     selectSubject.value.style.backgroundColor = "#E0E0E0";
@@ -959,7 +1005,9 @@
                     isBottomVisible,
                     importOption,
                     gender,
-                    cus_name
+                    cus_name,
+                    show_key_in_card,
+                    base64Input,
                 };
             }
         }).mount('#app');
