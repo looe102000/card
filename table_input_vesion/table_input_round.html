@@ -55,6 +55,11 @@
             color: #888;
             margin-top: 5px;
         }
+
+        .copy-button {
+            margin-left: 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -74,15 +79,15 @@
                             <td>{{ row.currentRound }}</td>
                             <td>
                                 <!-- 數字輸入框 -->
-                                <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
+                                <input type="text" v-model="row.card"
                                     :disabled="!canEdit(index) || isNextFilled(index)">
                                 <div class="number-range">可填數字: 1-{{ getMaxNumber(row.currentRound) }}</div>
                             </td>
                             <td>
                                 <!-- 區域選擇框 -->
                                 <select v-model="row.box" :disabled="!canEdit(index) || isNextFilled(index)">
-                                    <option v-for="(option, index) in getOptions(row.currentRound)" :value="index">
-                                        {{ option }}
+                                    <option v-for="option in getOptions(row.currentRound)" :value="option.value">
+                                        {{ option.text }}
                                     </option>
                                 </select>
                             </td>
@@ -96,16 +101,13 @@
             </div>
             <!-- 結果區域，所有回合完成後顯示 -->
             <div class="results col-12" v-if="allRoundsCompleted">
-                <h3>所有回合結果</h3>
-                <div v-if="false">
-                    <ul>
-                        <li v-for="(result, index) in results" :key="index">
-                            回合 {{ result.round }}: {{ result.box }} - {{ result.front }} ({{ result.key }})
-                        </li>
-                    </ul>
-                </div>
                 <p>輸出: {{ formattedResults }}</p>
-                <p>Base64輸出: {{ base64Output }}</p>
+                <p>Base64輸出: {{ base64Output }}
+                    <!-- 複製按鈕 -->
+                    <button class="btn btn-outline-primary copy-button" @click="copyToClipboard(base64Output)">
+                        複製
+                    </button>
+                </p>
                 <p>解碼: {{ decodedBase64 }}</p>
             </div>
         </div>
@@ -226,20 +228,20 @@
                             totalCards: 14,
                             drawCount: 2,
                             texts: [
-                                { key: "AA", "front": "紫微", "back": "主星" },
-                                { key: "AB", "front": "天機", "back": "主星" },
-                                { key: "AC", "front": "太陽", "back": "主星" },
-                                { key: "AD", "front": "武曲", "back": "主星" },
-                                { key: "AE", "front": "天同", "back": "主星" },
-                                { key: "AF", "front": "廉貞", "back": "主星" },
-                                { key: "AG", "front": "天府", "back": "主星" },
-                                { key: "AH", "front": "太陰", "back": "主星" },
-                                { key: "AI", "front": "貪狼", "back": "主星" },
-                                { key: "AJ", "front": "巨門", "back": "主星" },
-                                { key: "AK", "front": "天相", "back": "主星" },
-                                { key: "AL", "front": "天梁", "back": "主星" },
-                                { key: "AM", "front": "七殺", "back": "主星" },
-                                { key: "AN", "front": "破軍", "back": "主星" }
+                                { key: "AA", "front": "", "back": "" },
+                                { key: "AB", "front": "", "back": "" },
+                                { key: "AC", "front": "", "back": "" },
+                                { key: "AD", "front": "", "back": "" },
+                                { key: "AE", "front": "", "back": "" },
+                                { key: "AF", "front": "", "back": "" },
+                                { key: "AG", "front": "", "back": "" },
+                                { key: "AH", "front": "", "back": "" },
+                                { key: "AI", "front": "", "back": "" },
+                                { key: "AJ", "front": "", "back": "" },
+                                { key: "AK", "front": "", "back": "" },
+                                { key: "AL", "front": "", "back": "" },
+                                { key: "AM", "front": "", "back": "" },
+                                { key: "AN", "front": "", "back": "" }
                             ]
                         },
                         {
@@ -249,20 +251,20 @@
                             totalCards: 14,
                             drawCount: 2,
                             texts: [
-                                { key: "BA", "front": "文昌", "back": "副星" },
-                                { key: "BB", "front": "文曲", "back": "副星" },
-                                { key: "BC", "front": "左輔", "back": "副星" },
-                                { key: "BD", "front": "右弼", "back": "副星" },
-                                { key: "BE", "front": "天魁", "back": "副星" },
-                                { key: "BF", "front": "天鉞", "back": "副星" },
-                                { key: "BG", "front": "地空", "back": "副星" },
-                                { key: "BH", "front": "地劫", "back": "副星" },
-                                { key: "BI", "front": "火星", "back": "副星" },
-                                { key: "BJ", "front": "鈴星", "back": "副星" },
-                                { key: "BK", "front": "擎羊", "back": "副星" },
-                                { key: "BL", "front": "陀羅", "back": "副星" },
-                                { key: "BM", "front": "天馬", "back": "副星" },
-                                { key: "BN", "front": "祿存", "back": "副星" }
+                                { key: "BA", "front": "", "back": "" },
+                                { key: "BB", "front": "", "back": "" },
+                                { key: "BC", "front": "", "back": "" },
+                                { key: "BD", "front": "", "back": "" },
+                                { key: "BE", "front": "", "back": "" },
+                                { key: "BF", "front": "", "back": "" },
+                                { key: "BG", "front": "", "back": "" },
+                                { key: "BH", "front": "", "back": "" },
+                                { key: "BI", "front": "", "back": "" },
+                                { key: "BJ", "front": "", "back": "" },
+                                { key: "BK", "front": "", "back": "" },
+                                { key: "BL", "front": "", "back": "" },
+                                { key: "BM", "front": "", "back": "" },
+                                { key: "BN", "front": "", "back": "" }
                             ]
                         },
                         {
@@ -272,38 +274,38 @@
                             totalCards: 32,
                             drawCount: 3,
                             texts: [
-                                { key: "CA", "front": "天官", "back": "乙級星" },
-                                { key: "CB", "front": "天福", "back": "乙級星" },
-                                { key: "CC", "front": "天廚", "back": "乙級星" },
-                                { key: "CD", "front": "天刑", "back": "乙級星" },
-                                { key: "CE", "front": "天姚", "back": "乙級星" },
-                                { key: "CF", "front": "解神", "back": "乙級星" },
-                                { key: "CG", "front": "天巫", "back": "乙級星" },
-                                { key: "CH", "front": "天月", "back": "乙級星" },
-                                { key: "CI", "front": "陰煞", "back": "乙級星" },
-                                { key: "CJ", "front": "台輔", "back": "乙級星" },
-                                { key: "CK", "front": "封誥", "back": "乙級星" },
-                                { key: "CL", "front": "天空", "back": "乙級星" },
-                                { key: "CM", "front": "天哭", "back": "乙級星" },
-                                { key: "CN", "front": "天虛", "back": "乙級星" },
-                                { key: "CO", "front": "龍池", "back": "乙級星" },
-                                { key: "CP", "front": "鳳閣", "back": "乙級星" },
-                                { key: "CQ", "front": "紅鸞", "back": "乙級星" },
-                                { key: "CR", "front": "天喜", "back": "乙級星" },
-                                { key: "CS", "front": "孤辰", "back": "乙級星" },
-                                { key: "CT", "front": "寡宿", "back": "乙級星" },
-                                { key: "CU", "front": "蜚廉", "back": "乙級星" },
-                                { key: "CV", "front": "破碎", "back": "乙級星" },
-                                { key: "CW", "front": "華蓋", "back": "乙級星" },
-                                { key: "CX", "front": "咸池", "back": "乙級星" },
-                                { key: "CY", "front": "天德", "back": "乙級星" },
-                                { key: "CZ", "front": "月德", "back": "乙級星" },
-                                { key: "DA", "front": "天才", "back": "乙級星" },
-                                { key: "DB", "front": "天壽", "back": "乙級星" },
-                                { key: "DC", "front": "三台", "back": "乙級星" },
-                                { key: "DD", "front": "八座", "back": "乙級星" },
-                                { key: "DE", "front": "恩光", "back": "乙級星" },
-                                { key: "DF", "front": "天貴", "back": "乙級星" }
+                                { key: "CA", "front": "", "back": "" },
+                                { key: "CB", "front": "", "back": "" },
+                                { key: "CC", "front": "", "back": "" },
+                                { key: "CD", "front": "", "back": "" },
+                                { key: "CE", "front": "", "back": "" },
+                                { key: "CF", "front": "", "back": "" },
+                                { key: "CG", "front": "", "back": "" },
+                                { key: "CH", "front": "", "back": "" },
+                                { key: "CI", "front": "", "back": "" },
+                                { key: "CJ", "front": "", "back": "" },
+                                { key: "CK", "front": "", "back": "" },
+                                { key: "CL", "front": "", "back": "" },
+                                { key: "CM", "front": "", "back": "" },
+                                { key: "CN", "front": "", "back": "" },
+                                { key: "CO", "front": "", "back": "" },
+                                { key: "CP", "front": "", "back": "" },
+                                { key: "CQ", "front": "", "back": "" },
+                                { key: "CR", "front": "", "back": "" },
+                                { key: "CS", "front": "", "back": "" },
+                                { key: "CT", "front": "", "back": "" },
+                                { key: "CU", "front": "", "back": "" },
+                                { key: "CV", "front": "", "back": "" },
+                                { key: "CW", "front": "", "back": "" },
+                                { key: "CX", "front": "", "back": "" },
+                                { key: "CY", "front": "", "back": "" },
+                                { key: "CZ", "front": "", "back": "" },
+                                { key: "DA", "front": "", "back": "" },
+                                { key: "DB", "front": "", "back": "" },
+                                { key: "DC", "front": "", "back": "" },
+                                { key: "DD", "front": "", "back": "" },
+                                { key: "DE", "front": "", "back": "" },
+                                { key: "DF", "front": "", "back": "" }
                             ]
                         },
                         {
@@ -313,18 +315,18 @@
                             totalCards: 12,
                             drawCount: 1,
                             texts: [
-                                { key: "EA", "front": "長生", "back": "宮位" },
-                                { key: "EB", "front": "沐浴", "back": "宮位" },
-                                { key: "EC", "front": "冠帶", "back": "宮位" },
-                                { key: "ED", "front": "臨官", "back": "宮位" },
-                                { key: "EE", "front": "帝旺", "back": "宮位" },
-                                { key: "EF", "front": "衰", "back": "宮位" },
-                                { key: "EG", "front": "病", "back": "宮位" },
-                                { key: "EH", "front": "死", "back": "宮位" },
-                                { key: "EI", "front": "墓", "back": "宮位" },
-                                { key: "EJ", "front": "絕", "back": "宮位" },
-                                { key: "EK", "front": "胎", "back": "宮位" },
-                                { key: "EL", "front": "養", "back": "宮位" }
+                                { key: "EA", "front": "", "back": "" },
+                                { key: "EB", "front": "", "back": "" },
+                                { key: "EC", "front": "", "back": "" },
+                                { key: "ED", "front": "", "back": "" },
+                                { key: "EE", "front": "", "back": "" },
+                                { key: "EF", "front": "", "back": "" },
+                                { key: "EG", "front": "", "back": "" },
+                                { key: "EH", "front": "", "back": "" },
+                                { key: "EI", "front": "", "back": "" },
+                                { key: "EJ", "front": "", "back": "" },
+                                { key: "EK", "front": "", "back": "" },
+                                { key: "EL", "front": "", "back": "" }
                             ]
                         }
                     ]
@@ -357,11 +359,6 @@
                     getRandomTexts(round.round);
                 });
 
-                const getCardText = (round, card) => {
-                    const texts = getRandomTexts(round);
-                    return texts[card - 1].front;
-                };
-
                 const getCardKey = (round, card) => {
                     const texts = getRandomTexts(round);
                     return texts[card - 1].key;
@@ -381,7 +378,6 @@
                     return rows.value.map(row => {
                         return {
                             round: row.currentRound,
-                            front: getCardText(row.currentRound, row.card),
                             key: getCardKey(row.currentRound, row.card),
                             box: row.box
                         };
@@ -397,7 +393,7 @@
 
                 const formattedResults = computed(() => {
                     const version = `${round_data.ver}`;
-                    const resultStr = results.value.map(result => `${roundMap[result.round]}-${result.key}`).join('-');
+                    const resultStr = results.value.map(result => `${result.box}-${result.key}`).join('-');
                     return `${version}-${resultStr}`;
                 });
 
@@ -417,23 +413,6 @@
                     return decodedString;
                 });
 
-                // 防抖函數，用於延遲處理輸入事件
-                const debounce = (func, delay) => {
-                    let timeout;
-                    return function (...args) {
-                        clearTimeout(timeout);
-                        timeout = setTimeout(() => func.apply(this, args), delay);
-                    };
-                };
-
-                const handleInput = (index, row) => {
-                    if (validateNumber(index) && checkDuplicate(index)) {
-                        row.cardText = getCardText(row.currentRound, row.card);
-                    }
-                };
-
-                const debouncedHandleInput = debounce(handleInput, 100);
-
                 /* 禁用下一格 */
                 const isNextFilled = (index) => {
                     const nextRow = rows.value[index];
@@ -442,9 +421,20 @@
 
                 const getOptions = (currentRound) => {
                     if (currentRound === '四') {
-                        return ['center','中心區域'];
+                        return [{ value: 'center', text: locations['center'] }];
                     }
-                    return Object.values(locations).filter(option => option !== '中心區域');
+                    return Object.keys(locations)
+                        .filter(key => key !== 'center')
+                        .map(key => ({ value: key, text: locations[key] }));
+                };
+
+                // 複製 Base64 字串到剪貼板
+                const copyToClipboard = (text) => {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert("Base64 字串已複製到剪貼板！");
+                    }).catch(err => {
+                        console.error('複製失敗: ', err);
+                    });
                 };
 
                 return {
@@ -454,10 +444,8 @@
                     currentRoundImages,
                     validateNumber,
                     randomTexts,
-                    getCardText,
                     getCardKey,
                     checkDuplicate,
-                    debouncedHandleInput,
                     allRoundsCompleted,
                     results,
                     formattedResults,
@@ -466,7 +454,8 @@
                     getMaxNumber,
                     canShow,
                     isNextFilled,
-                    getOptions
+                    getOptions,
+                    copyToClipboard
                 };
             }
         }).mount('#app');
