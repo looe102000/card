@@ -454,6 +454,7 @@
                 <div v-if="importOption === 'key_in'" class="mt-2 mb-2 col-12">
                     <span style="font-size: 1em; font-weight: bold; color: #ffffff;">請輸入序號</span>
                     <input v-model="base64Input" type="text" class="form-control mt-2 mb-2 col-12" placeholder="請輸入序號" />
+                    <p> {{ card_ver }}</p>
                     <button class="btn btn-primary" @click="show_key_in_card">顯示卡片</button>
                 </div>
             </div>
@@ -490,6 +491,9 @@
                 const cus_name = ref('');
 
                 const base64Input = ref('');
+
+                const card_ver = ref('');
+
 
                 // 各自代表的區域
                 const locations = {
@@ -947,6 +951,13 @@
                     const locationData = locationString.split('-');
                     const parsedCards = [];
 
+                    if (ver !== round_data.ver) {
+                        alert('版本不匹配');
+                        return [];
+                    }else{
+                        card_ver.value = ver;
+                    }
+
                     for (let i = 0; i < locationData.length; i += 2) {
                         const location = locationData[i];
                         const key = locationData[i + 1];
@@ -1008,6 +1019,7 @@
                     cus_name,
                     show_key_in_card,
                     base64Input,
+                    card_ver
                 };
             }
         }).mount('#app');
