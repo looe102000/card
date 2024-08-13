@@ -103,7 +103,7 @@
             <div class="results col-12 col-md-6" v-if="allRoundsCompleted">
                 <p hidden>輸出: {{ formattedResults }}</p>
                 <p>本次操作序號為：</p>
-                <p>{{ base64Output }}</p>
+                <p style="white-space: normal;word-wrap: break-word;overflow-wrap: break-word;">{{ base64Output }}</p>
                 <!-- 複製按鈕 -->
                 <button class="btn btn-outline-primary copy-button" @click="copyToClipboard(base64Output)">複製</button>
                 <p hidden>解碼: {{ decodedBase64 }}</p>
