@@ -327,7 +327,7 @@ createApp({
         // 複製 Base64 字串到剪貼板
         const copyToClipboard = (text) => {
             navigator.clipboard.writeText(text).then(() => {
-                alert("Base64 字串已複製到剪貼板！");
+                alert("字串已複製到剪貼板！");
             }).catch(err => {
                 console.error('複製失敗: ', err);
             });
