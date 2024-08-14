@@ -79,7 +79,7 @@
                             <td>{{ row.currentRound }}</td>
                             <td>
                                 <!-- 數字輸入框 -->
-                                <input type="text" v-model="row.card"
+                                <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
                                     :disabled="!canEdit(index) || isNextFilled(index)">
                                 <div class="number-range">可填數字: 1-{{ getMaxNumber(row.currentRound) }}</div>
                             </td>
@@ -411,6 +411,23 @@
                     return decodedString;
                 });
 
+                // 防抖函數，用於延遲處理輸入事件
+                const debounce = (func, delay) => {
+                    let timeout;
+                    return function (...args) {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => func.apply(this, args), delay);
+                    };
+                };
+
+                const handleInput = (index, row) => {
+                    if (validateNumber(index) && checkDuplicate(index)) {
+                        row.cardText = getCardText(row.currentRound, row.card);
+                    }
+                };
+
+                const debouncedHandleInput = debounce(handleInput, 500);
+
                 /* 禁用下一格 */
                 const isNextFilled = (index) => {
                     const nextRow = rows.value[index];
@@ -444,6 +461,7 @@
                     randomTexts,
                     getCardKey,
                     checkDuplicate,
+                    debouncedHandleInput,
                     allRoundsCompleted,
                     results,
                     formattedResults,
