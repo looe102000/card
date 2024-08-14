@@ -412,7 +412,7 @@
                     </button>
                 </span>
                 <!-- 匯出和清空按鈕 -->
-                <span>
+                <span v-if="importOption !== 'key_in'">
                     <button v-if="cards.length > 0" type="button" class="btn btn-primary" @click="explorerNow()">匯出紀錄</button>
                 </span>
                 <span>
