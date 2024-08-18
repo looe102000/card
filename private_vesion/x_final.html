@@ -287,8 +287,8 @@
                 <div class="center-text">
                     <div style="display: flex;margin: 5px;">
 					    <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
-                        <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal">規則說明</button>
-                        <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal">抽牌說明</button>	
+                        <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
+                        <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>	
                     </div>
                     <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;" @click.stop>
                         <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender">
@@ -317,7 +317,7 @@
                         <div class="modal-content">
                             <div class="modal-header">
                             <h5 class="modal-title" id="DirectionsModalLabel">規則說明</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click.stop></button>
                             </div>
                             <div class="modal-body">
                                 <P>1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</P>
@@ -333,7 +333,7 @@
                                 <P>●我XXX在七月有XXX的考試，想知道考運如何？</P>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click.stop>Close</button>
                             </div>
                         </div>
                         </div>
@@ -344,7 +344,7 @@
                         <div class="modal-content">
                             <div class="modal-header">
                             <h5 class="modal-title" id="CardsModal">抽牌說明</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click.stop></button>
                             </div>
                             <div class="modal-body">
                                 <P>1. 總共4副牌，共抽8張牌。</P>
@@ -358,7 +358,7 @@
 								<P></P>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click.stop>Close</button>
                             </div>
                         </div>
                         </div>
