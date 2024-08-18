@@ -945,9 +945,12 @@
                 };
 
                 const parseBase64Input = (input) => {
-
                     const base64Decoded = atob(input);
-                    const [ver, locationString] = base64Decoded.split(';');
+
+                    // 將 input 解析為 JSON 對象
+                    const jsonData = JSON.parse(base64Decoded);
+
+                    const [ver, locationString] = jsonData.result.split(';');
                     const locationData = locationString.split('-');
                     const parsedCards = [];
 

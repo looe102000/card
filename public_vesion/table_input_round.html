@@ -60,14 +60,108 @@
             margin-left: 10px;
             cursor: pointer;
         }
+
+        .textareaContent {
+            font-size: 20px;
+            padding: 5px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            width: 100%;
+            height: 100%; /* 調整高度以適應 RWD */
+            box-sizing: border-box; /* 確保 padding 和 border 不會影響元素的總大小 */
+        }
+
     </style>
 </head>
 
 <body>
     <div id="app" class="container">
         <div class="table-container row">
-            <!-- 表格區域 -->
             <div class="col-md-6">
+                <div class="center-text">
+                    <div style="display: flex;margin: 5px;">
+					    <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
+                        <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
+                        <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>	
+                    </div>
+                    <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;" @click.stop>
+                        <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender">
+                            <option value="" hidden>性別</option>
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                        </select>
+                        <input type="text" class="form-control" style="width: 40%; margin-right: 10px;" v-model="cus_name" placeholder="姓名">
+                        <select id="selectSubject" ref="selectSubject" class="form-select" style="width: 30%;">
+                            <option value="" hidden>主題</option>
+                            <option value="工作">工作</option>
+                            <option value="感情">感情</option>
+                            <option value="財運">財運</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <textarea id="textareaContent" ref="textareaContent" name="textareaContent" class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。" @click.stop ></textarea>
+                    <div style="display: flex;margin-top: 10px;">
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()" @click.stop>確認</button>
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="ModifySubmitText()" @click.stop>編輯</button>
+                    </div>
+                    <!-- Modal -->
+                    <!-- 規則說明 -->
+                    <div class="modal fade" id="DirectionsModal" tabindex="-1" aria-labelledby="DirectionsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="DirectionsModalLabel">規則說明</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click.stop></button>
+                            </div>
+                            <div class="modal-body">
+                                <P>1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</P>
+                                <P>2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？</P>
+                                <P>3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）</P>
+                                <P>4. 健康、失物、賭博、代問，將不予回答。</P>
+                                <P>5. 不清楚不明確的問題，也將不予回答。</P>
+                                <P>6. 出國唸書和遊學打工，要先設定國家再問。</P>
+                                <P>7. 提問之前，自己最好先有想法，結果會更為精確。</P>
+                                <P>例如：</P>
+                                <P>●我XXX想知道是否可以在十月底前賣掉房子？</P>
+                                <P>●我XXX是否可以在三個月內和XXX發展感情？</P>
+                                <P>●我XXX在七月有XXX的考試，想知道考運如何？</P>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click.stop>Close</button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <!-- 抽牌說明 -->
+					<div class="modal fade" id="CardsModal" tabindex="-1" aria-labelledby="CardsModal" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="CardsModal">抽牌說明</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click.stop></button>
+                            </div>
+                            <div class="modal-body">
+                                <P>1. 總共4副牌，共抽8張牌。</P>
+                                <P>2. 第1輪共14張，抽2張，並選12宮位則一放。如1放酉，8放亥。</P>
+                                <P>3. 卡片放置位置可以重覆。</P>
+                                <P>4. 第2輪共14張，抽2張，並選12宮位則一放，與第1輪相同。如3放酉，12放申。</P>
+								<P>5. 第3輪共32張，抽3張，並選12宮位則一放，放置位置可以重覆，與前二輪相同。</P>
+								<P>6. 最後1輪‧，數字1-12擇1即可。</P>
+								<P></P>
+								<P></P>
+								<P></P>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click.stop>Close</button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 表格區域 -->
+            <div class="col-md-6" v-if="showTable">
                 <table class="table table-bordered">
                     <tr>
                         <th>回合</th>
@@ -95,10 +189,6 @@
                     </template>
                 </table>
             </div>
-            <!-- 圖片區域，當前回合尚未完成時顯示 -->
-            <div class="images col-12 col-md-6" v-if="!allRoundsCompleted">
-                <img v-for="(image, index) in currentRoundImages" :src="image" :key="index">
-            </div>
             <!-- 結果區域，所有回合完成後顯示 -->
             <div class="results col-12 col-md-6" v-if="allRoundsCompleted">
                 <p hidden>輸出: {{ formattedResults }}</p>
@@ -115,7 +205,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@3.4.27/dist/vue.global.min.js"></script>
     <!-- 引入 Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/main-min.js"></script>
+    <script src="js/main.js"></script>
 </body>
 
 </html>

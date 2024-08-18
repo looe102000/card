@@ -273,11 +273,13 @@ createApp({
         const formattedResults = computed(() => {
             const version = `${round_data.ver}`;
             const resultStr = results.value.map(result => `${result.box}-${result.key}`).join('-');
-            return `${version};${resultStr}`;
+            return {
+                result: `${version};${resultStr}`
+            };
         });
 
         const base64Output = computed(() => {
-            const utf8String = new TextEncoder().encode(formattedResults.value);
+            const utf8String = new TextEncoder().encode(JSON.stringify(formattedResults.value));
             const base64String = btoa(String.fromCharCode.apply(null, utf8String));
             return base64String;
         });
@@ -333,6 +335,44 @@ createApp({
             });
         };
 
+        //選取類型
+        const selectSubject = ref(null);
+        //問題描述
+        const textareaContent = ref(null);
+
+        const gender = ref('');
+
+        const cus_name = ref('');
+
+        const showTable = ref(false);
+
+        const SubmitText = () => {
+            let text = textareaContent.value.value;
+            //如有文字則將輸入框readonly
+            if(text != ""){
+                textareaContent.value.readOnly = true;
+                //要呈現不給輸入的 style
+                textareaContent.value.style.backgroundColor = "#E0E0E0";
+
+                selectSubject.value.disabled = true;
+                selectSubject.value.style.backgroundColor = "#E0E0E0";
+
+                showTable.value = true;
+            }else{
+                alert("請填寫問題描述");
+            }
+        };
+
+        const ModifySubmitText = () => {
+            textareaContent.value.readOnly = false;
+            textareaContent.value.style.backgroundColor = "#FFFFFF";
+
+            selectSubject.value.disabled = false;
+            selectSubject.value.style.backgroundColor = "#FFFFFF";
+
+            showTable.value = false;
+        };
+
         return {
             rows,
             roundImages,
@@ -352,7 +392,14 @@ createApp({
             canShow,
             isNextFilled,
             getOptions,
-            copyToClipboard
+            copyToClipboard,
+            gender,
+            cus_name,
+            SubmitText,
+            ModifySubmitText,
+            selectSubject,
+            textareaContent,
+            showTable
         };
     }
 }).mount('#app');
