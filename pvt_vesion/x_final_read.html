@@ -950,6 +950,12 @@
                     // 將 input 解析為 JSON 對象
                     const jsonData = JSON.parse(base64Decoded);
 
+                    const cus_info = jsonData.cus_info;
+
+                    gender.value = decodeURIComponent(cus_info.gender);
+                    cus_name.value = decodeURIComponent(cus_info.cus_name);
+                    textareaContent.value.value = decodeURIComponent(cus_info.content);
+
                     const [ver, locationString] = jsonData.result.split(';');
                     const locationData = locationString.split('-');
                     const parsedCards = [];
