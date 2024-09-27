@@ -955,6 +955,7 @@
                     gender.value = decodeURIComponent(cus_info.gender);
                     cus_name.value = decodeURIComponent(cus_info.cus_name);
                     textareaContent.value.value = decodeURIComponent(cus_info.content);
+                    selectSubject.value.value = decodeURIComponent(cus_info.subject);
 
                     const [ver, locationString] = jsonData.result.split(';');
                     const locationData = locationString.split('-');
