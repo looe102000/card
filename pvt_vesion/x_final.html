@@ -288,7 +288,8 @@
                     <div style="display: flex;margin: 5px;">
 					    <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
                         <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
-                        <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>	
+                        <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>
+                        <button type="button" class="btn btn-outline-warning" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#AllLinkModalLabel" @click.stop>連結資訊</button>
                     </div>
                     <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;" @click.stop>
                         <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender">
@@ -312,7 +313,7 @@
                     </div>
                     <!-- Modal -->
                     <!-- 規則說明 -->
-                    <div class="modal fade" id="DirectionsModal" tabindex="-1" aria-labelledby="DirectionsModalLabel" aria-hidden="true">
+                    <div class="modal fade" id="DirectionsModal" tabindex="-1" aria-labelledby="DirectionsModalLabel" aria-hidden="true" @click.stop>
                         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -339,7 +340,7 @@
                         </div>
                     </div>
                     <!-- 抽牌說明 -->
-					<div class="modal fade" id="CardsModal" tabindex="-1" aria-labelledby="CardsModal" aria-hidden="true">
+					<div class="modal fade" id="CardsModal" tabindex="-1" aria-labelledby="CardsModal" aria-hidden="true" @click.stop>
                         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -359,6 +360,48 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click.stop>Close</button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- 連結資訊 -->
+                    <div class="modal fade" id="AllLinkModalLabel" tabindex="-1" aria-labelledby="AllLinkModalLabel" aria-hidden="true" @click.stop>
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="AllLinkModalLabel">連結資訊</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+							<div class="modal-body" style="text-align:center;">
+								<div style="display: flex; justify-content: space-around;">
+                                    <!-- 問卷區塊 -->
+                                    <div style="text-align: center;">
+                                        <p>問卷</p>
+                                        <a href="https://forms" target="_blank">
+                                            <img src="images/.jpg" alt="問卷連結">
+                                        </a>
+                                    </div>
+                                
+                                    <!-- 好友＠0區塊 -->
+                                    <div style="text-align: center;">
+                                        <p>好友＠0</p>
+                                        <a href="https://lin.ee/" target="_blank">
+                                            <img src="images/@0.png" alt="好友">
+                                        </a>
+                                    </div>
+                                
+                                    <!-- 社群區塊 -->
+                                    <div style="text-align: center;">
+                                        <p>社群</p>
+                                        <a href="https:/" target="_blank">
+                                            <img src="images/LINE.jpg" alt="社群">
+                                        </a>
+                                    </div>
+                                </div>
+							</div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                         </div>
