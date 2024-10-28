@@ -81,12 +81,16 @@
         <div class="table-container row">
             <div class="col-md-6">
                 <div class="center-text">
-                    <div style="display: flex;margin: 5px;">
-                        <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
-                        <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;"
-                            data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
-                        <button type="button" class="btn btn-outline-info" style="margin-right: 10px;"
-                            data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 5px;">
+                        <!-- Left side buttons -->
+                        <div style="display: flex;">
+                            <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;"
+                                data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
+                            <button type="button" class="btn btn-outline-info" style="margin-right: 10px;"
+                                data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>
+                        </div>
+                        <!-- Right side time block -->
+                        <div style="margin-left: auto; font-weight: bold;">目前時間 : {{ currentTime }}</div>
                     </div>
                     <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;" @click.stop>
                         <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender">
@@ -192,7 +196,7 @@
                             </td>
                             <td>
                                 <!-- 區域選擇框 -->
-                                <select v-model="row.box" :disabled="!canEdit(index) || isNextFilled(index)">
+                                <select v-model="row.box">
                                     <option v-for="option in getOptions(row.currentRound)" :value="option.value">
                                         {{ option.text }}
                                     </option>
@@ -220,7 +224,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // 使用 Vue 3 創建應用
-        const { createApp, ref, computed } = Vue;
+        const { createApp, ref, computed, onMounted, onUnmounted} = Vue;
 
         createApp({
             setup() {
@@ -505,15 +509,23 @@
                     '四': 4
                 };
                 
+                const resultsTime = ref('');
+
                 const formattedResults = computed(() => {
                     const version = `${round_data.ver}`;
                     const resultStr = results.value.map(result => `${result.box}-${result.key}`).join('-');
+
+                    if (resultsTime.value === ''){
+                        resultsTime.value = currentTime.value;
+                    }
+
                     return {
                         cus_info: {
                             gender: encodeURIComponent(gender.value),
                             cus_name: encodeURIComponent(cus_name.value),
                             content: encodeURIComponent(questionContent.value),
-                            subject: encodeURIComponent(selectSubject.value.value)
+                            subject: encodeURIComponent(selectSubject.value.value),
+                            divination_time: encodeURIComponent(resultsTime.value)
                         },
                         result: `${version};${resultStr}`
                     };
@@ -604,6 +616,37 @@
                     showTable.value = false;
                 };
 
+                const currentTime = ref("");
+
+                // 定義函數來更新時間
+                const updateTime = () => {
+                    const now = new Date();
+                    // 使用 Intl.DateTimeFormat 來獲取特定時區（GMT+8）的時間
+                    const options = {
+                        timeZone: 'Asia/Taipei', // GMT+8 時區，對應台北
+                        hour12: false, // 使用 24 小時制
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    };
+                    const formatter = new Intl.DateTimeFormat('zh-tw', options);
+                    currentTime.value = formatter.format(now);
+                };
+
+                // Vue 的生命周期鉤子，用於初始化和清除定時器
+                onMounted(() => {
+                    updateTime(); // 初始化顯示時間
+                    const intervalId = setInterval(updateTime, 1000); // 每秒更新時間
+
+                    // 保存 intervalId 以便後續清除
+                    onUnmounted(() => {
+                        clearInterval(intervalId); // 組件卸載時清除定時器
+                    });
+                });
+
                 return {
                     rows,
                     roundImages,
@@ -631,7 +674,8 @@
                     selectSubject,
                     textareaContent,
                     showTable,
-                    questionContent
+                    questionContent,
+                    currentTime
                 };
             }
         }).mount('#app');

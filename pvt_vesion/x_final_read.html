@@ -285,6 +285,8 @@
             </div>
             <div class="box center">
                 <div class="center-text">
+                    <!-- Right side time block -->
+                    <div style="margin-right: auto; font-weight: bold;">占卜時間 : {{ divination_time }}</div>
                     <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;">
                         <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender" disabled>
                             <option value="" hidden>性別</option>
@@ -476,24 +478,18 @@
                 const selectSubject = ref(null);
                 //問題描述
                 const textareaContent = ref(null);
-
                 // 新增歷史紀錄相關的變數
                 const historyOptions = ref([]);
                 const selectedHistory = ref('');
                 const jsonTextarea = ref(null);
                 const fileInput = ref(null);
-
                 const isBottomVisible = ref(false); // 默認隱藏
-
                 const importOption = ref(''); // 匯入方式選擇
-
                 const gender = ref('');
                 const cus_name = ref('');
-
                 const base64Input = ref('');
-
                 const card_ver = ref('');
-
+                const divination_time = ref("");
 
                 // 各自代表的區域
                 const locations = {
@@ -884,6 +880,21 @@
                             gender.value = record.gender;
                             cus_name.value = record.cus_name;
 
+
+                            // 使用 Intl.DateTimeFormat 來獲取特定時區（GMT+8）的時間
+                            const options = {
+                                timeZone: 'Asia/Taipei', // GMT+8 時區，對應台北
+                                hour12: false, // 使用 24 小時制
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            };
+
+                            divination_time.value = new Intl.DateTimeFormat('zh-tw', options).format(new Date(record.operations[0].timestamp));
+                            
                             isBottomVisible.value = false;
                         }
 
@@ -956,6 +967,7 @@
                     cus_name.value = decodeURIComponent(cus_info.cus_name);
                     textareaContent.value.value = decodeURIComponent(cus_info.content);
                     selectSubject.value.value = decodeURIComponent(cus_info.subject);
+                    divination_time.value = decodeURIComponent(cus_info.divination_time);
 
                     const [ver, locationString] = jsonData.result.split(';');
                     const locationData = locationString.split('-');
@@ -1029,7 +1041,8 @@
                     cus_name,
                     show_key_in_card,
                     base64Input,
-                    card_ver
+                    card_ver,
+                    divination_time
                 };
             }
         }).mount('#app');

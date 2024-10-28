@@ -286,10 +286,15 @@
             <div class="box center" @dragover.prevent="dragOver('center')" @drop="dropCard('center')"  @click="boxClickSelectCard('center')">
                 <div class="center-text">
                     <div style="display: flex;margin: 5px;">
-					    <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
-                        <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
-                        <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>
-                        <button type="button" class="btn btn-outline-warning" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#AllLinkModalLabel" @click.stop>連結資訊</button>
+                        <!-- Left side buttons -->
+                        <div style="display: flex;">
+                            <!-- Button trigger modal : https://bootstrap5.hexschool.com/docs/5.0/components/buttons/ -->
+                            <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
+                            <button type="button" class="btn btn-outline-info" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>
+                            <button type="button" class="btn btn-outline-warning" style="margin-right: 10px;" data-bs-toggle="modal" data-bs-target="#AllLinkModalLabel" @click.stop>連結資訊</button>
+                        </div>
+                        <!-- Right side time block -->
+                        <div style="margin-left: auto; font-weight: bold;">目前時間 : {{ currentTime }}</div>
                     </div>
                     <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;" @click.stop>
                         <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender">
@@ -1164,10 +1169,38 @@
                     };
                 };
 
-        
+                const currentTime = ref("");
+
+                // 定義函數來更新時間
+                const updateTime = () => {
+                    const now = new Date();
+                    // 使用 Intl.DateTimeFormat 來獲取特定時區（GMT+8）的時間
+                    const options = {
+                        timeZone: 'Asia/Taipei', // GMT+8 時區，對應台北
+                        hour12: false, // 使用 24 小時制
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    };
+                    const formatter = new Intl.DateTimeFormat('zh-tw', options);
+                    currentTime.value = formatter.format(now);
+                };
+
+                // Vue 的生命周期鉤子，用於初始化和清除定時器
                 onMounted(() => {
                     openDatabase();
                     initRound();
+
+                    updateTime(); // 初始化顯示時間
+                    const intervalId = setInterval(updateTime, 1000); // 每秒更新時間
+
+                    // 保存 intervalId 以便後續清除
+                    onUnmounted(() => {
+                        clearInterval(intervalId); // 組件卸載時清除定時器
+                    });
                 });
 
                 return {
@@ -1195,7 +1228,8 @@
                     gender,
                     cus_name,
                     area_grid_heigh,
-                    boxClickSelectCard
+                    boxClickSelectCard,
+                    currentTime
                 };
             }
         }).mount('#app');
