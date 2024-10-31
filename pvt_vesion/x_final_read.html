@@ -695,13 +695,14 @@
 
                     request.onsuccess = function(event) {
                         db.value = event.target.result;
-                        console.log('資料庫開啟成功');
-                        deleteOldRecords();
+                        //console.log('資料庫開啟成功');
+                        // 檢查是否有過期記錄, 並刪除
+                        // deleteOldRecords();
                         loadHistoryOptions();
                     };
 
                     request.onerror = function(event) {
-                        console.error('資料庫錯誤: ' + event.target.errorCode);
+                        //console.error('資料庫錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -730,16 +731,16 @@
                         let putRequest = objectStore.put(sessionData);
 
                         putRequest.onsuccess = function(event) {
-                            console.log('操作記錄新增成功');
+                            //console.log('操作記錄新增成功');
                         };
 
                         putRequest.onerror = function(event) {
-                            console.error('新增操作記錄錯誤: ' + event.target.errorCode);
+                            //console.error('新增操作記錄錯誤: ' + event.target.errorCode);
                         };
                     };
 
                     getRequest.onerror = function(event) {
-                        console.error('獲取 session 資料錯誤: ' + event.target.errorCode);
+                        //console.error('獲取 session 資料錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -750,11 +751,11 @@
                     let clearRequest = objectStore.clear();
 
                     clearRequest.onsuccess = function(event) {
-                        console.log('所有操作記錄已清除');
+                        //console.log('所有操作記錄已清除');
                     };
 
                     clearRequest.onerror = function(event) {
-                        console.error('清除操作記錄錯誤: ' + event.target.errorCode);
+                        //console.error('清除操作記錄錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -766,17 +767,18 @@
                     objectStore.openCursor().onsuccess = function(event) {
                         let cursor = event.target.result;
                         if (cursor) {
-                            let recordDate = new Date(cursor.value.sessionKey);
+                            let recordDate = new Date(cursor.value.operations[0].timestamp);
+                            //console.log('recordDate', recordDate);
                             let ageInDays = (currentDate - recordDate) / (1000 * 60 * 60 * 24);
                             if (ageInDays > retentionDays.value) {
                                 let deleteRequest = cursor.delete();
 
                                 deleteRequest.onsuccess = function() {
-                                    console.log('已刪除過期記錄', cursor.value.sessionKey);
+                                    //console.log('已刪除過期記錄', cursor.value.sessionKey);
                                 };
 
                                 deleteRequest.onerror = function(event) {
-                                    console.error('刪除記錄錯誤: ' + event.target.errorCode);
+                                    //console.error('刪除記錄錯誤: ' + event.target.errorCode);
                                 };
                             }
                             cursor.continue();
@@ -784,7 +786,7 @@
                     };
 
                     objectStore.openCursor().onerror = function(event) {
-                        console.error('檢查過期記錄錯誤: ' + event.target.errorCode);
+                        //console.error('檢查過期記錄錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -818,12 +820,12 @@
                             link.click();
                             document.body.removeChild(link);
 
-                            console.log('匯出完成');
+                            //console.log('匯出完成');
                         }
                     };
 
                     objectStore.openCursor().onerror = function(event) {
-                        console.error('匯出錯誤: ' + event.target.errorCode);
+                        //console.error('匯出錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -842,7 +844,7 @@
                     };
 
                     objectStore.getAll().onerror = function(event) {
-                        console.error('載入歷史紀錄錯誤: ' + event.target.errorCode);
+                        //console.error('載入歷史紀錄錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -879,22 +881,25 @@
                             sessionKey.value = record.sessionKey;
                             gender.value = record.gender;
                             cus_name.value = record.cus_name;
-
-
-                            // 使用 Intl.DateTimeFormat 來獲取特定時區（GMT+8）的時間
-                            const options = {
-                                timeZone: 'Asia/Taipei', // GMT+8 時區，對應台北
-                                hour12: false, // 使用 24 小時制
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit'
-                            };
-
-                            divination_time.value = new Intl.DateTimeFormat('zh-tw', options).format(new Date(record.operations[0].timestamp));
                             
+                            if(record.divination_time != undefined){
+                                divination_time.value = record.divination_time;
+                            } else {
+                                // 使用 Intl.DateTimeFormat 來獲取特定時區（GMT+8）的時間
+                                const options = {
+                                    timeZone: 'Asia/Taipei', // GMT+8 時區，對應台北
+                                    hour12: false, // 使用 24 小時制
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit'
+                                };
+
+                                divination_time.value = new Intl.DateTimeFormat('zh-tw', options).format(new Date(record.operations[0].timestamp));
+                            }
+
                             isBottomVisible.value = false;
                         }
 
@@ -902,7 +907,7 @@
                     };
 
                     getRequest.onerror = function(event) {
-                        console.error('載入歷史紀錄錯誤: ' + event.target.errorCode);
+                        //console.error('載入歷史紀錄錯誤: ' + event.target.errorCode);
                     };
 
 
@@ -949,7 +954,7 @@
                         sessionKey.value = data.sessionKey;
 
                     } catch (error) {
-                        console.error(error)
+                        //console.error(error)
 
                         alert('JSON 解析錯誤，請檢查格式');
                     }

@@ -996,6 +996,7 @@
                 const operations = ref([]);
                 const content = ref('');
                 const sessionKey = ref('');
+                //紀錄保留天數
                 const retentionDays = ref(7);
 
                 const openDatabase = () => {
@@ -1010,13 +1011,15 @@
 
                     request.onsuccess = function(event) {
                         db.value = event.target.result;
-                        console.log('資料庫開啟成功');
+                        //console.log('資料庫開啟成功');
                         generateSessionKey();  // 產生新的 session key
-                        deleteOldRecords();
+
+                        // 檢查是否有過期記錄, 並刪除
+                        // deleteOldRecords();
                     };
 
                     request.onerror = function(event) {
-                        console.error('資料庫錯誤: ' + event.target.errorCode);
+                        //console.error('資料庫錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -1049,7 +1052,7 @@
                     };
 
                     objectStore.openCursor().onerror = function(event) {
-                        console.error('生成 session key 錯誤: ' + event.target.errorCode);
+                        //console.error('生成 session key 錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -1066,6 +1069,7 @@
                             subject: selectSubject.value.value,
                             gender:gender.value,
                             cus_name:cus_name.value,
+                            divination_time : currentTime.value,
                             operations: [] 
                         };
 
@@ -1078,16 +1082,16 @@
                         let putRequest = objectStore.put(sessionData);
 
                         putRequest.onsuccess = function(event) {
-                            console.log('操作記錄新增成功');
+                            //console.log('操作記錄新增成功');
                         };
 
                         putRequest.onerror = function(event) {
-                            console.error('新增操作記錄錯誤: ' + event.target.errorCode);
+                            //console.error('新增操作記錄錯誤: ' + event.target.errorCode);
                         };
                     };
 
                     getRequest.onerror = function(event) {
-                        console.error('獲取 session 資料錯誤: ' + event.target.errorCode);
+                        //console.error('獲取 session 資料錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -1098,11 +1102,11 @@
                     let clearRequest = objectStore.clear();
 
                     clearRequest.onsuccess = function(event) {
-                        console.log('所有操作記錄已清除');
+                        //console.log('所有操作記錄已清除');
                     };
 
                     clearRequest.onerror = function(event) {
-                        console.error('清除操作記錄錯誤: ' + event.target.errorCode);
+                        //console.error('清除操作記錄錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -1114,17 +1118,18 @@
                     objectStore.openCursor().onsuccess = function(event) {
                         let cursor = event.target.result;
                         if (cursor) {
-                            let recordDate = new Date(cursor.value.sessionKey);
+                            let recordDate = new Date(cursor.value.operations[0].timestamp);
+                            //console.log('recordDate', recordDate);
                             let ageInDays = (currentDate - recordDate) / (1000 * 60 * 60 * 24);
                             if (ageInDays > retentionDays.value) {
                                 let deleteRequest = cursor.delete();
 
                                 deleteRequest.onsuccess = function() {
-                                    console.log('已刪除過期記錄', cursor.value.sessionKey);
+                                    //console.log('已刪除過期記錄', cursor.value.sessionKey);
                                 };
 
                                 deleteRequest.onerror = function(event) {
-                                    console.error('刪除記錄錯誤: ' + event.target.errorCode);
+                                    //console.error('刪除記錄錯誤: ' + event.target.errorCode);
                                 };
                             }
                             cursor.continue();
@@ -1132,7 +1137,7 @@
                     };
 
                     objectStore.openCursor().onerror = function(event) {
-                        console.error('檢查過期記錄錯誤: ' + event.target.errorCode);
+                        //console.error('檢查過期記錄錯誤: ' + event.target.errorCode);
                     };
                 };
 
@@ -1166,12 +1171,12 @@
                             link.click();
                             document.body.removeChild(link);
 
-                            console.log('匯出完成');
+                            //console.log('匯出完成');
                         }
                     };
 
                     objectStore.openCursor().onerror = function(event) {
-                        console.error('匯出錯誤: ' + event.target.errorCode);
+                        //console.error('匯出錯誤: ' + event.target.errorCode);
                     };
                 };
 
