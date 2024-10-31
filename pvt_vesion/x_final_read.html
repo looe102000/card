@@ -414,7 +414,7 @@
                     </button>
                 </span>
                 <!-- 匯出和清空按鈕 -->
-                <span v-if="importOption !== 'key_in'">
+                <span>
                     <button v-if="cards.length > 0" type="button" class="btn btn-primary" @click="explorerNow()">匯出紀錄</button>
                 </span>
                 <span>
@@ -664,10 +664,42 @@
 
                 /* 匯出本次操作紀錄為 JSON 檔案 */
                 const explorerNow = () => {
-                    if(sessionKey.value != ''){
-                        exportDatabase(sessionKey.value);
+
+                    if(importOption !="history"){
+                        //產生 sessionKey
+                        (async () => {
+                            try {
+                                sessionKey.value = await GetSessionKey();
+
+                                if(sessionKey.value != ''){
+                                    //寫入資料
+                                    addOperation(cards.value.map(item => {
+                                                        return {
+                                                            "number": item.number,
+                                                            "location": item.location,
+                                                            "location_name": locations[item.location],
+                                                            "frontText": item.frontText,
+                                                            "backText": item.backText,
+                                                        }
+                                                    }).sort((a, b) => a.number - b.number));
+                                }
+                                
+                                if(sessionKey.value != ''){
+                                    exportDatabase(sessionKey.value);
+                                }else{
+                                    alert("請選擇匯出的紀錄");
+                                }
+
+                            } catch (error) {
+                                //console.error(error.message);
+                            }
+                        })();                        
                     }else{
-                        alert("請選擇匯出的紀錄");
+                        if(sessionKey.value != ''){
+                            exportDatabase(sessionKey.value);
+                        }else{
+                            alert("請選擇匯出的紀錄");
+                        }
                     }
                 };
                 
@@ -706,6 +738,42 @@
                     };
                 };
 
+                // 生成新的 session key, 改為同步取得
+                const GetSessionKey = () => {
+                    return new Promise((resolve, reject) => {
+                        let transaction = db.value.transaction(['Records'], 'readonly');
+                        let objectStore = transaction.objectStore('Records');
+
+                        let today = new Date();
+                        let yyyyMMdd = today.toISOString().slice(0, 10).replace(/-/g, '');
+                        let prefix = yyyyMMdd;
+                        let maxIndex = 0;
+
+                        objectStore.openCursor().onsuccess = function(event) {
+                            let cursor = event.target.result;
+                            if (cursor) {
+                                let key = cursor.key;
+                                if (key.startsWith(prefix)) {
+                                    let index = parseInt(key.slice(-4));
+                                    if (index > maxIndex) {
+                                        maxIndex = index;
+                                    }
+                                }
+                                cursor.continue();
+                            } else {
+                                let newIndex = (maxIndex + 1).toString().padStart(4, '0');
+                                let sessionKey = `${prefix}${newIndex}`;
+                                //console.log('新的 session key:', sessionKey);
+                                resolve(sessionKey); // 成功生成 session key，並傳給 resolve
+                            }
+                        };
+
+                        objectStore.openCursor().onerror = function(event) {
+                            reject(new Error('生成 session key 錯誤: ' + event.target.errorCode)); // 捕捉錯誤並拒絕 Promise
+                        };
+                    });
+                };
+
                 const addOperation = (data) => {
                     let transaction = db.value.transaction(['Records'], 'readwrite');
                     let objectStore = transaction.objectStore('Records');
@@ -719,6 +787,7 @@
                             subject: selectSubject.value.value,
                             gender:gender.value,
                             cus_name:cus_name.value,
+                            divination_time : divination_time.value,
                             operations: [] 
                         };
 
@@ -726,6 +795,7 @@
                             cards: data,
                             timestamp: new Date().toISOString()
                         };
+
                         sessionData.operations.push(newOperation);
 
                         let putRequest = objectStore.put(sessionData);
@@ -840,7 +910,7 @@
                     let objectStore = transaction.objectStore('Records');
 
                     objectStore.getAll().onsuccess = function(event) {
-                        historyOptions.value = event.target.result;
+                        historyOptions.value = event.target.result.sort((a, b) => b.sessionKey - a.sessionKey);
                     };
 
                     objectStore.getAll().onerror = function(event) {
@@ -947,9 +1017,12 @@
                         });
 
                         cards.value = loadedCards;
-
-                        selectSubject.value.value = data.subject;
+                        
+                        gender.value = data.gender;
+                        cus_name.value = data.cus_name;
                         textareaContent.value.value = data.content;
+                        selectSubject.value.value = data.subject;
+                        divination_time.value = data.divination_time;
 
                         sessionKey.value = data.sessionKey;
 
