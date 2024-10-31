@@ -664,42 +664,10 @@
 
                 /* 匯出本次操作紀錄為 JSON 檔案 */
                 const explorerNow = () => {
-
-                    if(importOption !="history"){
-                        //產生 sessionKey
-                        (async () => {
-                            try {
-                                sessionKey.value = await GetSessionKey();
-
-                                if(sessionKey.value != ''){
-                                    //寫入資料
-                                    addOperation(cards.value.map(item => {
-                                                        return {
-                                                            "number": item.number,
-                                                            "location": item.location,
-                                                            "location_name": locations[item.location],
-                                                            "frontText": item.frontText,
-                                                            "backText": item.backText,
-                                                        }
-                                                    }).sort((a, b) => a.number - b.number));
-                                }
-                                
-                                if(sessionKey.value != ''){
-                                    exportDatabase(sessionKey.value);
-                                }else{
-                                    alert("請選擇匯出的紀錄");
-                                }
-
-                            } catch (error) {
-                                //console.error(error.message);
-                            }
-                        })();                        
+                    if(sessionKey.value != ''){
+                        exportDatabase(sessionKey.value);
                     }else{
-                        if(sessionKey.value != ''){
-                            exportDatabase(sessionKey.value);
-                        }else{
-                            alert("請選擇匯出的紀錄");
-                        }
+                        alert("請選擇匯出的紀錄");
                     }
                 };
                 
@@ -1024,7 +992,32 @@
                         selectSubject.value.value = data.subject;
                         divination_time.value = data.divination_time;
 
-                        sessionKey.value = data.sessionKey;
+                        //重新匯入情況下 , session 取新的
+                        //sessionKey.value = data.sessionKey;
+
+                        isBottomVisible.value = false;
+
+                        (async () => {
+                            try {
+                                sessionKey.value = await GetSessionKey();
+
+                                if(sessionKey.value != ''){
+                                    //寫入資料
+                                    addOperation(loadedCards.map(item => {
+                                                        return {
+                                                            "number": item.number,
+                                                            "location": item.location,
+                                                            "location_name": locations[item.location],
+                                                            "frontText": item.frontText,
+                                                            "backText": item.backText,
+                                                        }
+                                                    }).sort((a, b) => a.number - b.number));
+                                }
+
+                            } catch (error) {
+                                //console.error(error.message);
+                            }
+                        })();      
 
                     } catch (error) {
                         //console.error(error)
@@ -1034,50 +1027,77 @@
                 };
 
                 const parseBase64Input = (input) => {
-                    const base64Decoded = atob(input);
+                    try{
+                        const base64Decoded = atob(input);
 
-                    // 將 input 解析為 JSON 對象
-                    const jsonData = JSON.parse(base64Decoded);
+                        // 將 input 解析為 JSON 對象
+                        const jsonData = JSON.parse(base64Decoded);
 
-                    const cus_info = jsonData.cus_info;
+                        const cus_info = jsonData.cus_info;
 
-                    gender.value = decodeURIComponent(cus_info.gender);
-                    cus_name.value = decodeURIComponent(cus_info.cus_name);
-                    textareaContent.value.value = decodeURIComponent(cus_info.content);
-                    selectSubject.value.value = decodeURIComponent(cus_info.subject);
-                    divination_time.value = decodeURIComponent(cus_info.divination_time);
+                        gender.value = decodeURIComponent(cus_info.gender);
+                        cus_name.value = decodeURIComponent(cus_info.cus_name);
+                        textareaContent.value.value = decodeURIComponent(cus_info.content);
+                        selectSubject.value.value = decodeURIComponent(cus_info.subject);
+                        divination_time.value = decodeURIComponent(cus_info.divination_time);
 
-                    const [ver, locationString] = jsonData.result.split(';');
-                    const locationData = locationString.split('-');
-                    const parsedCards = [];
+                        const [ver, locationString] = jsonData.result.split(';');
+                        const locationData = locationString.split('-');
+                        const parsedCards = [];
 
-                    if (ver !== round_data.ver) {
-                        alert('版本不匹配');
-                        return [];
-                    }else{
-                        card_ver.value = ver;
-                    }
-
-                    for (let i = 0; i < locationData.length; i += 2) {
-                        const location = locationData[i];
-                        const key = locationData[i + 1];
-                        const round = round_data.rounds.find(r => r.texts.some(t => t.key === key));
-
-                        if (round) {
-                            const textData = round.texts.find(t => t.key === key);
-                            parsedCards.push({
-                                id: `card-${i / 2 + 1}`,
-                                location,
-                                number: i / 2 + 1,
-                                frontText: textData.front,
-                                backText: textData.back,
-                                card_back_background_image: round.card_back_background_image,
-                                card_face_background_image: round.card_face_background_image
-                            });
+                        if (ver !== round_data.ver) {
+                            alert('版本不匹配');
+                            return [];
+                        }else{
+                            card_ver.value = ver;
                         }
-                    }
 
-                    return parsedCards;
+                        for (let i = 0; i < locationData.length; i += 2) {
+                            const location = locationData[i];
+                            const key = locationData[i + 1];
+                            const round = round_data.rounds.find(r => r.texts.some(t => t.key === key));
+
+                            if (round) {
+                                const textData = round.texts.find(t => t.key === key);
+                                parsedCards.push({
+                                    id: `card-${i / 2 + 1}`,
+                                    location,
+                                    number: i / 2 + 1,
+                                    frontText: textData.front,
+                                    backText: textData.back,
+                                    card_back_background_image: round.card_back_background_image,
+                                    card_face_background_image: round.card_face_background_image
+                                });
+                            }
+                        }
+
+                        (async () => {
+                            try {
+                                sessionKey.value = await GetSessionKey();
+
+                                if(sessionKey.value != ''){
+                                    //寫入資料
+                                    addOperation(parsedCards.map(item => {
+                                                        return {
+                                                            "number": item.number,
+                                                            "location": item.location,
+                                                            "location_name": locations[item.location],
+                                                            "frontText": item.frontText,
+                                                            "backText": item.backText,
+                                                        }
+                                                    }).sort((a, b) => a.number - b.number));
+                                }
+
+                            } catch (error) {
+                                //console.error(error.message);
+                            }
+                        })();      
+
+                        return parsedCards;
+                    }catch(error){
+                        alert("序號錯誤");
+                        return [];
+                    }
                 };
 
                 const show_key_in_card = () => {
