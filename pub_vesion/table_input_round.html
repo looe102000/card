@@ -77,7 +77,58 @@
 </head>
 
 <body>
-    <div id="app" class="container">
+
+    <!-- 說明頁面 -->
+    <div id="introPage" class="container" style="padding-top: 30px; max-width: 1200px;">
+        <h1 class="mb-4 text-center" style="color: #333; font-weight: bold;">歡迎來到抽牌系統</h1>
+        
+        <!-- 兩欄佈局 -->
+        <div class="row">
+            <!-- 左邊規則說明 -->
+            <div class="col-md-6 mb-5">
+                <div class="p-4 border rounded shadow-sm" style="background-color: #f8f9fa;">
+                    <h2 class="mb-3" style="color: #007bff;">規則說明</h2>
+                    <ol style="line-height: 1.8; color: #444;">
+                        <li>每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</li>
+                        <li>問題務必「清楚精準」，最好設定明確時間。<br>例如：「我在三個月內會不會有好桃花？」、「我半年內是否有升遷的可能？」</li>
+                        <li>如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術）。</li>
+                        <li>健康、失物、賭博、代問，將不予回答。</li>
+                        <li>不清楚不明確的問題，也將不予回答。</li>
+                        <li>出國唸書和遊學打工，要先設定國家再問。</li>
+                        <li>提問之前，自己最好先有想法，結果會更為精確。</li>
+                    </ol>
+                    <p>例如：</p>
+                    <ul style="color: #444;">
+                        <li>我想知道是否可以在十月底前賣掉房子？</li>
+                        <li>我是否可以在三個月內和某人發展感情？</li>
+                        <li>我在七月有某個考試，想知道考運如何？</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 右邊抽牌說明 -->
+            <div class="col-md-6 mb-5">
+                <div class="p-4 border rounded shadow-sm" style="background-color: #f8f9fa;">
+                    <h2 class="mb-3" style="color: #007bff;">抽牌說明</h2>
+                    <ol style="line-height: 1.8; color: #444;">
+                        <li>總共4副牌，共抽8張牌。</li>
+                        <li>第1輪共14張，抽2張，並選擇12宮位放置。例如：1放酉，8放亥。</li>
+                        <li>卡片放置位置可以重覆。</li>
+                        <li>第2輪共14張，抽2張，並選擇12宮位放置，與第1輪相同。例如：3放酉，12放申。</li>
+                        <li>第3輪共32張，抽3張，並選擇12宮位放置，放置位置可以重覆，與前二輪相同。</li>
+                        <li>最後1輪，數字1-12擇1即可。</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- 確定按鈕 -->
+        <div class="text-center">
+            <button id="startButton" type="button" class="btn btn-primary btn-lg mt-4 mb-5 px-5">確定</button>
+        </div>
+    </div>
+
+    <div id="app" class="container" style="display: none;">
         <div class="table-container row">
             <div class="col-md-6">
                 <div class="center-text">
@@ -208,7 +259,6 @@
             </div>
             <!-- 結果區域，所有回合完成後顯示 -->
             <div class="results col-12 col-md-6" v-if="allRoundsCompleted && showTable">
-                <p hidden>輸出: {{ formattedResults }}</p>
                 <p>本次操作序號為：</p>
                 <p style="white-space: normal;word-wrap: break-word;overflow-wrap: break-word;">{{ base64Output }}</p>
                 <!-- 複製按鈕 -->
@@ -218,6 +268,19 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const startButton = document.getElementById('startButton');
+            const introPage = document.getElementById('introPage');
+            const app = document.getElementById('app');
+
+            // 點擊確定按鈕後隱藏說明頁面並顯示應用內容
+            startButton.addEventListener('click', function () {
+                introPage.style.display = 'none';
+                app.style.display = 'block';
+            });
+        });
+    </script>
     <!-- 引入 Vue 3 -->
     <script src="https://cdn.jsdelivr.net/npm/vue@3.4.27/dist/vue.global.min.js"></script>
     <!-- 引入 Bootstrap JS -->
