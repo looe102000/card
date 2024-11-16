@@ -8,14 +8,30 @@
     <!-- 引入 Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
+        
+        html, body {
             font-family: Arial, sans-serif !important;
+            height: 100% !important;  /* 確保 html 和 body 高度都是 100% */
             color: #fff !important;
+        }
+
+        html{
             /* 背景圖 */
             background-image: url("images/background1.jpg") !important;
-            background-size: cover;
-            background-repeat: no-repeat; 
-            background-position: center; /* 向上移動背景 */
+            background-size: cover;           /* 確保背景圖片覆蓋整個頁面 */
+            background-repeat: no-repeat;     /* 防止背景圖片重複 */
+            background-position: center;      /* 使背景圖保持居中 */
+            background-attachment: fixed;     /* 固定背景圖片，使其不隨滾動而移動 */
+        }
+
+        body {
+            background: none !important; /* 覆蓋 Bootstrap 對 body 背景的設定 */
+        }
+
+        .container {
+            max-width: 800px; /* 調整容器的最大寬度，使其更窄 */
+            margin: 0 auto; /* 自動設定左右的 margin，使其置中 */
+            padding: 0 20px; /* 增加左右 padding，使內容離邊緣更遠 */
         }
 
         /* 樣式設置 */
@@ -103,10 +119,9 @@
             background-position: center;
         }
 
-        .container {
-            max-width: 800px; /* 調整容器的最大寬度，使其更窄 */
-            margin: 0 auto; /* 自動設定左右的 margin，使其置中 */
-            padding: 0 20px; /* 增加左右 padding，使內容離邊緣更遠 */
+        .modal-result-text_style{
+            color:black; 
+            overflow-wrap: break-word;
         }
     </style>
 </head>
@@ -301,7 +316,7 @@
         <!-- 顯示結果的模態框 -->
         <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content" style="color:black; overflow-wrap: break-word;">
+                <div class="modal-content modal-result-text_style">
                     <div class="modal-header">
                         <h5 class="modal-title" id="resultModalLabel">回合結果</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
