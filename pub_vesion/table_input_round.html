@@ -123,11 +123,28 @@
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
+            color: black;
         }
 
         .modal-result-text_style{
             color:black; 
             overflow-wrap: break-word;
+        }
+
+        @media screen and (max-width: 768px) {
+            .button-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .button-container button {
+                margin-right: 0;
+                margin-bottom: 10px; /* 讓每個按鈕之間保持間距 */
+            }
+
+            .button-container button:last-child {
+                margin-bottom: 10px; /* 讓最後一個按鈕與底部保持間距 */
+            }
         }
     </style>
 </head>
@@ -187,7 +204,7 @@
                 <div class="center-text">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin: 5px;">
                         <!-- Left side buttons -->
-                        <div style="display: flex;">
+                        <div class="button-container" style="display: flex;">
                             <button id="returnButton" type="button" class="btn btn-outline-warning" style="margin-right: 10px;">返回說明頁</button>
                             <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;"
                                 data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
