@@ -146,6 +146,11 @@
                 margin-bottom: 10px; /* 讓最後一個按鈕與底部保持間距 */
             }
         }
+
+        .modal-content {
+            background-color: #f8f9fa;
+            color: black;
+        }
     </style>
 </head>
 
@@ -205,11 +210,13 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin: 5px;">
                         <!-- Left side buttons -->
                         <div class="button-container" style="display: flex;">
-                            <button id="returnButton" type="button" class="btn btn-outline-warning" style="margin-right: 10px;">返回說明頁</button>
+                            <button id="returnButton" type="button" class="btn btn-outline-light" style="margin-right: 10px;">返回說明頁</button>
                             <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;"
                                 data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
                             <button type="button" class="btn btn-outline-info" style="margin-right: 10px;"
                                 data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>
+                            <button type="button" class="btn btn-outline-warning" style="margin-right: 10px;"
+                                 data-bs-toggle="modal" data-bs-target="#AllLinkModalLabel" @click.stop>連結資訊</button>
                         </div>
                         <!-- Right side time block -->
                         <div style="margin-left: auto; font-weight: bold;">目前時間 : {{ currentTime }}</div>
@@ -295,6 +302,47 @@
                                         @click.stop>Close</button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <!-- 連結資訊 -->
+                    <div class="modal fade" id="AllLinkModalLabel" tabindex="-1" aria-labelledby="AllLinkModalLabel" aria-hidden="true" @click.stop>
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="AllLinkModalLabel">連結資訊</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+							<div class="modal-body" style="text-align:center;">
+								<div style="display: flex; justify-content: space-around;">
+                                    <!-- 問卷區塊 -->
+                                    <div style="text-align: center;">
+                                        <p>問卷</p>
+                                        <a href="https://forms.gle/LcBrCzUvLagm7R5Z8" target="_blank">
+                                            <img src="images/feedbackQR.jpg" alt="問卷連結">
+                                        </a>
+                                    </div>
+                                
+                                    <!-- 好友＠0區塊 -->
+                                    <div style="text-align: center;">
+                                        <p>好友＠035huiof</p>
+                                        <a href="https://lin.ee/seLphIC" target="_blank">
+                                            <img src="images/@035huiof.png" alt="好友">
+                                        </a>
+                                    </div>
+                                
+                                    <!-- 社群區塊 -->
+                                    <div style="text-align: center;">
+                                        <p>社群</p>
+                                        <a href="https://line.me/ti/g2/1DKrqd7y118-txklw0DKV0XkdIqBmLKTDIiu8A?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank">
+                                            <img src="images/LINEgroup.jpg" alt="社群" border="0" height=339 width=336>
+                                        </a>
+                                    </div>
+                                </div>
+							</div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                            </div>
+                        </div>
                         </div>
                     </div>
                 </div>
