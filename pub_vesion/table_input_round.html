@@ -11,15 +11,9 @@
         
         html, body {
             font-family: Arial, sans-serif !important;
-            height: 100vh; /* 使用視窗高度作為基準 */
+            min-height: 100%;
+            height: auto;
             color: #fff !important;
-        }
-
-        @media (max-width: 768px) {
-            html {
-                background-size: 100% 100%; /* 強制背景圖完全填滿 */
-                background-attachment: scroll; /* 移除固定背景以提升兼容性 */
-            }
         }
 
         html{
@@ -28,7 +22,6 @@
             background-size: cover;           /* 確保背景圖片覆蓋整個頁面 */
             background-repeat: no-repeat;     /* 防止背景圖片重複 */
             background-position: center;      /* 使背景圖保持居中 */
-            background-attachment: fixed;     /* 固定背景圖片，使其不隨滾動而移動 */
         }
 
         body {
