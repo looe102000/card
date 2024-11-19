@@ -11,8 +11,15 @@
         
         html, body {
             font-family: Arial, sans-serif !important;
-            height: 100% !important;  /* 確保 html 和 body 高度都是 100% */
+            height: 100vh; /* 使用視窗高度作為基準 */
             color: #fff !important;
+        }
+
+        @media (max-width: 768px) {
+            html {
+                background-size: 100% 100%; /* 強制背景圖完全填滿 */
+                background-attachment: scroll; /* 移除固定背景以提升兼容性 */
+            }
         }
 
         html{
