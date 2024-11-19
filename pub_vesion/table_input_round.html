@@ -158,6 +158,12 @@
             max-width: 80% !important; /* 設置模態框寬度為 80% */
         }
 
+        @media screen and (max-width: 768px) {
+            .modal-dialog {
+                max-width: 100% !important;
+            }
+        }
+
         .introPage{
             max-width: 1200px;
         }
@@ -168,6 +174,26 @@
         
         .visible {
             display: block;
+        }
+
+        .meditation_style {
+            /* 背景圖 */
+            background-image: url("images/img_meditation.jpg") !important;
+            background-size: contain;       /* 確保背景圖片完全顯示並保持比例 */
+            background-repeat: no-repeat;     /* 防止背景圖片重複 */
+            background-position: center;      /* 使背景圖保持居中 */
+            background-attachment: fixed;     /* 固定背景圖片，使其不隨滾動而移動 */
+            height: 70vh;
+            display: flex;                  /* 使用 Flexbox */
+            justify-content: center;        /* 水平置中 */
+            align-items: center;            /* 垂直置中 */
+            text-align: center;             /* 若有多行文字，設定文字居中 */
+        }
+
+        @media screen and (max-width: 768px) {
+            .meditation_style {
+                background-size: cover;       /* 確保背景圖片覆蓋整個頁面 */
+            }
         }
     </style>
 </head>
@@ -266,10 +292,12 @@
                         <textarea v-model="questionContent" id="textareaContent" ref="textareaContent"
                             class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。" @click.stop></textarea>
                         <div style="display: flex;margin-top: 10px;">
-                            <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()"
+                            <button v-if="!allRoundsCompleted" type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()" 
                                 @click.stop>確認</button>
                             <button v-if="allRoundsCompleted" type="button" class="btn btn-primary"
                                 style="margin-right: 10px;" @click="ModifySubmitText()" @click.stop>編輯</button>
+                            <button v-if="allRoundsCompleted" type="button" class="btn btn-primary"
+                                style="margin-right: 10px;" @click="navigateToPage('E_Page')">返回抽牌頁</button>
                         </div>
                     </div>
                 </div>
@@ -279,8 +307,7 @@
             <button type="button" class="btn btn-outline-light" style="margin-right: 10px;" @click="navigateToPage('C_Page')">上一頁</button>
             <div class="row">
                 <div class="col-md-12 mt-2">
-                    <div class="p-2 border rounded shadow-sm summary_div_background">
-                        <h1 class="mb-3" style="color: #007bff;">冥想</h2>
+                    <div class="p-2 border rounded shadow-sm meditation_style">
                         <p>請專心冥想您的問題，並點選下方的按鈕進行抽牌。</p>
                     </div>
                 </div>
@@ -290,7 +317,7 @@
             </div>
         </div>
         <div id="E_Page" class="page container introPage p-3" :class="{ visible: currentPage === 'E_Page' }">
-            <button type="button" class="btn btn-outline-light" style="margin-right: 10px;" @click="navigateToPage('D_Page')">上一頁</button>
+            <button type="button" class="btn btn-outline-light" style="margin-right: 10px;" @click="navigateToPage('C_Page')">返回問題頁</button>
              <!-- 表格區域 -->
              <div class="col-md-12" v-if="showTable">
                 <table class="table table-bordered">
@@ -440,7 +467,7 @@
                         <p id="operationSequence" v-if="allRoundsCompleted">{{ base64Output }}</p>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-outline-primary copy-button" @click="copyToClipboard(base64Output)">複製</button>
+                        <button class="btn btn-primary copy-button" @click="copyToClipboard(base64Output)">複製</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
                     </div>
                 </div>
