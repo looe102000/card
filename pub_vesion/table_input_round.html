@@ -922,6 +922,7 @@
                     currentPage.value = pageId;
                 }
 
+                // 監測所有區域是否有被選擇
                 const hasSelectedBox = ref(false);
                 watch(
                     () => rows.value.map(row => row.box),
@@ -930,7 +931,7 @@
                             hasSelectedBox.value = true; // 當有任意區域被選擇，將其設為 true
                         }
                     },
-                    { deep: true }
+                    { immediate: true, deep: true }
                 );
 
                 return {

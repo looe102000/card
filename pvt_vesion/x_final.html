@@ -313,8 +313,8 @@
                     </div>
                     <textarea id="textareaContent" ref="textareaContent" name="textareaContent" class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。" @click.stop ></textarea>
                     <div style="display: flex;margin-top: 10px;">
-                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()" @click.stop>確認</button>
-                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="ModifySubmitText()" @click.stop>編輯</button>
+                        <button type="button" v-if="!hasSelectedBox" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()" @click.stop>確認</button>
+                        <button type="button" v-if="!hasSelectedBox" class="btn btn-primary" style="margin-right: 10px;" @click="ModifySubmitText()" @click.stop>編輯</button>
                     </div>
                     <!-- Modal -->
                     <!-- 規則說明 -->
@@ -543,7 +543,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script>
 
-        const { createApp, ref, onMounted, onUnmounted } = Vue;
+        const { createApp, ref, onMounted, onUnmounted, watch } = Vue;
 
         createApp({
             setup() {
@@ -1214,6 +1214,18 @@
                     });
                 });
 
+                // 監測所有區域是否有被選擇
+                const hasSelectedBox = ref(false);
+                // 監測所有卡片的位置信息，當有卡片放入區域時更新 hasSelectedBox
+                watch(
+                    () => cards.value.map(card => card.location),
+                    (newLocations) => {
+                        // 如果卡片在指定位置（不在 bottom 並且顯示卡面），則表示區域已被選擇
+                        hasSelectedBox.value = newLocations.some(location => location !== 'bottom' && location !== '');
+                    },
+                    { immediate: true, deep: true }
+                );
+
                 return {
                     cards,
                     cardsInBox,
@@ -1240,7 +1252,8 @@
                     cus_name,
                     area_grid_heigh,
                     boxClickSelectCard,
-                    currentTime
+                    currentTime,
+                    hasSelectedBox
                 };
             }
         }).mount('#app');
