@@ -298,7 +298,7 @@
                             <button v-if="!allRoundsCompleted && !hasSelectedBox" type="button" class="btn btn-primary"
                                 style="margin-right: 10px;" @click="ModifySubmitText()" @click.stop>編輯</button>
                             <button v-if="allRoundsCompleted || hasSelectedBox" type="button" class="btn btn-primary"
-                                style="margin-right: 10px;" @click="navigateToPage('E_Page')">返回抽牌頁</button>
+                                style="margin-right: 10px;" @click="gotoCardPage('E_Page')">返回抽牌頁</button>
                         </div>
                     </div>
                 </div>
@@ -353,7 +353,7 @@
                 <p>本次操作序號為：</p>
                 <p style="white-space: normal;word-wrap: break-word;overflow-wrap: break-word;">{{ base64Output }}</p>
                 <!-- 複製按鈕 -->
-                <button class="btn btn-outline-primary copy-button" @click="copyToClipboard(base64Output)">複製</button>
+                <button class="btn btn-outline-light copy-button" @click="copyToClipboard(base64Output)">複製</button>
             </div>
         </div>
 
@@ -934,6 +934,20 @@
                     { immediate: true, deep: true }
                 );
 
+
+                const gotoCardPage = () => 
+                { 
+                    // 返回問題頁
+                    navigateToPage('E_Page');
+
+                    //如果判斷回合已結束
+                    if (allRoundsCompleted.value) {
+                        // 顯示模態框
+                        const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                        resultModal.show();
+                    }
+                }
+
                 return {
                     rows,
                     roundImages,
@@ -965,7 +979,8 @@
                     currentTime,
                     currentPage,
                     navigateToPage,
-                    hasSelectedBox
+                    hasSelectedBox,
+                    gotoCardPage
                 };
             }
         }).mount('#app');
