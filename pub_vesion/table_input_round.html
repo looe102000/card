@@ -291,12 +291,13 @@
                         </div>
                         <textarea v-model="questionContent" id="textareaContent" ref="textareaContent"
                             class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。" @click.stop></textarea>
+                        <!--未抽牌前可以改題目, 抽牌後只能瀏覽-->
                         <div style="display: flex;margin-top: 10px;">
-                            <button v-if="!allRoundsCompleted" type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()" 
+                            <button v-if="!allRoundsCompleted && !hasSelectedBox" type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()" 
                                 @click.stop>確認</button>
-                            <button v-if="allRoundsCompleted" type="button" class="btn btn-primary"
+                            <button v-if="!allRoundsCompleted && !hasSelectedBox" type="button" class="btn btn-primary"
                                 style="margin-right: 10px;" @click="ModifySubmitText()" @click.stop>編輯</button>
-                            <button v-if="allRoundsCompleted" type="button" class="btn btn-primary"
+                            <button v-if="allRoundsCompleted || hasSelectedBox" type="button" class="btn btn-primary"
                                 style="margin-right: 10px;" @click="navigateToPage('E_Page')">返回抽牌頁</button>
                         </div>
                     </div>
@@ -921,6 +922,17 @@
                     currentPage.value = pageId;
                 }
 
+                const hasSelectedBox = ref(false);
+                watch(
+                    () => rows.value.map(row => row.box),
+                    (newValues) => {
+                        if (newValues.some(box => box !== "")) {
+                            hasSelectedBox.value = true; // 當有任意區域被選擇，將其設為 true
+                        }
+                    },
+                    { deep: true }
+                );
+
                 return {
                     rows,
                     roundImages,
@@ -951,7 +963,8 @@
                     questionContent,
                     currentTime,
                     currentPage,
-                    navigateToPage
+                    navigateToPage,
+                    hasSelectedBox
                 };
             }
         }).mount('#app');
