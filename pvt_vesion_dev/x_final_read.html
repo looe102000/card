@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin-top: 50px;
+            font-family: Arial, sans-serif !important;
+            color: #fff !important;
+            /* 背景圖 */
+            background-image: url("images/background1.jpg") !important;
+            background-size: cover;
+            background-repeat: no-repeat; 
+            background-position: center;
+        }
+
+        .header {
+            text-align: center;
+            padding: 3px;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            height: 80vh;
+            margin-top: 2%;
+        }
+
+        .box {
+            border: 2px dashed black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative; /* 為卡片的絕對定位提供參考 */
+            min-height: 100px; /* 設置最小高度以便拖放 */
+        }
+
+        .center {
+            border: 2px solid black;
+            grid-column: 2 / span 2;
+            grid-row: 2 / span 2;
+            align-items:end;
+            padding:5px;
+        }
+
+        .bottom {
+            display: flex;
+            flex-wrap: wrap; /* 允許內容換行 */
+            border: 2px dashed rgb(134, 9, 3);
+            grid-column: 1 / span 4;
+            min-height: 150px; /* 最小高度 */
+            position: relative;
+            align-items: center;
+            justify-content: center;
+            padding: 10px; /* 內間距，確保內容不緊貼邊界 */
+            gap: 10px; /* 卡片之間的間距 */
+        }
+
+        .card {
+            position: absolute; /* 絕對定位 */
+            cursor: grab;
+            transition: transform 0.3s, width 0.3s, height 0.3s, z-index 0.3s;
+            border: 2px solid #000;
+            box-sizing: border-box;
+            /*擺上卡背圖*/
+            /*background-image: url("cardback.png");*/
+            background-size: cover;
+            background-repeat: no-repeat; 
+            background-position: center;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+        }
+
+        .card-front {
+			/*background-image: url("cardface.png");*/
+            background-size: cover;
+            background-repeat: no-repeat; 
+            background-position: center;
+            /*background-color: #fff;*/
+            background-blend-mode: multiply; /* 或 screen，根據你想要的效果 */
+            background-color: rgba(128, 128, 128, 0.5); /* 半透明的灰色 */
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .card-back {
+            /*background-color: #333;*/
+            color: white;
+            transform: rotateY(180deg);
+            font-size: 15px;
+        }
+
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-number {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: #E0E0E0;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 4px;
+        }
+
+        /* 調整回合 區塊 */
+        .round-display {
+            grid-column: 1 / span 4;
+            text-align: center;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .hidden-front {
+            display: none;
+        }
+
+        .card.is-clicked {
+            transform: translateY(-10px); /* 向上移動 10px */
+            z-index: 10; /* 提升 z-index 以確保卡片在頂層 */
+        }
+
+        h1 {
+            margin: 5px;
+        }
+
+        .forbidden-drop {
+            cursor: not-allowed;
+        }
+
+        .center-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box; /* 確保 padding 和 border 不會影響元素的總大小 */
+        }
+
+        .textareaContent {
+            font-size: 20px;
+            padding: 5px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            width: 100%;
+            height: 100%; /* 調整高度以適應 RWD */
+            box-sizing: border-box; /* 確保 padding 和 border 不會影響元素的總大小 */
+        }
+
+        .center .card {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .modal-title{
+            color: #000; /* 設置文字顏色為黑色 */
+        }
+
+        .modal-body p {
+            color: #000; /* 設置文字顏色為黑色 */
+        }
+
+        /* 用法說明的 寬度 */
+        .modal-dialog {
+            max-width: 80% !important; /* 設置模態框寬度為 80% */
+        }
+
+        /* 用於隱藏卡片 */
+        .card[style*="opacity: 0"] {
+            visibility: hidden;
+        }
+
+        /* 下方匯入區塊 */
+        .bottom_other_area {
+            display: flex;
+            flex-wrap: wrap; /* 允許內容換行 */
+            grid-column: 1 / span 4;
+            position: relative;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 10px; /* 內間距，確保內容不緊貼邊界 */
+            gap: 10px;
+        }
+
+    </style>
+    <!--Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <title>小教室</title>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="box"><span style="font-size: 2em;">巳</span>
+                <div v-for="(card, index) in cardsInBox('1')" :key="card.id" class="card" :style="cardStyle(card, index, '1')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">午</span>
+                <div v-for="(card, index) in cardsInBox('2')" :key="card.id" class="card" :style="cardStyle(card, index, '2')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">未</span>
+                <div v-for="(card, index) in cardsInBox('3')" :key="card.id" class="card" :style="cardStyle(card, index, '3')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">申</span>
+                <div v-for="(card, index) in cardsInBox('4')" :key="card.id" class="card" :style="cardStyle(card, index, '4')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">辰</span>
+                <div v-for="(card, index) in cardsInBox('5')" :key="card.id" class="card" :style="cardStyle(card, index, '5')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box center">
+                <div class="center-text">
+                    <!-- Right side time block -->
+                    <div style="margin-right: auto; font-weight: bold;">占卜時間 : {{ divination_time }}</div>
+                    <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;">
+                        <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender" disabled>
+                            <option value="" hidden>性別</option>
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                        </select>
+                        <input type="text" class="form-control" style="width: 40%; margin-right: 10px;" v-model="cus_name" placeholder="姓名" disabled>
+                        <select id="selectSubject" ref="selectSubject" class="form-select"  style="width: 30%;" disabled>
+                            <option value="" hidden>主題</option>
+                            <option value="工作">工作</option>
+                            <option value="感情">感情</option>
+                            <option value="財運">財運</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <textarea id="textareaContent" ref="textareaContent" name="textareaContent" class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。" disabled></textarea>
+                </div>
+                <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">酉</span>
+                <div v-for="(card, index) in cardsInBox('6')" :key="card.id" class="card" :style="cardStyle(card, index, '6')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">卯</span>
+                <div v-for="(card, index) in cardsInBox('7')" :key="card.id" class="card" :style="cardStyle(card, index, '7')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">戌</span>
+                <div v-for="(card, index) in cardsInBox('8')" :key="card.id" class="card" :style="cardStyle(card, index, '8')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">寅</span>
+                <div v-for="(card, index) in cardsInBox('9')" :key="card.id" class="card" :style="cardStyle(card, index, '9')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">丑</span>
+                <div v-for="(card, index) in cardsInBox('10')" :key="card.id" class="card" :style="cardStyle(card, index, '10')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">子</span>
+                <div v-for="(card, index) in cardsInBox('11')" :key="card.id" class="card" :style="cardStyle(card, index, '11')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="box"><span style="font-size: 2em;">亥</span>
+                <div v-for="(card, index) in cardsInBox('12')" :key="card.id" class="card" :style="cardStyle(card, index, '12')">
+                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                        <div class="card-front" :style="cardBgStyle(card,'front')">
+                            <h1>{{ card.frontText }}</h1>
+                        </div>
+                        <div class="card-back" :style="cardBgStyle(card,'back')">
+                            <h1>{{ card.backText }}</h1>
+                        </div>
+                    </div>
+                    <div class="card-number">{{ card.number }}</div>
+                </div>
+            </div>
+            <div class="bottom_other_area" class="mt-2">
+                <span> 
+                    <button type="button" class="btn btn-secondary" @click="isBottomVisible = !isBottomVisible">
+                        {{ isBottomVisible ? '隱藏' : '顯示' }} 匯入功能
+                    </button>
+                </span>
+                <!-- 匯出和清空按鈕 -->
+                <span>
+                    <button v-if="cards.length > 0" type="button" class="btn btn-primary" @click="explorerNow()">匯出紀錄</button>
+                </span>
+                <span>
+                    <button v-if="cards.length > 0" type="button" class="btn btn-primary" @click="refreshPage()">清空畫面</button>
+                </span>
+            </div>
+            <div class="bottom_other_area" v-if="isBottomVisible">
+                <!-- 顯眼的標示文字說明 -->
+                <div class="w-100 text-center mb-2">
+                    <span style="font-size: 1.5em; font-weight: bold; color: #ffffff;">請選擇匯入方式</span>
+                </div>
+            
+                <!-- 匯入方式選擇 -->
+                <select v-model="importOption" class="form-select mt-2 mb-2">
+                    <option value="" disabled hidden>選擇匯入方式</option>
+                    <option value="history">歷史紀錄</option>
+                    <option value="file">檔案匯入</option>
+                    <option value="key_in">輸入序號</option>
+                </select>
+            
+                <!-- 歷史紀錄選擇 -->
+                <div v-if="importOption === 'history'" class="mt-2">
+                    <select id="historyRecords" class="form-select" v-if="historyOptions.length > 0" v-model="selectedHistory" @change="loadHistory">
+                        <option value="" hidden selected>選擇歷史紀錄</option>
+                        <option v-for="record in historyOptions" :key="record.sessionKey" :value="record.sessionKey">
+                            {{ formatRecord(record) }}
+                        </option>
+                    </select>
+                </div>
+            
+                <!-- 檔案匯入 -->
+                <div v-if="importOption === 'file'" class="mt-2">
+                    <span style="font-size: 1em; font-weight: bold; color: #ffffff;">選擇需要匯入的json檔案</span>
+                    <input type="file" @change="handleFileUpload" class="form-control mt-2" ref="fileInput"/>
+                    <textarea ref="jsonTextarea" class="form-control mt-2" placeholder="在此處粘貼或輸入JSON數據..." @input="importCards" hidden></textarea>
+                </div>
+
+                <!-- 輸入序號 -->
+                <div v-if="importOption === 'key_in'" class="mt-2 mb-2 col-12">
+                    <span style="font-size: 1em; font-weight: bold; color: #ffffff;">請輸入序號</span>
+                    <input v-model="base64Input" type="text" class="form-control mt-2 mb-2 col-12" placeholder="請輸入序號" />
+                    <p> {{ card_ver }}</p>
+                    <button class="btn btn-primary" @click="show_key_in_card">顯示卡片</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Vue3 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.27/dist/vue.global.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script>
+
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                // 定義卡片數據
+                const cards = ref([]);
+                //選取類型
+                const selectSubject = ref(null);
+                //問題描述
+                const textareaContent = ref(null);
+                // 新增歷史紀錄相關的變數
+                const historyOptions = ref([]);
+                const selectedHistory = ref('');
+                const jsonTextarea = ref(null);
+                const fileInput = ref(null);
+                const isBottomVisible = ref(false); // 默認隱藏
+                const importOption = ref(''); // 匯入方式選擇
+                const gender = ref('');
+                const cus_name = ref('');
+                const base64Input = ref('');
+                const card_ver = ref('');
+                const divination_time = ref("");
+
+                // 各自代表的區域
+                const locations = {
+                    '1': '巳',
+                    '2': '午',
+                    '3': '未',
+                    '4': '申',
+                    '5': '辰',
+                    '6': '酉',
+                    '7': '卯',
+                    '8': '戌',
+                    '9': '寅',
+                    '10': '丑',
+                    '11': '子',
+                    '12': '亥',
+                    'center': '中心區域'
+                };
+
+                const round_data = {
+                    ver: "1.0",
+                    rounds: [
+                        {
+                            round: "一",
+                            card_back_background_image: "images/back3.jpg",
+                            card_face_background_image: "images/face10.jpg",
+                            totalCards: 14,
+                            drawCount: 2,
+                            texts: [
+                                { key: "AA", "front": "紫微", "back": "主星" },
+                                { key: "AB", "front": "天機", "back": "主星" },
+                                { key: "AC", "front": "太陽", "back": "主星" },
+                                { key: "AD", "front": "武曲", "back": "主星" },
+                                { key: "AE", "front": "天同", "back": "主星" },
+                                { key: "AF", "front": "廉貞", "back": "主星" },
+                                { key: "AG", "front": "天府", "back": "主星" },
+                                { key: "AH", "front": "太陰", "back": "主星" },
+                                { key: "AI", "front": "貪狼", "back": "主星" },
+                                { key: "AJ", "front": "巨門", "back": "主星" },
+                                { key: "AK", "front": "天相", "back": "主星" },
+                                { key: "AL", "front": "天梁", "back": "主星" },
+                                { key: "AM", "front": "七殺", "back": "主星" },
+                                { key: "AN", "front": "破軍", "back": "主星" }
+                            ]
+                        },
+                        {
+                            round: "二",
+                            card_back_background_image: "images/back2.jpg",
+                            card_face_background_image: "images/face16.jpg",
+                            totalCards: 14,
+                            drawCount: 2,
+                            texts: [
+                                { key: "BA", "front": "文昌", "back": "副星" },
+                                { key: "BB", "front": "文曲", "back": "副星" },
+                                { key: "BC", "front": "左輔", "back": "副星" },
+                                { key: "BD", "front": "右弼", "back": "副星" },
+                                { key: "BE", "front": "天魁", "back": "副星" },
+                                { key: "BF", "front": "天鉞", "back": "副星" },
+                                { key: "BG", "front": "地空", "back": "副星" },
+                                { key: "BH", "front": "地劫", "back": "副星" },
+                                { key: "BI", "front": "火星", "back": "副星" },
+                                { key: "BJ", "front": "鈴星", "back": "副星" },
+                                { key: "BK", "front": "擎羊", "back": "副星" },
+                                { key: "BL", "front": "陀羅", "back": "副星" },
+                                { key: "BM", "front": "天馬", "back": "副星" },
+                                { key: "BN", "front": "祿存", "back": "副星" }
+                            ]
+                        },
+                        {
+                            round: "三",
+                            card_back_background_image: "images/back1.jpg",
+                            card_face_background_image: "images/face17.jpg",
+                            totalCards: 32,
+                            drawCount: 3,
+                            texts: [
+                                { key: "CA", "front": "天官", "back": "乙級星" },
+                                { key: "CB", "front": "天福", "back": "乙級星" },
+                                { key: "CC", "front": "天廚", "back": "乙級星" },
+                                { key: "CD", "front": "天刑", "back": "乙級星" },
+                                { key: "CE", "front": "天姚", "back": "乙級星" },
+                                { key: "CF", "front": "解神", "back": "乙級星" },
+                                { key: "CG", "front": "天巫", "back": "乙級星" },
+                                { key: "CH", "front": "天月", "back": "乙級星" },
+                                { key: "CI", "front": "陰煞", "back": "乙級星" },
+                                { key: "CJ", "front": "台輔", "back": "乙級星" },
+                                { key: "CK", "front": "封誥", "back": "乙級星" },
+                                { key: "CL", "front": "天空", "back": "乙級星" },
+                                { key: "CM", "front": "天哭", "back": "乙級星" },
+                                { key: "CN", "front": "天虛", "back": "乙級星" },
+                                { key: "CO", "front": "龍池", "back": "乙級星" },
+                                { key: "CP", "front": "鳳閣", "back": "乙級星" },
+                                { key: "CQ", "front": "紅鸞", "back": "乙級星" },
+                                { key: "CR", "front": "天喜", "back": "乙級星" },
+                                { key: "CS", "front": "孤辰", "back": "乙級星" },
+                                { key: "CT", "front": "寡宿", "back": "乙級星" },
+                                { key: "CU", "front": "蜚廉", "back": "乙級星" },
+                                { key: "CV", "front": "破碎", "back": "乙級星" },
+                                { key: "CW", "front": "華蓋", "back": "乙級星" },
+                                { key: "CX", "front": "咸池", "back": "乙級星" },
+                                { key: "CY", "front": "天德", "back": "乙級星" },
+                                { key: "CZ", "front": "月德", "back": "乙級星" },
+                                { key: "DA", "front": "天才", "back": "乙級星" },
+                                { key: "DB", "front": "天壽", "back": "乙級星" },
+                                { key: "DC", "front": "三台", "back": "乙級星" },
+                                { key: "DD", "front": "八座", "back": "乙級星" },
+                                { key: "DE", "front": "恩光", "back": "乙級星" },
+                                { key: "DF", "front": "天貴", "back": "乙級星" }
+                            ]
+                        },
+                        {
+                            round: "四",
+                            card_back_background_image: "images/back4.jpg",
+                            card_face_background_image: "images/face9.jpg",
+                            totalCards: 12,
+                            drawCount: 1,
+                            texts: [
+                                { key: "EA", "front": "長生", "back": "宮位" },
+                                { key: "EB", "front": "沐浴", "back": "宮位" },
+                                { key: "EC", "front": "冠帶", "back": "宮位" },
+                                { key: "ED", "front": "臨官", "back": "宮位" },
+                                { key: "EE", "front": "帝旺", "back": "宮位" },
+                                { key: "EF", "front": "衰", "back": "宮位" },
+                                { key: "EG", "front": "病", "back": "宮位" },
+                                { key: "EH", "front": "死", "back": "宮位" },
+                                { key: "EI", "front": "墓", "back": "宮位" },
+                                { key: "EJ", "front": "絕", "back": "宮位" },
+                                { key: "EK", "front": "胎", "back": "宮位" },
+                                { key: "EL", "front": "養", "back": "宮位" }
+                            ]
+                        }
+                    ]
+                };
+
+                // 依據 box 取得卡片, 並根據 number 屬性排序, 以確保卡片的順序
+                const cardsInBox = (box) => {
+                    if (!cards.value) return [];
+                    return cards.value.filter(card => card.location === box).sort((a, b) => a.number - b.number);
+                };
+
+                const cardStyle = (card, index, box) => {
+                    const aspectRatio = 2 / 3; // 卡片比例 2:3
+                    const boxHeight = 100; // 固定高度
+                    const cardHeight = boxHeight - 4; // 扣除邊框的寬度
+                    const cardWidth = cardHeight * aspectRatio;
+
+                    const offset = box === 'bottom' ? index * (cardWidth + 10) : index * 10; // 底部區塊與其他區塊的偏移
+
+                    const style = {
+                        position: 'relative',
+                        margin: '0 5px', // 卡片之間的空隙
+                        width: `${cardWidth}px`,
+                        height: `${cardHeight}px`,
+                        zIndex: card.zIndex || 0 // 根據 zIndex 設定疊加順序
+                    };
+
+                    // 中間區塊牌組靠左排列，左至右
+                    if (box === 'center') {
+                        style.position = 'absolute';
+                        style.left = `${index * (cardWidth + 10)}px`;
+                        style.bottom = '0';
+                        style.transform = 'none';
+                    }
+                    if (card.isDragging) {
+                        style.position = 'absolute'; // 使用絕對定位
+                        style.left = `${card.touchX}px`;
+                        style.top = `${card.touchY}px`;
+                    }
+
+                    return style;
+                };
+            
+                const cardBgStyle = (card, side) => {
+                    return {
+                        backgroundImage: `url(${side === "front" ? card.card_face_background_image : card.card_back_background_image})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                    };
+                };
+
+                /* 匯出本次操作紀錄為 JSON 檔案 */
+                const explorerNow = () => {
+                    if(sessionKey.value != ''){
+                        exportDatabase(sessionKey.value);
+                    }else{
+                        alert("請選擇匯出的紀錄");
+                    }
+                };
+                
+                //重新整理畫面
+                const refreshPage = () => {
+                    location.reload();
+                };
+
+                /* 資料庫 */
+                const db = ref(null);
+                const operations = ref([]);
+                const content = ref('');
+                const sessionKey = ref('');
+                const retentionDays = ref(7);
+
+                const openDatabase = () => {
+                    let request = indexedDB.open('OperationsDB', 1);
+
+                    request.onupgradeneeded = function(event) {
+                        db.value = event.target.result;
+                        if (!db.value.objectStoreNames.contains('Records')) {
+                            db.value.createObjectStore('Records', { keyPath: 'sessionKey' });
+                        }
+                    };
+
+                    request.onsuccess = function(event) {
+                        db.value = event.target.result;
+                        //console.log('資料庫開啟成功');
+                        // 檢查是否有過期記錄, 並刪除
+                        // deleteOldRecords();
+                        loadHistoryOptions();
+                    };
+
+                    request.onerror = function(event) {
+                        //console.error('資料庫錯誤: ' + event.target.errorCode);
+                    };
+                };
+
+                // 生成新的 session key, 改為同步取得
+                const GetSessionKey = () => {
+                    return new Promise((resolve, reject) => {
+                        let transaction = db.value.transaction(['Records'], 'readonly');
+                        let objectStore = transaction.objectStore('Records');
+
+                        let today = new Date();
+                        let yyyyMMdd = today.toISOString().slice(0, 10).replace(/-/g, '');
+                        let prefix = yyyyMMdd;
+                        let maxIndex = 0;
+
+                        objectStore.openCursor().onsuccess = function(event) {
+                            let cursor = event.target.result;
+                            if (cursor) {
+                                let key = cursor.key;
+                                if (key.startsWith(prefix)) {
+                                    let index = parseInt(key.slice(-4));
+                                    if (index > maxIndex) {
+                                        maxIndex = index;
+                                    }
+                                }
+                                cursor.continue();
+                            } else {
+                                let newIndex = (maxIndex + 1).toString().padStart(4, '0');
+                                let sessionKey = `${prefix}${newIndex}`;
+                                //console.log('新的 session key:', sessionKey);
+                                resolve(sessionKey); // 成功生成 session key，並傳給 resolve
+                            }
+                        };
+
+                        objectStore.openCursor().onerror = function(event) {
+                            reject(new Error('生成 session key 錯誤: ' + event.target.errorCode)); // 捕捉錯誤並拒絕 Promise
+                        };
+                    });
+                };
+
+                const addOperation = (data) => {
+                    let transaction = db.value.transaction(['Records'], 'readwrite');
+                    let objectStore = transaction.objectStore('Records');
+                    let getRequest = objectStore.get(sessionKey.value);
+
+                    getRequest.onsuccess = function(event) {
+                        let sessionData = event.target.result || 
+                        { 
+                            sessionKey: sessionKey.value, 
+                            content: textareaContent.value.value,
+                            subject: selectSubject.value.value,
+                            gender:gender.value,
+                            cus_name:cus_name.value,
+                            divination_time : divination_time.value,
+                            operations: [] 
+                        };
+
+                        let newOperation = {
+                            cards: data,
+                            timestamp: new Date().toISOString()
+                        };
+
+                        sessionData.operations.push(newOperation);
+
+                        let putRequest = objectStore.put(sessionData);
+
+                        putRequest.onsuccess = function(event) {
+                            //console.log('操作記錄新增成功');
+                        };
+
+                        putRequest.onerror = function(event) {
+                            //console.error('新增操作記錄錯誤: ' + event.target.errorCode);
+                        };
+                    };
+
+                    getRequest.onerror = function(event) {
+                        //console.error('獲取 session 資料錯誤: ' + event.target.errorCode);
+                    };
+                };
+
+                // 清除資料庫
+                const clearDatabase = () => {
+                    let transaction = db.value.transaction(['Records'], 'readwrite');
+                    let objectStore = transaction.objectStore('Records');
+                    let clearRequest = objectStore.clear();
+
+                    clearRequest.onsuccess = function(event) {
+                        //console.log('所有操作記錄已清除');
+                    };
+
+                    clearRequest.onerror = function(event) {
+                        //console.error('清除操作記錄錯誤: ' + event.target.errorCode);
+                    };
+                };
+
+                const deleteOldRecords = () => {
+                    let transaction = db.value.transaction(['Records'], 'readwrite');
+                    let objectStore = transaction.objectStore('Records');
+                    let currentDate = new Date();
+
+                    objectStore.openCursor().onsuccess = function(event) {
+                        let cursor = event.target.result;
+                        if (cursor) {
+                            let recordDate = new Date(cursor.value.operations[0].timestamp);
+                            //console.log('recordDate', recordDate);
+                            let ageInDays = (currentDate - recordDate) / (1000 * 60 * 60 * 24);
+                            if (ageInDays > retentionDays.value) {
+                                let deleteRequest = cursor.delete();
+
+                                deleteRequest.onsuccess = function() {
+                                    //console.log('已刪除過期記錄', cursor.value.sessionKey);
+                                };
+
+                                deleteRequest.onerror = function(event) {
+                                    //console.error('刪除記錄錯誤: ' + event.target.errorCode);
+                                };
+                            }
+                            cursor.continue();
+                        }
+                    };
+
+                    objectStore.openCursor().onerror = function(event) {
+                        //console.error('檢查過期記錄錯誤: ' + event.target.errorCode);
+                    };
+                };
+
+                const exportDatabase = (key) => {
+                    let transaction = db.value.transaction(['Records'], 'readonly');
+                    let objectStore = transaction.objectStore('Records');
+                    let allRecords = [];
+
+                    objectStore.openCursor().onsuccess = function(event) {
+                        let cursor = event.target.result;
+                        if (cursor) {
+                            //如果有key值,則只匯出該key值的資料
+                            if(key != ""){
+                                if(cursor.value.sessionKey == key){
+                                    allRecords.push(cursor.value);
+                                }
+                            }else{
+                                allRecords.push(cursor.value);
+                            }
+                            cursor.continue();
+                        } else {
+                            let dataStr = JSON.stringify(allRecords, null, 2);
+                            let dataBlob = new Blob([dataStr], { type: 'application/json' });
+                            let url = URL.createObjectURL(dataBlob);
+
+                            let fileName = `${key}_${selectSubject.value.value}_${gender.value}_${cus_name.value}.json`;
+                            let link = document.createElement('a');
+                            link.href = url;
+                            link.download = fileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+
+                            //console.log('匯出完成');
+                        }
+                    };
+
+                    objectStore.openCursor().onerror = function(event) {
+                        //console.error('匯出錯誤: ' + event.target.errorCode);
+                    };
+                };
+
+                // 新增的方法
+                const formatRecord = (record) => {
+                    const truncatedContent = record.content.length > 20 ? record.content.substring(0, 20) + "..." : record.content;
+                    return `${record.sessionKey}_${record.subject}_${truncatedContent}`;
+                };
+
+                const loadHistoryOptions = () => {
+                    let transaction = db.value.transaction(['Records'], 'readonly');
+                    let objectStore = transaction.objectStore('Records');
+
+                    objectStore.getAll().onsuccess = function(event) {
+                        historyOptions.value = event.target.result.sort((a, b) => b.sessionKey - a.sessionKey);
+                    };
+
+                    objectStore.getAll().onerror = function(event) {
+                        //console.error('載入歷史紀錄錯誤: ' + event.target.errorCode);
+                    };
+                };
+
+                const loadHistory = () => {
+                    let transaction = db.value.transaction(['Records'], 'readonly');
+                    let objectStore = transaction.objectStore('Records');
+                    let getRequest = objectStore.get(selectedHistory.value);
+
+                    getRequest.onsuccess = function(event) {
+                        let record = event.target.result;
+                        if (record) {
+                             // 使用深拷貝確保 Vue 能夠監聽到變化
+                            let loadedCards = JSON.parse(JSON.stringify(record.operations[0].cards));
+
+                            // 比對每張卡片並設置正確的背景
+                            loadedCards.forEach(card => {
+                                for (let round of round_data.rounds) {
+                                    for (let text of round.texts) {
+                                        if (card.frontText === text.front && card.backText === text.back) {
+                                            //console.log('找到匹配的卡片');
+                                            card.card_back_background_image = round.card_back_background_image;
+                                            card.card_face_background_image = round.card_face_background_image;
+                                            break;
+                                        }
+                                    }
+                                }
+                            });
+
+                            cards.value = loadedCards;
+
+                            selectSubject.value.value = record.subject;
+                            textareaContent.value.value = record.content;
+
+                            sessionKey.value = record.sessionKey;
+                            gender.value = record.gender;
+                            cus_name.value = record.cus_name;
+                            
+                            if(record.divination_time != undefined){
+                                divination_time.value = record.divination_time;
+                            } else {
+                                // 使用 Intl.DateTimeFormat 來獲取特定時區（GMT+8）的時間
+                                const options = {
+                                    timeZone: 'Asia/Taipei', // GMT+8 時區，對應台北
+                                    hour12: false, // 使用 24 小時制
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit'
+                                };
+
+                                divination_time.value = new Intl.DateTimeFormat('zh-tw', options).format(new Date(record.operations[0].timestamp));
+                            }
+
+                            isBottomVisible.value = false;
+                        }
+
+                        //console.log('歷史紀錄載入成功');
+                    };
+
+                    getRequest.onerror = function(event) {
+                        //console.error('載入歷史紀錄錯誤: ' + event.target.errorCode);
+                    };
+
+
+                };
+
+                // 處理文件上傳
+                const handleFileUpload = () => {
+                    const file = fileInput.value.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            jsonTextarea.value.value = e.target.result;
+                            importCards();  // 文件讀取完成後直接匯入卡片
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+
+                // 匯入卡片
+                const importCards = () => {
+                    try {
+                        let data = JSON.parse(jsonTextarea.value.value)[0];
+
+                        let loadedCards = data.operations[0].cards;
+                        
+                        // 比對每張卡片並設置正確的背景
+                        loadedCards.forEach(card => {
+                            for (let round of round_data.rounds) {  // 使用 round_data.rounds 替換 rounds
+                                for (let text of round.texts) {
+                                    if (card.frontText === text.front && card.backText === text.back) {
+                                        card.card_back_background_image = round.card_back_background_image;
+                                        card.card_face_background_image = round.card_face_background_image;
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+
+                        cards.value = loadedCards;
+                        
+                        gender.value = data.gender;
+                        cus_name.value = data.cus_name;
+                        textareaContent.value.value = data.content;
+                        selectSubject.value.value = data.subject;
+                        divination_time.value = data.divination_time;
+
+                        //重新匯入情況下 , session 取新的
+                        //sessionKey.value = data.sessionKey;
+
+                        isBottomVisible.value = false;
+
+                        (async () => {
+                            try {
+                                sessionKey.value = await GetSessionKey();
+
+                                if(sessionKey.value != ''){
+                                    //寫入資料
+                                    addOperation(loadedCards.map(item => {
+                                                        return {
+                                                            "number": item.number,
+                                                            "location": item.location,
+                                                            "location_name": locations[item.location],
+                                                            "frontText": item.frontText,
+                                                            "backText": item.backText,
+                                                        }
+                                                    }).sort((a, b) => a.number - b.number));
+                                }
+
+                            } catch (error) {
+                                //console.error(error.message);
+                            }
+                        })();      
+
+                    } catch (error) {
+                        //console.error(error)
+
+                        alert('JSON 解析錯誤，請檢查格式');
+                    }
+                };
+
+                const parseBase64Input = (input) => {
+                    try{
+                        const base64Decoded = atob(input);
+
+                        // 將 input 解析為 JSON 對象
+                        const jsonData = JSON.parse(base64Decoded);
+
+                        const cus_info = jsonData.cus_info;
+
+                        gender.value = decodeURIComponent(cus_info.gender);
+                        cus_name.value = decodeURIComponent(cus_info.cus_name);
+                        textareaContent.value.value = decodeURIComponent(cus_info.content);
+                        selectSubject.value.value = decodeURIComponent(cus_info.subject);
+                        divination_time.value = decodeURIComponent(cus_info.divination_time);
+
+                        const [ver, locationString] = jsonData.result.split(';');
+                        const locationData = locationString.split('-');
+                        const parsedCards = [];
+
+                        if (ver !== round_data.ver) {
+                            alert('版本不匹配');
+                            return [];
+                        }else{
+                            card_ver.value = ver;
+                        }
+
+                        for (let i = 0; i < locationData.length; i += 2) {
+                            const location = locationData[i];
+                            const key = locationData[i + 1];
+                            const round = round_data.rounds.find(r => r.texts.some(t => t.key === key));
+
+                            if (round) {
+                                const textData = round.texts.find(t => t.key === key);
+                                parsedCards.push({
+                                    id: `card-${i / 2 + 1}`,
+                                    location,
+                                    number: i / 2 + 1,
+                                    frontText: textData.front,
+                                    backText: textData.back,
+                                    card_back_background_image: round.card_back_background_image,
+                                    card_face_background_image: round.card_face_background_image
+                                });
+                            }
+                        }
+
+                        (async () => {
+                            try {
+                                sessionKey.value = await GetSessionKey();
+
+                                if(sessionKey.value != ''){
+                                    //寫入資料
+                                    addOperation(parsedCards.map(item => {
+                                                        return {
+                                                            "number": item.number,
+                                                            "location": item.location,
+                                                            "location_name": locations[item.location],
+                                                            "frontText": item.frontText,
+                                                            "backText": item.backText,
+                                                        }
+                                                    }).sort((a, b) => a.number - b.number));
+                                }
+
+                            } catch (error) {
+                                //console.error(error.message);
+                            }
+                        })();      
+
+                        return parsedCards;
+                    }catch(error){
+                        alert("序號錯誤");
+                        return [];
+                    }
+                };
+
+                const show_key_in_card = () => {
+                    if(base64Input.value != ""){
+                        cards.value = parseBase64Input(base64Input.value);
+                    }else{
+                        alert("請輸入序號");
+                    }
+                };
+
+                onMounted(() => {
+                    openDatabase();
+                    selectSubject.value.style.backgroundColor = "#E0E0E0";
+                    textareaContent.value.style.backgroundColor = "#E0E0E0";
+                });
+
+                return {
+                    cards,
+                    cardsInBox,
+                    cardStyle,
+                    exportDatabase,
+                    clearDatabase,
+                    cardBgStyle,
+                    refreshPage,
+                    historyOptions,
+                    selectedHistory,
+                    loadHistory,
+                    selectSubject,
+                    textareaContent,
+                    formatRecord,
+                    jsonTextarea,
+                    fileInput,
+                    handleFileUpload,
+                    importCards,
+                    explorerNow,
+                    isBottomVisible,
+                    importOption,
+                    gender,
+                    cus_name,
+                    show_key_in_card,
+                    base64Input,
+                    card_ver,
+                    divination_time
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
