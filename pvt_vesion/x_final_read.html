@@ -644,6 +644,13 @@
                         zIndex: card.zIndex || 0 // 根據 zIndex 設定疊加順序
                     };
 
+                    // 中間區塊牌組靠左排列，左至右
+                    if (box === 'center') {
+                        style.position = 'absolute';
+                        style.left = `${index * (cardWidth + 10)}px`;
+                        style.bottom = '0';
+                        style.transform = 'none';
+                    }
                     if (card.isDragging) {
                         style.position = 'absolute'; // 使用絕對定位
                         style.left = `${card.touchX}px`;

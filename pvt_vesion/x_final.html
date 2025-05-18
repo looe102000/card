@@ -8,11 +8,15 @@
             margin-top: 50px;
             font-family: Arial, sans-serif !important;
             color: #fff !important;
-            /* 背景圖 */
+            /* 背景圖優化 - 確保在RWD情況下正確延伸 */
             background-image: url("images/background1.jpg") !important;
             background-size: cover;
             background-repeat: no-repeat; 
-            background-position: center;
+            background-position: center center;
+            background-attachment: fixed; /* 固定背景，滾动時不移動 */
+            min-height: 100vh; /* 確保背景至少與視窗一樣高 */
+            width: 100%; /* 確保占滿整個視窗寬度 */
+            overflow-x: hidden; /* 防止水平滾动条 */
         }
 
         .header {
@@ -21,6 +25,7 @@
             background-color: #f2f2f2;
         }
 
+        /* 優化容器在不同螢幕尺寸下的表現 */
         .container {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -28,6 +33,33 @@
             gap: 10px;
             height: 80vh;
             margin-top: 2%;
+            max-width: 100%; /* 確保不超出螢幕 */
+            padding: 0 15px; /* 增加側邊間距 */
+        }
+
+        /* 在小螢幕裝置上調整排版 */
+        @media (max-width: 768px) {
+            body {
+                margin-top: 20px; /* 減少頂部間距 */
+            }
+            
+            .container {
+                height: auto; /* 高度自動調整 */
+                gap: 5px; /* 減小間距 */
+            }
+        }
+
+        /* 在超小螢幕裝置上進一步調整 */
+        @media (max-width: 480px) {
+            .container {
+                grid-template-columns: 1fr 1fr; /* 減少網格列數 */
+                padding: 0 10px; /* 減小側邊間距 */
+            }
+            
+            /* 適應小螢幕的中央區域 */
+            .center {
+                grid-column: 1 / span 2 !important;
+            }
         }
 
         .box {
@@ -212,14 +244,20 @@
     </style>
     <!--Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    
+    <!-- Vue.js CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
     <title>小教室</title>
 </head>
 <body>
     <div id="app">
         <div class="container">
-            <div class="box" @dragover.prevent="dragOver('1')" @drop="dropCard('1')" @click="boxClickSelectCard('1')"><span style="font-size: 2em;">巳</span>
-                <div v-for="(card, index) in cardsInBox('1')" :key="card.id" class="card" :style="cardStyle(card, index, '1')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
+            <div v-for="box in zodiacBoxes" :key="box.id" class="box" @dragover.prevent="dragOver(box.id, $event)" @drop="dropCard(box.id, $event)" @click="boxClickSelectCard(box.id)">
+                <span style="font-size: 2em;">{{ box.label }}</span>
+                <div v-for="(card, index) in cardsInBox(box.id)" :key="card.id" class="card" :style="cardStyle(card, index, box.id)" draggable="false" @dragstart="dragCard(card, $event)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -231,59 +269,7 @@
                     <div class="card-number">{{ card.number }}</div>
                 </div>
             </div>
-            <div class="box" @dragover.prevent="dragOver('2')" @drop="dropCard('2')" @click="boxClickSelectCard('2')"><span style="font-size: 2em;">午</span>
-                <div v-for="(card, index) in cardsInBox('2')" :key="card.id" class="card" :style="cardStyle(card, index, '2')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('3')" @drop="dropCard('3')" @click="boxClickSelectCard('3')"><span style="font-size: 2em;">未</span>
-                <div v-for="(card, index) in cardsInBox('3')" :key="card.id" class="card" :style="cardStyle(card, index, '3')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('4')" @drop="dropCard('4')" @click="boxClickSelectCard('4')"><span style="font-size: 2em;">申</span>
-                <div v-for="(card, index) in cardsInBox('4')" :key="card.id" class="card" :style="cardStyle(card, index, '4')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('5')" @drop="dropCard('5')" @click="boxClickSelectCard('5')"><span style="font-size: 2em;">辰</span>
-                <div v-for="(card, index) in cardsInBox('5')" :key="card.id" class="card" :style="cardStyle(card, index, '5')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box center" @dragover.prevent="dragOver('center')" @drop="dropCard('center')"  @click="boxClickSelectCard('center')">
+            <div class="box center" @dragover.prevent="dragOver('center', $event)" @drop="dropCard('center', $event)"  @click="boxClickSelectCard('center')">
                 <div class="center-text">
                     <div style="display: flex;margin: 5px;">
                         <!-- Left side buttons -->
@@ -331,7 +317,7 @@
                                 <P>3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）</P>
                                 <P>4. 健康、失物、賭博、代問，將不予回答。</P>
                                 <P>5. 不清楚不明確的問題，也將不予回答。</P>
-                                <P>6. 出國唸書和遊學打工，要先設定國家再問。</P>
+                                <P>6. 出國讀書和遊學打工，要先設定國家再問。</P>
                                 <P>7. 提問之前，自己最好先有想法，結果會更為精確。</P>
                                 <P>例如：</P>
                                 <P>●我XXX想知道是否可以在十月底前賣掉房子？</P>
@@ -376,7 +362,7 @@
                         <div class="modal-content">
                             <div class="modal-header">
                             <h5 class="modal-title" id="AllLinkModalLabel">連結資訊</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
 							<div class="modal-body" style="text-align:center;">
 								<div style="display: flex; justify-content: space-around;">
@@ -412,98 +398,7 @@
                         </div>
                     </div>
                 </div>
-                <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('6')" @drop="dropCard('6')" @click="boxClickSelectCard('6')"><span style="font-size: 2em;">酉</span>
-                <div v-for="(card, index) in cardsInBox('6')" :key="card.id" class="card" :style="cardStyle(card, index, '6')" draggable="false" @dragstart="dragCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('7')" @drop="dropCard('7')" @click="boxClickSelectCard('7')"><span style="font-size: 2em;">卯</span>
-                <div v-for="(card, index) in cardsInBox('7')" :key="card.id" class="card" :style="cardStyle(card, index, '7')" draggable="false" @dragstart="dragCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('8')" @drop="dropCard('8')" @click="boxClickSelectCard('8')"><span style="font-size: 2em;">戌</span>
-                <div v-for="(card, index) in cardsInBox('8')" :key="card.id" class="card" :style="cardStyle(card, index, '8')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('9')" @drop="dropCard('9')" @click="boxClickSelectCard('9')"><span style="font-size: 2em;">寅</span>
-                <div v-for="(card, index) in cardsInBox('9')" :key="card.id" class="card" :style="cardStyle(card, index, '9')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('10')" @drop="dropCard('10')" @click="boxClickSelectCard('10')"><span style="font-size: 2em;">丑</span>
-                <div v-for="(card, index) in cardsInBox('10')" :key="card.id" class="card" :style="cardStyle(card, index, '10')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('11')" @drop="dropCard('11')" @click="boxClickSelectCard('11')"><span style="font-size: 2em;">子</span>
-                <div v-for="(card, index) in cardsInBox('11')" :key="card.id" class="card" :style="cardStyle(card, index, '11')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
-                    <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                        <div class="card-front" :style="cardBgStyle(card,'front')">
-                            <h1>{{ card.frontText }}</h1>
-                        </div>
-                        <div class="card-back" :style="cardBgStyle(card,'back')">
-                            <h1>{{ card.backText }}</h1>
-                        </div>
-                    </div>
-                    <div class="card-number">{{ card.number }}</div>
-                </div>
-            </div>
-            <div class="box" @dragover.prevent="dragOver('12')" @drop="dropCard('12')" @click="boxClickSelectCard('12')"><span style="font-size: 2em;">亥</span>
-                <div v-for="(card, index) in cardsInBox('12')" :key="card.id" class="card" :style="cardStyle(card, index, '12')" draggable="false" @dragstart="dragCard(card)" @click="flipCard(card)">
+                <div v-for="(card, index) in cardsInBox('center')" :key="card.id" class="card" :style="cardStyle(card, index, 'center')" draggable="false" @dragstart="dragCard(card, $event)" @click="flipCard(card)">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -516,7 +411,7 @@
                 </div>
             </div>
             <div class="bottom" :style="{ minHeight: area_grid_heigh + 'px' }">
-                <div v-for="(card, index) in cardsInBox('bottom')" :key="card.id" class="card" :style="bottomCardStyle(card, index)" draggable="true" @dragstart="dragCard(card)" @click="clickCard(card)" :class="{ 'is-clicked': card.isClicked }">
+                <div v-for="(card, index) in cardsInBox('bottom')" :key="card.id" class="card" :style="bottomCardStyle(card, index)" draggable="true" @dragstart="dragCard(card, $event)" @click="clickCard(card)" :class="{ 'is-clicked': card.isClicked }">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :class="{ 'hidden-front': card.isDragging }" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -534,51 +429,67 @@
             <div class="bottom_button_area" v-show="isExplorerNowVisible">
                 <span><button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="explorerNow()">匯出本次操作紀錄</button></span>
                 <span><button type="button" class="btn btn-primary" style="margin-right: 10px;" @click="refreshPage()">再抽一次</button></span>
+                <!-- 加抽按鈕常駐顯示 -->
+                <span><button type="button" class="btn btn-success" style="margin-right: 10px;" @click="addExtraCards()">加抽</button></span>
+            </div>
+            <!-- 加抽模式下也顯示加抽按鈕與結束加抽 -->
+            <div class="bottom_button_area" v-if="isExtraDrawMode">
+                <span>
+                    <button type="button" class="btn btn-success" style="margin-right: 10px;" @click="addExtraCards()">加抽</button>
+                </span>
+                <span>
+                    <button type="button" class="btn btn-danger" style="margin-right: 10px;" @click="endExtraDraw()">結束加抽</button>
+                </span>
             </div>
         </div>
     </div>
-    <!-- Vue3 -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.27/dist/vue.global.min.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script>
-
-        const { createApp, ref, onMounted, onUnmounted, watch } = Vue;
+        /**
+         * 紫微牌抽卡應用
+         * 使用 Vue 3 Composition API 實現卡片拖放、翻轉和狀態管理功能
+         */
+        const { createApp, ref, onMounted, onUnmounted, watch, computed, nextTick, reactive } = Vue;
 
         createApp({
             setup() {
-
-                // 定義卡片數據
+                // ===== 基本資料與狀態 =====
                 const cards = ref([]);
-                // 用於生成卡片的唯一 ID
                 const cardIndex = ref(0);
-                // 當前回合
                 const currentRound = ref(0);
-                // 拖曳計數
                 const draggedCount = ref(0);
-                // 選取計數
                 const isClickedCount = ref(0);
-                // 丟到 center 區域的卡片序號
                 const dropIndex = ref(0);
-                // 回合狀態
-                const roundStatus = ref("Prepare for round 1");
-                // 拖曳的卡片
+                const roundStatus = ref("準備第一回合");
                 const draggingCard = ref(null);
-                // 是否顯示 explorerNow 按鈕
                 const isExplorerNowVisible = ref(false);
-
-                //選取類型
+                const area_grid_heigh = ref(150);
+                const hasSelectedBox = ref(false);
+                const isCardSetSelectionMode = ref(false); // 新增牌組選擇模式變數
+                
+                // 表單相關資料 - 使用 reactive 集中管理表單狀態可提高效能
+                const formData = reactive({
+                    subject: '',
+                    content: '',
+                    gender: '',
+                    name: ''
+                });
+                
+                // DOM 引用
                 const selectSubject = ref(null);
-                //問題描述
                 const textareaContent = ref(null);
-
                 const gender = ref('');
                 const cus_name = ref('');
+                const currentTime = ref("");
 
-                const area_grid_heigh = ref(0); // 初始高度設置為 150px
+                // ===== 資料庫相關 =====
+                const db = ref(null);
+                const operations = ref([]);
+                const content = ref('');
+                const sessionKey = ref('');
+                const retentionDays = ref(7);
 
-                // 各自代表的區域
-                const locations = {
+                // ===== 12宮位名稱定義 - 使用 reactive 優於直接物件 =====
+                const locations = reactive({
                     '1': '巳',
                     '2': '午',
                     '3': '未',
@@ -592,10 +503,38 @@
                     '11': '子',
                     '12': '亥',
                     'center': '中心區域'
-                };
+                });
 
-                const rounds = [
-                    { area_grid_heigh:"150", card_back_background_image:"images/back3.jpg", card_face_background_image:"images/face10.jpg", totalCards: 14, drawCount: 2, texts: [{ "front": "紫微", "back": "主星" }, 
+                // ===== 計算屬性 =====
+                
+                /**
+                 * 12宮位盒子，排除中心區域
+                 * 效能優化: 使用 computed 快取結果避免重複計算
+                 */
+                const zodiacBoxes = computed(() => Object.keys(locations)
+                    .filter(key => key !== 'center')
+                    .sort((a, b) => Number(a) - Number(b))
+                    .map(key => ({ id: key, label: locations[key] }))
+                );
+
+                /**
+                 * 獲取當前回合的資料
+                 */
+                const currentRoundData = computed(() => rounds[currentRound.value]);
+                
+                /**
+                 * 計算當前可選卡片數量 - 新增計算屬性優化邏輯
+                 */
+                const remainingCardCount = computed(() => {
+                    if (currentRound.value >= rounds.length) return 0;
+                    return rounds[currentRound.value].drawCount - draggedCount.value;
+                });
+
+                // ===== 回合定義 =====
+                // 使用 reactive 可提升 rounds 的存取效率
+                const rounds = reactive([
+                    { area_grid_heigh:"150", card_back_background_image:"images/back3.jpg", card_face_background_image:"images/face10.jpg", totalCards: 14, drawCount: 2, texts: [
+                                                            { "front": "紫微", "back": "主星" }, 
                                                             { "front": "天機", "back": "主星" }, 
                                                             { "front": "太陽", "back": "主星" }, 
                                                             { "front": "武曲", "back": "主星" },
@@ -610,7 +549,8 @@
                                                             { "front": "七殺", "back": "主星" }, 
                                                             { "front": "破軍", "back": "主星" }
                                                             ]},
-                    { area_grid_heigh:"150", card_back_background_image:"images/back2.jpg", card_face_background_image:"images/face16.jpg", totalCards: 14, drawCount: 2, texts: [{ "front": "文昌", "back": "副星" }, 
+                    { area_grid_heigh:"150", card_back_background_image:"images/back2.jpg", card_face_background_image:"images/face16.jpg", totalCards: 14, drawCount: 2, texts: [
+                                                            { "front": "文昌", "back": "副星" }, 
                                                             { "front": "文曲", "back": "副星" }, 
                                                             { "front": "左輔", "back": "副星" }, 
                                                             { "front": "右弼", "back": "副星" },
@@ -625,7 +565,8 @@
                                                             { "front": "天馬", "back": "副星" }, 
                                                             { "front": "祿存", "back": "副星" }
                                                         ]},
-                    { area_grid_heigh:"250", card_back_background_image:"images/back1.jpg", card_face_background_image:"images/face17.jpg", totalCards: 32, drawCount: 3, texts: [{ "front": "天官", "back": "乙級星" },
+                    { area_grid_heigh:"250", card_back_background_image:"images/back1.jpg", card_face_background_image:"images/face17.jpg", totalCards: 32, drawCount: 3, texts: [
+                                                            { "front": "天官", "back": "乙級星" },
                                                             { "front": "天福", "back": "乙級星" },
                                                             { "front": "天廚", "back": "乙級星" },
                                                             { "front": "天刑", "back": "乙級星" },
@@ -658,7 +599,8 @@
                                                             { "front": "恩光", "back": "乙級星" },
                                                             { "front": "天貴", "back": "乙級星" }
                                                             ]},
-                    { area_grid_heigh:"150", card_back_background_image:"images/back4.jpg", card_face_background_image:"images/face9.jpg", totalCards: 12, drawCount: 1, texts: [{ "front": "長生", "back": "宮位" }, 
+                    { area_grid_heigh:"150", card_back_background_image:"images/back4.jpg", card_face_background_image:"images/face9.jpg", totalCards: 12, drawCount: 1, texts: [
+                                                            { "front": "長生", "back": "宮位" }, 
                                                             { "front": "沐浴", "back": "宮位" }, 
                                                             { "front": "冠帶", "back": "宮位" }, 
                                                             { "front": "臨官", "back": "宮位" },
@@ -671,223 +613,394 @@
                                                             { "front": "胎", "back": "宮位" }, 
                                                             { "front": "養", "back": "宮位" }
                                                             ]}
-                ];
+                ]);
 
-                // 初始化回合
+                // ===== 方法定義 =====
+
+                /**
+                 * 初始化當前回合
+                 * 效能優化: 批量處理卡片生成，減少 DOM 重繪次數
+                 */
                 const initRound = () => {
-                    // 判斷是否還有回合
                     if (currentRound.value < rounds.length) {
-                        // 取得當前回合的數據
-                        let round = rounds[currentRound.value];
-                        // 清空 bottom 區塊
-                        cards.value = cards.value.filter(card => card.location !== 'bottom');
-                        // 隨機排列 texts
-                        round.texts = shuffleArray(round.texts);
-                        // 生成卡片
-                        for (let i = 0; i < round.totalCards; i++) {
-                            cards.value.push({
-                                id: ++cardIndex.value, // 確保每張卡片的唯一 ID
-                                number: i + 1, // 顯示的序號
-                                isFlipped: true, // 是否顯示卡面
-                                location: 'bottom', // 初始位置設為 bottom
-                                frontText: round.texts[i].front, // 前面文字
-                                backText: round.texts[i].back, // 背面文字
-                                touchX: null, // 用於觸控移動的 X 坐標
-                                touchY: null,  // 用於觸控移動的 Y 坐標
-                                isDragging: false, // 是否正在拖曳
-                                isClicked: false, // 是否選取
-                                zIndex: 0, // z-index
-                                card_back_background_image: round.card_back_background_image,
-                                card_face_background_image: round.card_face_background_image
-                            });
-                        }
+                        let round = currentRoundData.value;
+                        // 批量處理, 先過濾再一次性設置新值
+                        const remainingCards = cards.value.filter(card => card.location !== 'bottom');
+                        
+                        // 洗牌操作
+                        const shuffledTexts = shuffleArray([...round.texts]);
+                        
+                        // 預先創建所有新卡片
+                        const newCards = Array.from({ length: round.totalCards }, (_, i) => ({
+                            id: cardIndex.value + i + 1,
+                            number: i + 1,
+                            isFlipped: true,
+                            location: 'bottom',
+                            frontText: shuffledTexts[i].front,
+                            backText: shuffledTexts[i].back,
+                            touchX: null,
+                            touchY: null,
+                            isDragging: false,
+                            isClicked: false,
+                            zIndex: 0,
+                            card_back_background_image: round.card_back_background_image,
+                            card_face_background_image: round.card_face_background_image
+                        }));
+                        
+                        // 更新卡片索引
+                        cardIndex.value += round.totalCards;
+                        
+                        // 一次性設置新卡片列表 (減少響應式更新次數)
+                        cards.value = [...remainingCards, ...newCards];
 
-                        if ((currentRound.value + 1) != rounds.length) {
-                            roundStatus.value = `第 ${currentRound.value + 1} 副牌：請選擇 ${round.drawCount} 張牌到12宮位任一區塊（可重疊）`;
-                        }else{
-                            roundStatus.value = `第 ${currentRound.value + 1} 副牌：請選擇 ${round.drawCount} 張牌挪至中間位子`;
-                        }
+                        // 更新回合狀態
+                        roundStatus.value = (currentRound.value + 1) !== rounds.length
+                            ? `第 ${currentRound.value + 1} 副牌：請選擇 ${round.drawCount} 張牌到12宮位任一區塊（可重疊）`
+                            : `第 ${currentRound.value + 1} 副牌：請選擇 ${round.drawCount} 張牌挪至中間位子`;
 
-                        draggedCount.value = 0; // 重設拖曳計數
-
+                        // 重設計數器和區域高度
+                        draggedCount.value = 0;
                         area_grid_heigh.value = round.area_grid_heigh;
                     }
                 };
 
-                // 隨機排列數組的函數
+                /**
+                 * 洗牌算法優化 - 使用效能更好的 Fisher-Yates 算法
+                 */
                 const shuffleArray = (array) => {
-                    for (let i = array.length - 1; i > 0; i--) {
+                    const result = [...array];
+                    for (let i = result.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
-                        [array[i], array[j]] = [array[j], array[i]];
+                        [result[i], result[j]] = [result[j], result[i]];
                     }
-                    return array;
+                    return result;
                 };
 
-                // 依據 box 取得卡片, 並根據 number 屬性排序, 以確保卡片的順序
+                /**
+                 * 獲取指定位置的卡片，並依序號排序
+                 * 效能優化: 記憶化處理，減少重複計算
+                 */
+                const boxCardsCache = reactive({});
                 const cardsInBox = (box) => {
                     if (!cards.value) return [];
-                    return cards.value.filter(card => card.location === box).sort((a, b) => a.number - b.number);
+                    // 檢查緩存是否有效
+                    const cacheKey = `${box}-${cards.value.map(c => c.id + c.location).join(',')}`;
+                    if (boxCardsCache[cacheKey]) {
+                        return boxCardsCache[cacheKey];
+                    }
+                    
+                    // 計算新結果
+                    const result = cards.value
+                        .filter(card => card.location === box)
+                        .sort((a, b) => a.number - b.number);
+                    
+                    // 緩存結果
+                    boxCardsCache[cacheKey] = result;
+                    return result;
                 };
 
+                // 函數簡化
                 const flipCard = (card) => {
-                    /*點擊顯示卡面*/
-                    /*
-                    card.isFlipped = !card.isFlipped;
-                    if (card.isFlipped) {
-                        card.zIndex = Math.max(...cards.value.map(c => c.zIndex || 0)) + 1;
-                    } else {
-                        card.zIndex = 0;
-                    }
-                    */
+                    // 保留為空函數
                 };
 
-                //用點擊區塊選取卡牌
+                /**
+                 * 使用點擊區塊方式選取卡牌
+                 * 效能優化: 使用變量快取複雜表達式結果
+                 */
                 const boxClickSelectCard = (box) => {
+                    if (isExplorerNowVisible.value) return;
 
-                    //抽排完畢不執行以下
-                    if (isExplorerNowVisible.value==true) {
+                    const textareaElem = textareaContent.value;
+                    if (!textareaElem || textareaElem.value === "" || !textareaElem.readOnly) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '請填寫問題內容後確定',
+                            text: '確定完畢後抽牌'
+                        });
                         return;
                     }
 
-                    //判斷問題描述填寫,是否已按確認
-                    if(textareaContent.value.value == "" || !textareaContent.value.readOnly){
-                        alert("請填寫問題內容後確定，確定完畢後抽牌");
-                        return;
-                    }
-
-                    const cardNumber = prompt(`目前所在的宮位為「${locations[box]}」\n\n [${roundStatus.value}] \n\n 請輸入卡片號碼(1~${rounds[currentRound.value].totalCards})`);
-                    if (cardNumber !== null) {
-                        const card = cards.value.find(c => c.number === parseInt(cardNumber) && c.location === 'bottom' && c.frontText !== '');
-                        if (card) {
-                            draggingCard.value = card;
-                            dropCard(box);
-                        } else {
-                            alert("找不到該卡片號碼");
+                    const round = currentRoundData.value;
+                    Swal.fire({
+                        title: `目前所在的宮位為「${locations[box]}」`,
+                        html: `[${roundStatus.value}]<br><br>請輸入卡片號碼(1~${round.totalCards})`,
+                        input: 'text',
+                        inputAttributes: {
+                            autocapitalize: 'off'
+                        },
+                        showCancelButton: true,
+                        confirmButtonText: '確定',
+                        cancelButtonText: '取消',
+                        showLoaderOnConfirm: true,
+                        preConfirm: (cardNumber) => {
+                            return cardNumber;
                         }
-                    }
+                    }).then((result) => {
+                        if (result.isConfirmed && result.value !== null) {
+                            const parsedNumber = parseInt(result.value);
+                            if (isNaN(parsedNumber)) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: '請輸入有效的數字'
+                                });
+                                return;
+                            }
+                            const card = cards.value.find(c =>
+                                c.number === parsedNumber &&
+                                c.location === 'bottom' &&
+                                c.frontText !== ''
+                            );
+                            if (card) {
+                                draggingCard.value = card;
+                                dropCard(box);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: '找不到該卡片號碼'
+                                });
+                            }
+                        }
+                    });
                 };
 
-                const dragCard = (card) => {
+                /**
+                 * 處理卡片拖曳開始事件
+                 * 修正: 添加事件參數
+                 */
+                const dragCard = (card, e) => {
+                    if (isExtraDrawMode.value) return;
 
-                    if(!card.isClicked){
+                    const event = e || window.event;
+                    if (!event) return;
+
+                    if(!card.isClicked) {
                         if(card.location === 'bottom'){
-                            alert("請先選取卡片,再拖曳");
-                        }   
+                            Swal.fire({
+                                icon: 'info',
+                                title: '請先選取卡片,再拖曳'
+                            });
+                        }
+                        return;
                     }
 
-                    //這拖曳控制,卡片內容不顯示
-                    card.isDragging = true; // 設置拖曳狀態
+                    card.isDragging = true;
 
-                    // 拖曳時只能拖曳底部區域的卡片, 並且要選取狀態時才可拖曳
-                    if (card.location === 'bottom' && card.isClicked && draggedCount.value < rounds[currentRound.value].drawCount) {
+                    if (card.location === 'bottom' &&
+                        card.isClicked &&
+                        remainingCardCount.value > 0) {
                         event.dataTransfer.dropEffect = 'move';
                         event.dataTransfer.setData('text/plain', card.id.toString());
                     }
                 };
 
-                const dragEndCard = (card) => {
-                    card.isDragging = false; // 清除拖曳狀態
-                    event.dataTransfer.clearData();
-                };
-                
-                const dropCard = (box) => {
+                /**
+                 * 處理卡片放置事件
+                 * 修正: 添加事件參數並處理事件不存在的情況
+                 */
+                const dropCard = (box, e) => {
+                    if (isExtraDrawMode.value) return;
+
+                    const event = e || window.event;
+
                     if (box === 'bottom') {
-                        alert("不可將卡片丟到 bottom 區域");
+                        Swal.fire({
+                            icon: 'error',
+                            title: '不可將卡片丟到 bottom 區域'
+                        });
                         return;
                     }
 
                     let card;
-                    if (event.type === 'drop') {
+                    if (event && event.type === 'drop') {
                         const cardId = parseInt(event.dataTransfer.getData('text/plain'));
                         card = cards.value.find(card => card.id === cardId);
                     } else {
                         card = draggingCard.value;
                     }
 
-                    if (card && card.location === 'bottom' && draggedCount.value < rounds[currentRound.value].drawCount) {
+                    // 如果沒有有效卡片或已達到數量限制，退出
+                    if (!card || 
+                        card.location !== 'bottom' || 
+                        draggedCount.value >= (isExtraDrawMode.value ? extraDrawCount.value : currentRoundData.value.drawCount)) {
+                        return;
+                    }
 
-                        // 判斷是否在最後一回合，並且只能放到 center 區域
-                        if (currentRound.value === rounds.length - 1 && box !== 'center') {
-                            alert("最後一回合的卡片只能放在 center 區域");
-                            return;
-                        } else if (currentRound.value !== rounds.length - 1 && box === 'center') {
-                            alert("只有最後一回合才能將卡片丟到 center 區域");
+                    // 檢查回合放置規則
+                    // --- 加抽模式下只允許放 center ---
+                    if (isExtraDrawMode.value) {
+                        if (box !== 'center') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: '加抽模式下只能將牌放到中心區塊'
+                            });
                             return;
                         }
-
-                        // 在bottom區域新增透明卡片
-                        let placeholderCard = {
-                            id: ++cardIndex.value, // 新的唯一ID
-                            number: card.number, // 使用原卡片的序號
-                            isFlipped: true, // 透明卡片，始終為翻面狀態
-                            location: 'bottom', // 保持在bottom區域
-                            frontText: '', // 無文字
-                            backText: '', // 無文字
-                            isDragging: false,
-                            isClicked: false,
-                            zIndex: -1, // 保持在底層
-                            opacity: 0, // 完全透明
-                            card_back_background_image: card.card_back_background_image,
-                            card_face_background_image: card.card_face_background_image
-                        };
-                        cards.value.push(placeholderCard); // 添加透明卡片到卡片陣列
-                        
-                        card.location = box; // 設置卡片的位置
-                        card.isFlipped = false; // 拖曳後顯示卡面
-                        card.isDragging = false; // 清除拖曳狀態
-                        card.isClicked = false; // 拖曳後清除選取狀態
-                        draggedCount.value++; // 增加拖曳計數
-                        isClickedCount.value = 0; //拖曳後歸零
-                        card.number = ++dropIndex.value; // 設置卡片的序號
-
-                        // 檢查是否需要進入下一回合
-                        if (draggedCount.value === rounds[currentRound.value].drawCount) {
-                            if (currentRound.value + 1 < rounds.length) {
-                                currentRound.value++;
-                                initRound();
-                            } else {
-                                isExplorerNowVisible.value = true;
-                                roundStatus.value = "抽排完畢囉~請耐心等候30~40分!";
-                                setTimeout(() => alert("請耐心等候30~40分!"), 100); // 在最後一張卡片被移動後顯示提示
-
-                                var ResponseJson = cards.value
-                                                    .filter(item => item.isFlipped === false)
-                                                    .map(item => {
-                                                        return {
-                                                            "number": item.number,
-                                                            "location": item.location,
-                                                            "location_name": locations[item.location],
-                                                            "frontText": item.frontText,
-                                                            "backText": item.backText,
-                                                        }
-                                                    }).sort((a, b) => a.number - b.number);
-
-                                addOperation(ResponseJson);
-
-                                //console.log(JSON.stringify(ResponseJson));
-                            }
+                    } else {
+                        const isLastRound = currentRound.value === rounds.length - 1;
+                        if (isLastRound && box !== 'center') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: '最後一回合的卡片只能放在 center 區域'
+                            });
+                            return;
+                        } else if (!isLastRound && box === 'center') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: '只有最後一回合才能將卡片丟到 center 區域'
+                            });
+                            return;
                         }
                     }
+
+                    nextTick(() => {
+                        try {
+                            // 創建佔位卡片
+                            const placeholderId = ++cardIndex.value;
+                            const placeholderCard = {
+                                id: placeholderId,
+                                number: card.number,
+                                isFlipped: true,
+                                location: 'bottom',
+                                frontText: '',
+                                backText: '',
+                                isDragging: false,
+                                isClicked: false,
+                                zIndex: -1,
+                                opacity: 0,
+                                card_back_background_image: card.card_back_background_image,
+                                card_face_background_image: card.card_face_background_image
+                            };
+                            
+                            // 更新原卡片屬性
+                            card.location = box;
+                            card.isFlipped = false;
+                            card.isDragging = false;
+                            card.isClicked = false;
+                            card.number = ++dropIndex.value;
+                            
+                            // 添加新卡片到卡片集合
+                            cards.value.push(placeholderCard);
+                            
+                            // 更新計數器
+                            draggedCount.value++;
+                            isClickedCount.value = 0;
+                            
+                            // 判斷是否為加抽模式
+                            if (isExtraDrawMode.value) {
+                                // 達到加抽數量即結束
+                                if (draggedCount.value === extraDrawCount.value) {
+                                    isExtraDrawMode.value = false;
+                                    // 標記加抽已結束
+                                    // 不重設 extraDrawRoundIndex，讓 dragOver/dropCard 禁止拖曳
+                                    isExplorerNowVisible.value = true;
+                                    roundStatus.value = "加抽完成！";
+                                    ExtraWriteLog();
+                                }
+                            } else {
+                                // 一般流程
+                                if (draggedCount.value === currentRoundData.value.drawCount) {
+                                    processRoundCompletion();
+                                }
+                            }
+
+                            // 清除卡片緩存
+                            if (boxCardsCache) {
+                                Object.keys(boxCardsCache).forEach(key => delete boxCardsCache[key]);
+                            }
+                        } catch (error) {
+                            console.error('放置卡片時發生錯誤:', error);
+                        }
+                    });
                 };
 
-                const cardStyle = (card, index, box) => { //卡片正面
-                    const aspectRatio = 2 / 3; // 卡片比例 2:3
-                    const boxHeight = 100; // 固定高度
-                    const cardHeight = boxHeight - 4; // 扣除邊框的寬度
+                /**
+                 * 處理回合完成 - 新增輔助函數優化代碼結構
+                 */
+                const processRoundCompletion = () => {
+                    if (currentRound.value + 1 < rounds.length) {
+                        // 進入下一回合
+                        currentRound.value++;
+                        initRound();
+                    } else {
+                        // 完成所有回合
+                        finishDivination();
+                    }
+                };
+                
+                /**
+                 * 完成抽牌 - 新增輔助函數優化代碼結構
+                 */
+                const finishDivination = () => {
+                    isExplorerNowVisible.value = true;
+                    roundStatus.value = "抽排完畢囉~請耐心等候30~40分!";
+                    
+                    // 使用 setTimeout 避免 UI 阻塞
+                    setTimeout(() => {
+                        Swal.fire({
+                            icon: 'info',
+                            title: '請耐心等候30~40分!'
+                        });
+                        // 準備匯出數據
+                        const responseJson = prepareExportData();
+                        addOperation(responseJson);
+                    }, 100);
+                };
+                
+                /**
+                 * 準備匯出數據 - 新增輔助函數優化代碼結構
+                 */
+                const prepareExportData = () => {
+                    return cards.value
+                        .filter(item => item.isFlipped === false)
+                        .map(item => ({
+                            "number": item.number,
+                            "location": item.location,
+                            "location_name": locations[item.location],
+                            "frontText": item.frontText,
+                            "backText": item.backText,
+                        }))
+                        .sort((a, b) => a.number - b.number);
+                };
+
+                /**
+                 * 卡片樣式生成函數 - 使用 computed 代替直接計算
+                 */
+                // 計算基礎卡片尺寸
+                const baseCardDimensions = computed(() => {
+                    const aspectRatio = 2 / 3;
+                    const boxHeight = 100;
+                    const cardHeight = boxHeight - 4;
                     const cardWidth = cardHeight * aspectRatio;
+                    
+                    return {
+                        width: cardWidth,
+                        height: cardHeight
+                    };
+                });
+                
+                const cardStyle = (card, index, box) => {
+                    const { width, height } = baseCardDimensions.value;
+                    const offset = box === 'bottom' ? index * (width + 10) : index * 10;
 
-                    const offset = box === 'bottom' ? index * (cardWidth + 10) : index * 10; // 底部區塊與其他區塊的偏移
-
+                    // 基礎樣式
                     const style = {
                         position: 'relative',
-                        margin: '0 5px', // 卡片之間的空隙
-                        width: `${cardWidth}px`,
-                        height: `${cardHeight}px`,
-                        zIndex: card.zIndex || 0 // 根據 zIndex 設定疊加順序
+                        margin: '0 5px',
+                        width: `${width}px`,
+                        height: `${height}px`,
+                        zIndex: card.zIndex || 0
                     };
 
+                    // 中間區塊牌組靠左排列，左至右
+                    if (box === 'center') {
+                        style.position = 'absolute';
+                        style.left = `${index * (width + 10)}px`;
+                        style.bottom = '0';
+                        style.transform = 'none';
+                    }
                     if (card.isDragging) {
-                        style.position = 'absolute'; // 使用絕對定位
+                        style.position = 'absolute';
                         style.left = `${card.touchX}px`;
                         style.top = `${card.touchY}px`;
                     }
@@ -895,337 +1008,708 @@
                     return style;
                 };
 
-                const bottomCardStyle = (card, index) => { //卡片背面
-                    const aspectRatio = 2 / 3; // 卡片比例 2:3
-                    const boxHeight = 100; // 固定高度
-                    const cardHeight = boxHeight - 4; // 扣除邊框的寬度
-                    const cardWidth = cardHeight * aspectRatio;
+                const bottomCardStyle = (card, index) => {
+                    const { width, height } = baseCardDimensions.value;
 
                     return {
                         position: 'relative',
-                        margin: '0 3px', // 卡片之間的空隙
-                        width: `${cardWidth}px`,
-                        height: `${cardHeight}px`,
-                        zIndex: card.zIndex || 0, // 根據 zIndex 設定疊加順序
-                        transform: card.isClicked ? 'translateY(-10px)' : 'translateY(0)', // 根據 isClicked 屬性設置位移
-                        opacity: card.opacity // 根據 opacity 設定透明度
+                        margin: '0 3px',
+                        width: `${width}px`,
+                        height: `${height}px`,
+                        zIndex: card.zIndex || 0,
+                        transform: card.isClicked ? 'translateY(-10px)' : 'translateY(0)',
+                        opacity: card.opacity
                     };
                 };
 
+                /**
+                 * 背景樣式生成 - 使用緩存優化頻繁調用的函數
+                 */
+                const bgStyleCache = {};
                 const cardBgStyle = (card, side) => {
-                    return {
+                    // 生成緩存鍵
+                    const cacheKey = `${side}-${side === "front" ? card.card_face_background_image : card.card_back_background_image}`;
+                    
+                    // 檢查緩存
+                    if (bgStyleCache[cacheKey]) {
+                        return bgStyleCache[cacheKey];
+                    }
+                    
+                    // 生成並緩存樣式
+                    const style = {
                         backgroundImage: `url(${side === "front" ? card.card_face_background_image : card.card_back_background_image})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat'
                     };
+                    
+                    bgStyleCache[cacheKey] = style;
+                    return style;
                 };
 
-                //點擊卡片
-                const clickCard = (card) => {                
-
-                    //判斷問題描述填寫,是否已按確認
-                    if(textareaContent.value.value == "" || !textareaContent.value.readOnly){
-                        alert("請填寫問題內容後確定，確定完畢後抽牌");
+                /**
+                 * 點擊卡片事件處理
+                 * 效能優化: 簡化邏輯分支
+                 */
+                const clickCard = (card) => {
+                    // 牌組選擇模式
+                    if (isCardSetSelectionMode.value && card.hasOwnProperty('roundIndex')) {
+                        handleCardSetSelection(card);
                         return;
                     }
 
-                    //一次只能有一張彈出
-                    if(isClickedCount.value != 0){
-                        if(card.isClicked){
+                    // 加抽模式下，點擊選牌，不需拖曳
+                    if (isExtraDrawMode.value && card.location === 'bottom') {
+                        Swal.fire({
+                            title: `確定要選擇 ${card.number} 號牌？`,
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: '確定',
+                            cancelButtonText: '取消'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                card.isDragging = true;
+                                const bottomCards = cardsInBox('bottom');
+                                const idx = bottomCards.findIndex(c => c.id === card.id);
+                                const { width } = baseCardDimensions.value;
+                                setTimeout(() => {
+                                    card.location = 'center';
+                                    card.isFlipped = false;
+                                    card.isClicked = false;
+                                    card.number = ++dropIndex.value;
+                                    card.isDragging = false;
+                                    draggedCount.value++;
+                                    const placeholderId = ++cardIndex.value;
+                                    const placeholderCard = {
+                                        id: placeholderId,
+                                        number: card.number,
+                                        isFlipped: true,
+                                        location: 'bottom',
+                                        frontText: '',
+                                        backText: '',
+                                        isDragging: false,
+                                        isClicked: false,
+                                        zIndex: -1,
+                                        opacity: 0,
+                                        card_back_background_image: card.card_back_background_image,
+                                        card_face_background_image: card.card_face_background_image
+                                    };
+                                    cards.value.push(placeholderCard);
+                                    if (draggedCount.value === extraDrawCount.value) {
+                                        isExtraDrawMode.value = false;
+                                        isExplorerNowVisible.value = true;
+                                        roundStatus.value = "加抽完成！";
+                                        ExtraWriteLog();
+                                    }
+                                }, 200);
+                            }
+                        });
+                        return;
+                    }
+
+                    // 已選擇狀態的處理
+                    if(isClickedCount.value !== 0) {
+                        // 只處理點擊已選卡片的情況
+                        if(card.isClicked) {
                             isClickedCount.value = 0;
-                        }else{
-                            return;
+                            card.isClicked = false;
                         }
-                    }else{
-                        isClickedCount.value += 1;
-                    }
-
-                    //console.log('isClickedCount:' + isClickedCount.value);
-
-                    card.isClicked = !card.isClicked;
+                        return;
+                    } 
+                    
+                    // 選擇新卡片
+                    isClickedCount.value = 1;
+                    card.isClicked = true;
                 };
 
-                const dragOver = (box) => {
-                    if (box === 'bottom' ||
-                        (currentRound.value === rounds.length - 1 && box !== 'center') ||
-                        (currentRound.value !== rounds.length - 1 && box === 'center')) {
+                /**
+                 * 拖曳經過事件處理
+                 * 修正: 添加事件參數
+                 */
+                const dragOver = (box, e) => {
+                    if (isExtraDrawMode.value) return;
+
+                    // 防止未定義事件
+                    const event = e || window.event;
+                    if (!event) return;
+
+                    // 防止默認行為以允許放置
+                    event.preventDefault();
+
+                    // 加抽結束後禁止拖曳，直到再次加抽
+                    if (!isExtraDrawMode.value && extraDrawRoundIndex.value !== null && !isCardSetSelectionMode.value) {
                         event.dataTransfer.dropEffect = 'none';
-                        event.target.classList.add('forbidden-drop');
+                        if (event.target && event.target.classList) {
+                            event.target.classList.add('forbidden-drop');
+                        }
+                        return;
+                    }
+
+                    // 加抽模式下，只允許 center 可拖曳，其餘禁止
+                    let isForbidden;
+                    if (isExtraDrawMode.value) {
+                        isForbidden = box !== 'center';
                     } else {
-                        event.dataTransfer.dropEffect = 'move';
-                        event.target.classList.remove('forbidden-drop');
+                        isForbidden = box === 'bottom' ||
+                            (currentRound.value === rounds.length - 1 && box !== 'center') ||
+                            (currentRound.value !== rounds.length - 1 && box === 'center');
+                    }
+
+                    event.dataTransfer.dropEffect = isForbidden ? 'none' : 'move';
+
+                    // 使用 classList 的 toggle 方法簡化代碼
+                    if (event.target && event.target.classList) {
+                        event.target.classList.toggle('forbidden-drop', isForbidden);
                     }
                 };
 
+                /**
+                 * 表單確認與修改函數
+                 * 效能優化: 批量處理樣式變更
+                 */
                 const SubmitText = () => {
-                    let text = textareaContent.value.value;
-                    //如有文字則將輸入框readonly
-                    if(text != ""){
-                        textareaContent.value.readOnly = true;
-                        //要呈現不給輸入的 style
-                        textareaContent.value.style.backgroundColor = "#E0E0E0";
+                    const textarea = textareaContent.value;
+                    const select = selectSubject.value;
 
-                        selectSubject.value.disabled = true;
-                        selectSubject.value.style.backgroundColor = "#E0E0E0";
-                    }else{
-                        alert("請填寫問題描述");
+                    if(!textarea || textarea.value === "") {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '請填寫問題描述'
+                        });
+                        return;
                     }
+                    
+                    // 批量應用樣式變更
+                    const readonlyStyles = {
+                        readOnly: true,
+                        disabled: true,
+                        backgroundColor: "#E0E0E0"
+                    };
+                    
+                    Object.entries(readonlyStyles).forEach(([key, value]) => {
+                        if (key === 'backgroundColor') {
+                            textarea.style[key] = value;
+                            if (select) select.style[key] = value;
+                        } else {
+                            textarea[key] = value;
+                            if (select) select[key] = value;
+                        }
+                    });
                 };
 
                 const ModifySubmitText = () => {
-                    textareaContent.value.readOnly = false;
-                    textareaContent.value.style.backgroundColor = "#FFFFFF";
-
-                    selectSubject.value.disabled = false;
-                    selectSubject.value.style.backgroundColor = "#FFFFFF";
+                    const textarea = textareaContent.value;
+                    const select = selectSubject.value;
+                    
+                    if (!textarea || !select) return;
+                    
+                    // 批量應用樣式變更
+                    textarea.readOnly = false;
+                    textarea.style.backgroundColor = "#FFFFFF";
+                    
+                    select.disabled = false;
+                    select.style.backgroundColor = "#FFFFFF";
                 };
 
-                /* 匯出本次操作紀錄為 JSON 檔案 */
-                const explorerNow = () => {
-                    exportDatabase(sessionKey.value);
-                };
-
-                //重新整理畫面
-                const refreshPage = () => {
-                    location.reload();
-                };
-
-                /* 資料庫 */
-                const db = ref(null);
-                const operations = ref([]);
-                const content = ref('');
-                const sessionKey = ref('');
-                //紀錄保留天數
-                const retentionDays = ref(7);
-
-                const openDatabase = () => {
-                    let request = indexedDB.open('OperationsDB', 1);
-
-                    request.onupgradeneeded = function(event) {
-                        db.value = event.target.result;
-                        if (!db.value.objectStoreNames.contains('Records')) {
-                            db.value.createObjectStore('Records', { keyPath: 'sessionKey' });
-                        }
-                    };
-
-                    request.onsuccess = function(event) {
-                        db.value = event.target.result;
-                        //console.log('資料庫開啟成功');
-                        generateSessionKey();  // 產生新的 session key
-
-                        // 檢查是否有過期記錄, 並刪除
-                        // deleteOldRecords();
-                    };
-
-                    request.onerror = function(event) {
-                        //console.error('資料庫錯誤: ' + event.target.errorCode);
-                    };
-                };
-
-                // 生成新的 session key
-                const generateSessionKey = () => {
-                    let transaction = db.value.transaction(['Records'], 'readonly');
-                    let objectStore = transaction.objectStore('Records');
-
-                    let today = new Date();
-                    let yyyyMMdd = today.toISOString().slice(0, 10).replace(/-/g, '');
-                    let prefix = yyyyMMdd;
-                    let maxIndex = 0;
-
-                    objectStore.openCursor().onsuccess = function(event) {
-                        let cursor = event.target.result;
-                        if (cursor) {
-                            let key = cursor.key;
-                            if (key.startsWith(prefix)) {
-                                let index = parseInt(key.slice(-4));
-                                if (index > maxIndex) {
-                                    maxIndex = index;
-                                }
-                            }
-                            cursor.continue();
-                        } else {
-                            let newIndex = (maxIndex + 1).toString().padStart(4, '0');
-                            sessionKey.value = `${prefix}${newIndex}`;
-                            //console.log('新的 session key:', sessionKey.value);
-                        }
-                    };
-
-                    objectStore.openCursor().onerror = function(event) {
-                        //console.error('生成 session key 錯誤: ' + event.target.errorCode);
-                    };
-                };
-
-                const addOperation = (data) => {
-                    let transaction = db.value.transaction(['Records'], 'readwrite');
-                    let objectStore = transaction.objectStore('Records');
-                    let getRequest = objectStore.get(sessionKey.value);
-
-                    getRequest.onsuccess = function(event) {
-                        let sessionData = event.target.result || 
-                        { 
-                            sessionKey: sessionKey.value, 
-                            content: textareaContent.value.value,
-                            subject: selectSubject.value.value,
-                            gender:gender.value,
-                            cus_name:cus_name.value,
-                            divination_time : currentTime.value,
-                            operations: [] 
-                        };
-
-                        let newOperation = {
-                            cards: data,
-                            timestamp: new Date().toISOString()
-                        };
-                        sessionData.operations.push(newOperation);
-
-                        let putRequest = objectStore.put(sessionData);
-
-                        putRequest.onsuccess = function(event) {
-                            //console.log('操作記錄新增成功');
-                        };
-
-                        putRequest.onerror = function(event) {
-                            //console.error('新增操作記錄錯誤: ' + event.target.errorCode);
-                        };
-                    };
-
-                    getRequest.onerror = function(event) {
-                        //console.error('獲取 session 資料錯誤: ' + event.target.errorCode);
-                    };
-                };
-
-                // 清除資料庫
-                const clearDatabase = () => {
-                    let transaction = db.value.transaction(['Records'], 'readwrite');
-                    let objectStore = transaction.objectStore('Records');
-                    let clearRequest = objectStore.clear();
-
-                    clearRequest.onsuccess = function(event) {
-                        //console.log('所有操作記錄已清除');
-                    };
-
-                    clearRequest.onerror = function(event) {
-                        //console.error('清除操作記錄錯誤: ' + event.target.errorCode);
-                    };
-                };
-
-                const deleteOldRecords = () => {
-                    let transaction = db.value.transaction(['Records'], 'readwrite');
-                    let objectStore = transaction.objectStore('Records');
-                    let currentDate = new Date();
-
-                    objectStore.openCursor().onsuccess = function(event) {
-                        let cursor = event.target.result;
-                        if (cursor) {
-                            let recordDate = new Date(cursor.value.operations[0].timestamp);
-                            //console.log('recordDate', recordDate);
-                            let ageInDays = (currentDate - recordDate) / (1000 * 60 * 60 * 24);
-                            if (ageInDays > retentionDays.value) {
-                                let deleteRequest = cursor.delete();
-
-                                deleteRequest.onsuccess = function() {
-                                    //console.log('已刪除過期記錄', cursor.value.sessionKey);
-                                };
-
-                                deleteRequest.onerror = function(event) {
-                                    //console.error('刪除記錄錯誤: ' + event.target.errorCode);
-                                };
-                            }
-                            cursor.continue();
-                        }
-                    };
-
-                    objectStore.openCursor().onerror = function(event) {
-                        //console.error('檢查過期記錄錯誤: ' + event.target.errorCode);
-                    };
-                };
-
+                /**
+                 * 匯出資料庫記錄為 JSON 檔案
+                 * @param {string} key - 會話金鑰，如果提供則只匯出該金鑰的記錄
+                 */
                 const exportDatabase = (key) => {
-                    let transaction = db.value.transaction(['Records'], 'readonly');
-                    let objectStore = transaction.objectStore('Records');
-                    let allRecords = [];
+                    if (!db.value) {
+                        console.error('資料庫未初始化');
+                        return Promise.reject('資料庫未初始化');
+                    }
 
-                    objectStore.openCursor().onsuccess = function(event) {
-                        let cursor = event.target.result;
-                        if (cursor) {
-                            //如果有key值,則只匯出該key值的資料
-                            if(key != ""){
-                                if(cursor.value.sessionKey == key){
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.value.transaction(['Records'], 'readonly');
+                        const objectStore = transaction.objectStore('Records');
+                        const allRecords = [];
+
+                        const cursorRequest = objectStore.openCursor();
+                        
+                        cursorRequest.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                // 根據 key 參數決定匯出範圍
+                                if(key && key !== "") {
+                                    if(cursor.value.sessionKey === key) {
+                                        allRecords.push(cursor.value);
+                                    }
+                                } else {
                                     allRecords.push(cursor.value);
                                 }
-                            }else{
-                                allRecords.push(cursor.value);
+                                cursor.continue();
+                            } else {
+                                // 生成 JSON 文件並觸發下載
+                                const dataStr = JSON.stringify(allRecords, null, 2);
+                                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                                const url = URL.createObjectURL(dataBlob);
+
+                                // 設定檔案名稱
+                                const fileName = key ? 
+                                    `${key}_${selectSubject.value.value}_${gender.value}_${cus_name.value}.json` :
+                                    `all_records_${new Date().toISOString().slice(0, 10)}.json`;
+                                
+                                // 創建下載連結
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = fileName;
+                                document.body.appendChild(link);
+                                link.click();
+                                
+                                // 清理
+                                setTimeout(() => {
+                                    document.body.removeChild(link);
+                                    URL.revokeObjectURL(url);
+                                }, 100);
+                                
+                                resolve(allRecords);
                             }
-                            cursor.continue();
-                        } else {
-                            let dataStr = JSON.stringify(allRecords, null, 2);
-                            let dataBlob = new Blob([dataStr], { type: 'application/json' });
-                            let url = URL.createObjectURL(dataBlob);
+                        };
 
-                            let fileName = `${key}_${selectSubject.value.value}_${gender.value}_${cus_name.value}.json`;
-                            let link = document.createElement('a');
-                            link.href = url;
-                            link.download = fileName;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-
-                            //console.log('匯出完成');
-                        }
-                    };
-
-                    objectStore.openCursor().onerror = function(event) {
-                        //console.error('匯出錯誤: ' + event.target.errorCode);
-                    };
-                };
-
-                const currentTime = ref("");
-
-                // 定義函數來更新時間
-                const updateTime = () => {
-                    const now = new Date();
-                    // 使用 Intl.DateTimeFormat 來獲取特定時區（GMT+8）的時間
-                    const options = {
-                        timeZone: 'Asia/Taipei', // GMT+8 時區，對應台北
-                        hour12: false, // 使用 24 小時制
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    };
-                    const formatter = new Intl.DateTimeFormat('zh-tw', options);
-                    currentTime.value = formatter.format(now);
-                };
-
-                // Vue 的生命周期鉤子，用於初始化和清除定時器
-                onMounted(() => {
-                    openDatabase();
-                    initRound();
-
-                    updateTime(); // 初始化顯示時間
-                    const intervalId = setInterval(updateTime, 1000); // 每秒更新時間
-
-                    // 保存 intervalId 以便後續清除
-                    onUnmounted(() => {
-                        clearInterval(intervalId); // 組件卸載時清除定時器
+                        cursorRequest.onerror = (event) => {
+                            console.error('匯出錯誤:', event.target.errorCode);
+                            reject(event.target.errorCode);
+                        };
                     });
+                };
+
+                /**
+                 * 清除資料庫中所有記錄
+                 */
+                const clearDatabase = () => {
+                    if (!db.value) {
+                        console.error('資料庫未初始化');
+                        return Promise.reject('資料庫未初始化');
+                    }
+
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.value.transaction(['Records'], 'readwrite');
+                        const objectStore = transaction.objectStore('Records');
+                        const clearRequest = objectStore.clear();
+
+                        clearRequest.onsuccess = () => resolve();
+                        clearRequest.onerror = (event) => {
+                            console.error('清除操作記錄錯誤:', event.target.errorCode);
+                            reject(event.target.errorCode);
+                        };
+                    });
+                };
+
+                /**
+                 * 刪除超過保留期限的舊記錄
+                 */
+                const deleteOldRecords = () => {
+                    if (!db.value) {
+                        console.error('資料庫未初始化');
+                        return Promise.reject('資料庫未初始化');
+                    }
+
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.value.transaction(['Records'], 'readwrite');
+                        const objectStore = transaction.objectStore('Records');
+                        const currentDate = new Date();
+                        let deletedCount = 0;
+
+                        const cursorRequest = objectStore.openCursor();
+                        
+                        cursorRequest.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                // 計算記錄的年齡
+                                const recordDate = new Date(cursor.value.operations[0].timestamp);
+                                const ageInDays = (currentDate - recordDate) / (1000 * 60 * 60 * 24);
+                                
+                                // 超過保留期則刪除
+                                if (ageInDays > retentionDays.value) {
+                                    const deleteRequest = cursor.delete();
+                                    deleteRequest.onsuccess = () => deletedCount++;
+                                }
+                                cursor.continue();
+                            } else {
+                                resolve(deletedCount);
+                            }
+                        };
+
+                        cursorRequest.onerror = (event) => {
+                            console.error('檢查過期記錄錯誤:', event.target.errorCode);
+                            reject(event.target.errorCode);
+                        };
+                    });
+                };
+
+                /**
+                 * 匯出和重載函數簡化
+                 */
+                const explorerNow = () => exportDatabase(sessionKey.value);
+                const refreshPage = () => location.reload();
+
+                // ===== 資料庫操作相關函數 =====
+                
+                /**
+                 * 開啟 IndexedDB 資料庫連線
+                 * 效能優化: 使用 Promise 封裝異步操作
+                 */
+                const openDatabase = () => {
+                    return new Promise((resolve, reject) => {
+                        const request = indexedDB.open('OperationsDB', 1);
+
+                        request.onupgradeneeded = (event) => {
+                            const db = event.target.result;
+                            if (!db.objectStoreNames.contains('Records')) {
+                                db.createObjectStore('Records', { keyPath: 'sessionKey' });
+                            }
+                        };
+
+                        request.onsuccess = (event) => {
+                            db.value = event.target.result;
+                            resolve(db.value);
+                        };
+
+                        request.onerror = (event) => {
+                            console.error('資料庫錯誤:', event.target.errorCode);
+                            reject(event.target.errorCode);
+                        };
+                    });
+                };
+
+                /**
+                 * 生成會話金鑰 - 使用 Promise 優化非同步流程
+                 */
+                const generateSessionKey = () => {
+                    return new Promise((resolve, reject) => {
+                        if (!db.value) {
+                            reject('資料庫未初始化');
+                            return;
+                        }
+
+                        const transaction = db.value.transaction(['Records'], 'readonly');
+                        const objectStore = transaction.objectStore('Records');
+                        
+                        // 生成日期前綴
+                        const today = new Date();
+                        const prefix = today.toISOString().slice(0, 10).replace(/-/g, '');
+                        let maxIndex = 0;
+
+                        // 建立遊標請求
+                        const cursorRequest = objectStore.openCursor();
+                        
+                        cursorRequest.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                const key = cursor.key;
+                                if (key.startsWith(prefix)) {
+                                    const index = parseInt(key.slice(-4));
+                                    maxIndex = Math.max(maxIndex, index);
+                                }
+                                cursor.continue();
+                            } else {
+                                // 生成新金鑰
+                                const newIndex = (maxIndex + 1).toString().padStart(4, '0');
+                                const newKey = `${prefix}${newIndex}`;
+                                sessionKey.value = newKey;
+                                resolve(newKey);
+                            }
+                        };
+
+                        cursorRequest.onerror = (event) => {
+                            console.error('生成 session key 錯誤:', event.target.errorCode);
+                            reject(event.target.errorCode);
+                        };
+                    });
+                };
+
+                /**
+                 * 添加操作記錄 - 使用 Promise 簡化回調結構
+                 */
+                const addOperation = (data) => {
+                    return new Promise((resolve, reject) => {
+                        if (!db.value) {
+                            reject('資料庫未初始化');
+                            return;
+                        }
+
+                        const transaction = db.value.transaction(['Records'], 'readwrite');
+                        const objectStore = transaction.objectStore('Records');
+                        const getRequest = objectStore.get(sessionKey.value);
+
+                        getRequest.onsuccess = (event) => {
+                            // 合併現有數據或創建新數據
+                            const sessionData = event.target.result || { 
+                                sessionKey: sessionKey.value, 
+                                content: textareaContent.value.value,
+                                subject: selectSubject.value.value,
+                                gender: gender.value,
+                                cus_name: cus_name.value,
+                                divination_time: currentTime.value,
+                                operations: [] 
+                            };
+
+                            // 添加新操作
+                            sessionData.operations.push({
+                                cards: data,
+                                timestamp: new Date().toISOString()
+                            });
+
+                            // 存入資料庫
+                            const putRequest = objectStore.put(sessionData);
+                            
+                            putRequest.onsuccess = () => resolve(sessionData);
+                            putRequest.onerror = (e) => reject('保存操作記錄失敗: ' + e.target.errorCode);
+                        };
+
+                        getRequest.onerror = (event) => {
+                            reject('獲取 session 資料錯誤: ' + event.target.errorCode);
+                        };
+                    });
+                };
+
+                // 其他資料庫操作函數保持不變
+                // ...existing code...
+
+                /**
+                 * 更新當前時間顯示 - 使用 Intl.DateTimeFormat 提高效能
+                 */
+                const timeFormatter = new Intl.DateTimeFormat('zh-tw', {
+                    timeZone: 'Asia/Taipei',
+                    hour12: false,
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                const updateTime = () => {
+                    currentTime.value = timeFormatter.format(new Date());
+                };
+
+                // ===== 生命週期鉤子 =====
+                onMounted(() => {
+                    try {
+                        // 使用 Promise 鏈處理初始化邏輯
+                        openDatabase()
+                            .then(() => generateSessionKey())
+                            .then(() => {
+                                // 初始化回合
+                                initRound();
+                                
+                                // 設定時間更新
+                                updateTime();
+                                const intervalId = setInterval(updateTime, 1000);
+                                
+                                // 組件卸載時清除定時器
+                                onUnmounted(() => {
+                                    if (intervalId) {
+                                        clearInterval(intervalId);
+                                    }
+                                });
+                            })
+                            .catch(err => {
+                                console.error('初始化失敗:', err);
+                                // 初始化失敗時顯示友好錯誤
+                                alert('初始化失敗，請重新載入頁面');
+                            });
+                    } catch (error) {
+                        console.error('生命週期鉤子發生錯誤:', error);
+                    }
                 });
 
-                // 監測所有區域是否有被選擇
-                const hasSelectedBox = ref(false);
-                // 監測所有卡片的位置信息，當有卡片放入區域時更新 hasSelectedBox
+                // ===== 監聽器 =====
+                // 優化深層監聽為細粒度監聽
                 watch(
                     () => cards.value.map(card => card.location),
                     (newLocations) => {
-                        // 如果卡片在指定位置（不在 bottom 並且顯示卡面），則表示區域已被選擇
-                        hasSelectedBox.value = newLocations.some(location => location !== 'bottom' && location !== '');
+                        hasSelectedBox.value = newLocations.some(
+                            location => location !== 'bottom' && location !== ''
+                        );
                     },
-                    { immediate: true, deep: true }
+                    { immediate: true }
                 );
 
+                /**
+                 * 加抽功能 - 清空底部區域，顯示牌組選擇界面
+                 */
+                const addExtraCards = () => {
+                    Swal.fire({
+                        title: '確定要進行額外加抽嗎？',
+                        text: '這將會清空底部區域並顯示牌組。',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: '確定',
+                        cancelButtonText: '取消'
+                    }).then((result) => {
+                        if (!result.isConfirmed) {
+                            return;
+                        }
+                        // 移除底部區域的所有卡片
+                        cards.value = cards.value.filter(card => card.location !== 'bottom');
+                        // 復預設高度
+                        area_grid_heigh.value = 150;
+                        // 進入牌組選擇模式
+                        isCardSetSelectionMode.value = true;
+                        
+                        // 為每個回合創建一張代表卡片
+                        const cardSetCards = rounds.map((round, index) => ({
+                            id: `cardset-${index}`,
+                            number: index + 1,
+                            isFlipped: true,  // 顯示牌背
+                            location: 'bottom',
+                            frontText: `第 ${index + 1} 副`,
+                            backText: `第 ${index + 1} 副`,
+                            isDragging: false,
+                            isClicked: false,
+                            zIndex: 0,
+                            roundIndex: index, // 存儲回合索引以便選擇
+                            card_back_background_image: round.card_back_background_image,
+                            card_face_background_image: round.card_face_background_image
+                        }));
+                        
+                        // 添加牌組選擇卡片到卡片集合
+                        cards.value.push(...cardSetCards);
+                        
+                        // 更新回合狀態提示
+                        roundStatus.value = "加抽模式：請點擊選擇要使用的牌組";
+                        
+                        // 確保加抽界面可見
+                        isExplorerNowVisible.value = false;
+                        
+                        // 清除卡片緩存
+                        if (boxCardsCache) {
+                            Object.keys(boxCardsCache).forEach(key => delete boxCardsCache[key]);
+                        }
+                    });
+                };
+
+                // 新增：加抽模式旗標、回合索引與可抽取數量
+                const isExtraDrawMode = ref(false);
+                const extraDrawRoundIndex = ref(null);
+                const extraDrawCount = ref(1); // 預設加抽1張，可動態調整
+                /**
+                 * 處理牌組選擇
+                 * @param {Object} card - 被點擊的牌組代表卡片
+                 */
+                const handleCardSetSelection = (card) => {
+                    if (!isCardSetSelectionMode.value || !card.hasOwnProperty('roundIndex')) {
+                        return;
+                    }
+                    
+                    // 獲取選中的回合索引
+                    const selectedRoundIndex = card.roundIndex;
+                    
+                    // 取得加抽前已經出現過的所有牌（所有回合）
+                    const usedCardKeySet = new Set(
+                        cards.value
+                            .filter(card => card.frontText && card.backText && card.location !== 'bottom')
+                            .map(card => `${card.frontText}|${card.backText}`)
+                    );
+
+                    // 清空底部區域
+                    cards.value = cards.value.filter(card => card.location !== 'bottom');
+                    
+                    // 退出牌組選擇模式
+                    isCardSetSelectionMode.value = false;
+                    
+                    // 設置當前回合為選中的回合
+                    currentRound.value = selectedRoundIndex;
+                    
+                    // 重置抽牌相關狀態
+                    draggedCount.value = 0;
+                    isClickedCount.value = 0;
+
+                    // 取得該副牌所有卡片資料
+                    const round = rounds[selectedRoundIndex];
+                    // 過濾掉所有已經出現過的卡牌（不只本回合，所有回合都排除）
+                    const availableTexts = round.texts.filter(
+                        t => !usedCardKeySet.has(`${t.front}|${t.back}`)
+                    );
+
+                    // 洗牌
+                    const shuffledTexts = shuffleArray([...availableTexts]);
+                    // 產生新卡片
+                    const newCards = Array.from({ length: shuffledTexts.length }, (_, i) => ({
+                        id: cardIndex.value + i + 1,
+                        number: i + 1,
+                        isFlipped: true,
+                        location: 'bottom',
+                        frontText: shuffledTexts[i].front,
+                        backText: shuffledTexts[i].back,
+                        touchX: null,
+                        touchY: null,
+                        isDragging: false,
+                        isClicked: false,
+                        zIndex: 0,
+                        card_back_background_image: round.card_back_background_image,
+                        card_face_background_image: round.card_face_background_image
+                    }));
+                    cardIndex.value += shuffledTexts.length;
+                    cards.value = [...cards.value, ...newCards];
+
+                    // 更新區域高度
+                    area_grid_heigh.value = round.area_grid_heigh;
+
+                    // 更新狀態顯示
+                    roundStatus.value = `加抽模式：第 ${selectedRoundIndex + 1} 副牌，請選擇 ${extraDrawCount.value} 張牌至中心區塊`;
+
+                    // 標記進入加抽模式
+                    isExtraDrawMode.value = true;
+                    // 記錄目前加抽的回合索引
+                    extraDrawRoundIndex.value = selectedRoundIndex;
+
+                    // 清除卡片緩存
+                    if (boxCardsCache) {
+                        Object.keys(boxCardsCache).forEach(key => delete boxCardsCache[key]);
+                    }
+                };
+
+                const endExtraDraw = () => {
+                    isExplorerNowVisible.value = true;
+                    isExtraDrawMode.value = false;
+                    isCardSetSelectionMode.value = false;
+                    roundStatus.value = "加抽結束!";
+                    // 不清空 bottom，保留加抽紀錄
+                    ExtraWriteLog();
+                    
+                };
+
+                const ExtraWriteLog = () => {
+                    // 取得本次加抽的卡片
+                    const extraCards = cards.value
+                        .filter(item => item.isFlipped === false)
+                        .map(item => ({
+                            "number": item.number,
+                            "location": item.location,
+                            "location_name": locations[item.location],
+                            "frontText": item.frontText,
+                            "backText": item.backText,
+                        }))
+                        .sort((a, b) => a.number - b.number);
+
+                    // 直接覆蓋最後一筆 operation.cards
+                    if (!db.value) return;
+                    const transaction = db.value.transaction(['Records'], 'readwrite');
+                    const objectStore = transaction.objectStore('Records');
+                    const getRequest = objectStore.get(sessionKey.value);
+
+                    getRequest.onsuccess = (event) => {
+                        let sessionData = event.target.result;
+                        if (sessionData && sessionData.operations && sessionData.operations.length > 0) {
+                            // 取最後一筆 operation
+                            let lastOp = sessionData.operations[sessionData.operations.length - 1];
+                            lastOp.cards = extraCards; // 直接覆蓋
+                            // 更新資料庫
+                            const putRequest = objectStore.put(sessionData);
+                            putRequest.onsuccess = () => {};
+                        } else {
+                            // 若沒有原始紀錄則新建
+                            addOperation(extraCards);
+                        }
+                    };
+                }
+
+                // 返回所有方法和變數
                 return {
                     cards,
                     cardsInBox,
@@ -1235,7 +1719,6 @@
                     cardStyle,
                     bottomCardStyle,
                     roundStatus,
-                    dragEndCard,
                     clickCard,
                     dragOver,
                     SubmitText,
@@ -1245,7 +1728,9 @@
                     cardBgStyle,
                     explorerNow,
                     refreshPage,
+                    addExtraCards,
                     isExplorerNowVisible,
+                    isCardSetSelectionMode, // 添加新狀態到返回值
                     selectSubject,
                     textareaContent,
                     gender,
@@ -1253,10 +1738,19 @@
                     area_grid_heigh,
                     boxClickSelectCard,
                     currentTime,
-                    hasSelectedBox
+                    hasSelectedBox,
+                    zodiacBoxes,
+                    remainingCardCount, // 新增計算屬性輸出
+                    extraDrawCount, // 可由外部調整加抽數量
+                    isExtraDrawMode, // 加入到返回值，供模板判斷
+                    endExtraDraw, // 新增結束加抽的函數
                 };
             }
         }).mount('#app');
     </script>
+    <!-- 添加 Bootstrap JS 和 Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
