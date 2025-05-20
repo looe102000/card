@@ -411,7 +411,7 @@
                 </div>
             </div>
             <div class="bottom" :style="{ minHeight: area_grid_heigh + 'px' }">
-                <div v-for="(card, index) in cardsInBox('bottom')" :key="card.id" class="card" :style="bottomCardStyle(card, index)" draggable="true" @dragstart="dragCard(card, $event)" @click="clickCard(card)" :class="{ 'is-clicked': card.isClicked }">
+                <div v-for="(card, index) in cardsInBox('bottom')" :key="card.id" class="card" :style="bottomCardStyle(card, index)" :draggable="!isExtraDrawMode" @dragstart="dragCard(card, $event)" @click="clickCard(card)" :class="{ 'is-clicked': card.isClicked }">
                     <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
                         <div class="card-front" :class="{ 'hidden-front': card.isDragging }" :style="cardBgStyle(card,'front')">
                             <h1>{{ card.frontText }}</h1>
@@ -435,7 +435,7 @@
             <!-- 加抽模式下也顯示加抽按鈕與結束加抽 -->
             <div class="bottom_button_area" v-if="isExtraDrawMode">
                 <span>
-                    <button type="button" class="btn btn-success" style="margin-right: 10px;" @click="addExtraCards()">加抽</button>
+                    <button type="button" class="btn btn-success" style="margin-right: 10px;" @click="addExtraCards()">返回</button>
                 </span>
                 <span>
                     <button type="button" class="btn btn-danger" style="margin-right: 10px;" @click="endExtraDraw()">結束加抽</button>
@@ -465,6 +465,7 @@
                 const area_grid_heigh = ref(150);
                 const hasSelectedBox = ref(false);
                 const isCardSetSelectionMode = ref(false); // 新增牌組選擇模式變數
+                const extraDrawUsedCards = ref({}); // { 0: Set(), 1: Set(), ... }
                 
                 // 表單相關資料 - 使用 reactive 集中管理表單狀態可提高效能
                 const formData = reactive({
@@ -1017,7 +1018,7 @@
                         width: `${width}px`,
                         height: `${height}px`,
                         zIndex: card.zIndex || 0,
-                        transform: card.isClicked ? 'translateY(-10px)' : 'translateY(0)',
+                        //transform: card.isClicked ? 'translateY(-10px)' : 'translateY(0)',
                         opacity: card.opacity
                     };
                 };
@@ -1058,7 +1059,6 @@
                         return;
                     }
 
-                    // 加抽模式下，點擊選牌，不需拖曳
                     if (isExtraDrawMode.value && card.location === 'bottom') {
                         Swal.fire({
                             title: `確定要選擇 ${card.number} 號牌？`,
@@ -1069,19 +1069,13 @@
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 card.isDragging = true;
-                                const bottomCards = cardsInBox('bottom');
-                                const idx = bottomCards.findIndex(c => c.id === card.id);
-                                const { width } = baseCardDimensions.value;
+                                // 找到原本卡片在 cards.value 的 index
+                                const cardIdx = cards.value.findIndex(c => c.id === card.id);
                                 setTimeout(() => {
-                                    card.location = 'center';
-                                    card.isFlipped = false;
-                                    card.isClicked = false;
-                                    card.number = ++dropIndex.value;
-                                    card.isDragging = false;
-                                    draggedCount.value++;
-                                    const placeholderId = ++cardIndex.value;
+
+                                    //const placeholderId = ++cardIndex.value;
                                     const placeholderCard = {
-                                        id: placeholderId,
+                                        id: card.number,
                                         number: card.number,
                                         isFlipped: true,
                                         location: 'bottom',
@@ -1094,7 +1088,17 @@
                                         card_back_background_image: card.card_back_background_image,
                                         card_face_background_image: card.card_face_background_image
                                     };
+
                                     cards.value.push(placeholderCard);
+
+                                    card.location = 'center';
+                                    card.isFlipped = false;
+                                    card.isClicked = false;
+                                    card.number = ++dropIndex.value;
+                                    card.isDragging = false;
+                                    draggedCount.value++;
+                                    
+
                                     if (draggedCount.value === extraDrawCount.value) {
                                         isExtraDrawMode.value = false;
                                         isExplorerNowVisible.value = true;
@@ -1104,6 +1108,7 @@
                                 }, 200);
                             }
                         });
+
                         return;
                     }
 
@@ -1550,6 +1555,7 @@
                         area_grid_heigh.value = 150;
                         // 進入牌組選擇模式
                         isCardSetSelectionMode.value = true;
+                        isExtraDrawMode.value = true;
                         
                         // 為每個回合創建一張代表卡片
                         const cardSetCards = rounds.map((round, index) => ({
@@ -1587,6 +1593,7 @@
                 const isExtraDrawMode = ref(false);
                 const extraDrawRoundIndex = ref(null);
                 const extraDrawCount = ref(1); // 預設加抽1張，可動態調整
+
                 /**
                  * 處理牌組選擇
                  * @param {Object} card - 被點擊的牌組代表卡片
@@ -1595,47 +1602,44 @@
                     if (!isCardSetSelectionMode.value || !card.hasOwnProperty('roundIndex')) {
                         return;
                     }
-                    
-                    // 獲取選中的回合索引
+
+                    // 取得選中的副牌索引
                     const selectedRoundIndex = card.roundIndex;
-                    
-                    // 取得加抽前已經出現過的所有牌（所有回合）
-                    const usedCardKeySet = new Set(
-                        cards.value
-                            .filter(card => card.frontText && card.backText && card.location !== 'bottom')
-                            .map(card => `${card.frontText}|${card.backText}`)
+                    const round = rounds[selectedRoundIndex];
+
+                    // 初始化該副牌的加抽紀錄
+                    if (!extraDrawUsedCards.value[selectedRoundIndex]) {
+                        extraDrawUsedCards.value[selectedRoundIndex] = new Set();
+                    }
+
+                    const usedInExtra = extraDrawUsedCards.value[selectedRoundIndex];
+                    const availableTexts = round.texts.filter(
+                        t => !usedInExtra.has(`${t.front}|${t.back}`)
                     );
 
                     // 清空底部區域
                     cards.value = cards.value.filter(card => card.location !== 'bottom');
-                    
+
                     // 退出牌組選擇模式
                     isCardSetSelectionMode.value = false;
-                    
+
                     // 設置當前回合為選中的回合
                     currentRound.value = selectedRoundIndex;
-                    
+
                     // 重置抽牌相關狀態
                     draggedCount.value = 0;
                     isClickedCount.value = 0;
 
-                    // 取得該副牌所有卡片資料
-                    const round = rounds[selectedRoundIndex];
-                    // 過濾掉所有已經出現過的卡牌（不只本回合，所有回合都排除）
-                    const availableTexts = round.texts.filter(
-                        t => !usedCardKeySet.has(`${t.front}|${t.back}`)
-                    );
-
                     // 洗牌
                     const shuffledTexts = shuffleArray([...availableTexts]);
                     // 產生新卡片
-                    const newCards = Array.from({ length: shuffledTexts.length }, (_, i) => ({
+                    const newCards = shuffledTexts.map((t, i) => ({
                         id: cardIndex.value + i + 1,
                         number: i + 1,
                         isFlipped: true,
                         location: 'bottom',
-                        frontText: shuffledTexts[i].front,
-                        backText: shuffledTexts[i].back,
+                        frontText: t.front,
+                        backText: t.back,
                         touchX: null,
                         touchY: null,
                         isDragging: false,
@@ -1644,7 +1648,7 @@
                         card_back_background_image: round.card_back_background_image,
                         card_face_background_image: round.card_face_background_image
                     }));
-                    cardIndex.value += shuffledTexts.length;
+                    cardIndex.value += newCards.length;
                     cards.value = [...cards.value, ...newCards];
 
                     // 更新區域高度
@@ -1670,14 +1674,13 @@
                     isCardSetSelectionMode.value = false;
                     roundStatus.value = "加抽結束!";
                     // 不清空 bottom，保留加抽紀錄
-                    ExtraWriteLog();
-                    
+                    //ExtraWriteLog();
                 };
 
                 const ExtraWriteLog = () => {
-                    // 取得本次加抽的卡片
+                    // 取得本次加抽的 center 卡片
                     const extraCards = cards.value
-                        .filter(item => item.isFlipped === false)
+                        .filter(item => item.isFlipped === false && item.location === 'center')
                         .map(item => ({
                             "number": item.number,
                             "location": item.location,
@@ -1687,7 +1690,15 @@
                         }))
                         .sort((a, b) => a.number - b.number);
 
-                    // 直接覆蓋最後一筆 operation.cards
+                    // 記錄已加抽過的卡片
+                    if (!extraDrawUsedCards.value[extraDrawRoundIndex.value]) {
+                        extraDrawUsedCards.value[extraDrawRoundIndex.value] = new Set();
+                    }
+                    extraCards.forEach(item => {
+                        extraDrawUsedCards.value[extraDrawRoundIndex.value].add(`${item.frontText}|${item.backText}`);
+                    });
+
+                    // 寫入資料庫
                     if (!db.value) return;
                     const transaction = db.value.transaction(['Records'], 'readwrite');
                     const objectStore = transaction.objectStore('Records');
@@ -1695,10 +1706,19 @@
 
                     getRequest.onsuccess = (event) => {
                         let sessionData = event.target.result;
-                        if (sessionData && sessionData.operations && sessionData.operations.length > 0) {
-                            // 取最後一筆 operation
-                            let lastOp = sessionData.operations[sessionData.operations.length - 1];
-                            lastOp.cards = extraCards; // 直接覆蓋
+                        if (sessionData) {
+                            // 只將新加抽的卡片 push 到最後一筆 operation.cards
+                            let lastOperation = sessionData.operations[sessionData.operations.length - 1];
+                            if (!lastOperation.cards) lastOperation.cards = [];
+                            // 過濾掉已經存在的卡片，只新增未出現過的
+                            const existingKeySet = new Set(
+                                lastOperation.cards.map(c => `${c.frontText}|${c.backText}|${c.location}`)
+                            );
+                            const newCards = extraCards.filter(
+                                c => !existingKeySet.has(`${c.frontText}|${c.backText}|${c.location}`)
+                            );
+                            lastOperation.cards.push(...newCards);
+
                             // 更新資料庫
                             const putRequest = objectStore.put(sessionData);
                             putRequest.onsuccess = () => {};
