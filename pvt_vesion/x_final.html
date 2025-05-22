@@ -434,7 +434,7 @@
             </div>
             <!-- 加抽模式下也顯示加抽按鈕與結束加抽 -->
             <div class="bottom_button_area" v-if="isExtraDrawMode">
-                <span>
+                <span v-if="!isCardSetSelectionMode">
                     <button type="button" class="btn btn-success" style="margin-right: 10px;" @click="addExtraCards()">返回</button>
                 </span>
                 <span>
