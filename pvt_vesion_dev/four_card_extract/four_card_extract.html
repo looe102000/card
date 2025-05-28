@@ -222,13 +222,13 @@
               number: null // 用戶填入數字
             };
           });
-        }
-
-        const handleClick = async (idx) => {
+        }        const handleClick = async (idx) => {
+          const deck = cardDecks[idx];
+          const maxNumber = deck.texts.length;
           const { value: inputValue } = await Swal.fire({
             title: `請輸入數字`,
             input: 'number',
-            inputLabel: '填完數字後顯示卡牌名稱',
+            inputLabel: `填完數字後顯示卡牌名稱 (可選範圍: 1~${maxNumber})`,
             inputValue: hand.value[idx].number ?? '',
             showCancelButton: true,
             confirmButtonText: '確定',
@@ -236,6 +236,8 @@
             inputValidator: (value) => {
               if (value === "") return '請輸入數字';
               if (isNaN(Number(value))) return '必須是數字';
+              const num = Number(value);
+              if (num < 1 || num > maxNumber) return `數字必須在 1~${maxNumber} 範圍內`;
               return null;
             }
           });
