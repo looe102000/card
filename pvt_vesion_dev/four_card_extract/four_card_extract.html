@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>卡牌左右卡背卡面區分+正確點擊</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>    .card-vertical {
+      aspect-ratio: 5/7;
+      width: min(90px, 10vw);
+      height: auto;
+      max-width: 100%;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.17);
+      cursor: pointer;
+    }
+    @media (max-width: 768px) {
+      .card-vertical {
+        width: min(80px, 12vw);
+      }
+    }
+    @media (max-width: 480px) {
+      .card-vertical {
+        width: min(70px, 15vw);
+      }
+    }
+    .card-content-mask {
+      background: rgba(0,0,0,0.22);
+      border-radius: 0.75rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.2em 0.7em;
+      border-radius: 1em;
+      font-size: 0.95em;
+      font-weight: bold;
+      background: rgba(255,255,255,0.85);
+      color: #2563eb;
+      border: 1px solid #93c5fd;
+      letter-spacing: 0.1em;
+      margin-top: 0.2em;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center">
+  <div id="app" class="w-full max-w-3xl p-4 md:p-12 border rounded-2xl shadow-xl bg-white">
+    <div class="flex justify-between items-center mb-4">
+      <span class="font-bold text-lg text-gray-600">卡牌抽取示例</span>
+      <button @click="randomizeHand"
+        class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
+      >重新洗牌</button>
+    </div>    <div class="flex h-[70vh]">
+      <!-- 左欄 -->      <div class="flex-1 flex flex-col items-center pr-4">
+        <div class="mb-4 w-full text-center text-gray-600 font-semibold tracking-wider">選牌區</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full">
+          <div
+            v-for="(card, idx) in hand"
+            :key="'left'+idx"
+            class="flex items-center justify-center select-none"
+          >
+            <div
+              class="card-vertical bg-white rounded-xl overflow-hidden flex flex-col items-center justify-center relative border-2 border-gray-200 hover:scale-105 transition group"
+              @click="handleClick(idx)"
+              tabindex="0"
+              style="outline:none;"
+            >
+              <!-- 卡背圖 -->
+              <img
+                :src="card.backImage"
+                alt="卡背"
+                class="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+              />
+              <!-- 遮罩、只顯示 back 標籤 -->
+              <div class="relative z-10 flex flex-col items-center w-full h-full justify-center card-content-mask">
+                <span class="badge mt-4 mb-2">{{ card.back }}</span>
+              </div>
+              <!-- 增加 hover 動畫（可選） -->
+              <div class="absolute inset-0 rounded-xl z-20 group-hover:ring-4 group-hover:ring-blue-400/30 pointer-events-none"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 中間虛線分隔 -->
+      <div class="border-l border-dashed border-gray-400 mx-2"></div>      <!-- 右欄 -->      <div class="flex-1 flex flex-col items-center pl-4">
+        <div class="mb-4 w-full text-center text-gray-600 font-semibold tracking-wider">結果區</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full">
+          <div
+            v-for="(card, idx) in hand"
+            :key="'right'+idx"
+            class="flex items-center justify-center select-none"
+          >
+            <div
+              class="card-vertical bg-white rounded-xl overflow-hidden flex flex-col items-center justify-center relative border-2 border-gray-200 hover:scale-105 transition group"
+            >
+              <img
+                :src="card.faceImage"
+                alt="卡面"
+                class="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+              />
+              <!-- badge效果：front + back一起在一個白色框裡 -->
+              <div v-if="card.number !== null"
+                class="relative z-10 flex flex-col items-center w-full h-full justify-center card-content-mask"
+              >
+                <div
+                  class="inline-flex flex-col items-center px-4 py-3 rounded-2xl shadow bg-white/90 border border-blue-200"
+                  style="min-width: 80px;"
+                >
+                  <span class="text-2xl font-bold text-blue-800 leading-tight">{{ card.front }}</span>
+                  <span class="text-xs text-blue-600 tracking-wider mt-1">{{ card.back }}</span>
+                </div>
+              </div>
+              <!-- 沒有輸入時就不顯示內容，純卡面 -->
+              <div class="absolute inset-0 rounded-xl z-20 group-hover:ring-4 group-hover:ring-blue-400/30 pointer-events-none"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    const { createApp, ref, onMounted } = Vue;
+
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * max);
+    }
+
+    createApp({
+      setup() {
+        // 卡堆資料
+        const cardDecks = [
+          {
+            card_back_background_image:"images/back3.jpg",
+            card_face_background_image:"images/face10.jpg",
+            totalCards: 14,
+            texts: [
+              { "front": "紫微", "back": "主星" }, { "front": "天機", "back": "主星" }, 
+              { "front": "太陽", "back": "主星" }, { "front": "武曲", "back": "主星" },
+              { "front": "天同", "back": "主星" }, { "front": "廉貞", "back": "主星" }, 
+              { "front": "天府", "back": "主星" }, { "front": "太陰", "back": "主星" },
+              { "front": "貪狼", "back": "主星" }, { "front": "巨門", "back": "主星" }, 
+              { "front": "天相", "back": "主星" }, { "front": "天梁", "back": "主星" },
+              { "front": "七殺", "back": "主星" }, { "front": "破軍", "back": "主星" }
+            ]
+          },
+          {
+            card_back_background_image:"images/back2.jpg",
+            card_face_background_image:"images/face16.jpg",
+            totalCards: 14,
+            texts: [
+              { "front": "文昌", "back": "副星" }, { "front": "文曲", "back": "副星" }, 
+              { "front": "左輔", "back": "副星" }, { "front": "右弼", "back": "副星" },
+              { "front": "天魁", "back": "副星" }, { "front": "天鉞", "back": "副星" }, 
+              { "front": "地空", "back": "副星" }, { "front": "地劫", "back": "副星" },
+              { "front": "火星", "back": "副星" }, { "front": "鈴星", "back": "副星" }, 
+              { "front": "擎羊", "back": "副星" }, { "front": "陀羅", "back": "副星" },
+              { "front": "天馬", "back": "副星" }, { "front": "祿存", "back": "副星" }
+            ]
+          },
+          {
+            card_back_background_image:"images/back1.jpg",
+            card_face_background_image:"images/face17.jpg",
+            totalCards: 32,
+            texts: [
+              { "front": "天官", "back": "乙級星" }, { "front": "天福", "back": "乙級星" },
+              { "front": "天廚", "back": "乙級星" }, { "front": "天刑", "back": "乙級星" },
+              { "front": "天姚", "back": "乙級星" }, { "front": "解神", "back": "乙級星" },
+              { "front": "天巫", "back": "乙級星" }, { "front": "天月", "back": "乙級星" },
+              { "front": "陰煞", "back": "乙級星" }, { "front": "台輔", "back": "乙級星" },
+              { "front": "封誥", "back": "乙級星" }, { "front": "天空", "back": "乙級星" },
+              { "front": "天哭", "back": "乙級星" }, { "front": "天虛", "back": "乙級星" },
+              { "front": "龍池", "back": "乙級星" }, { "front": "鳳閣", "back": "乙級星" },
+              { "front": "紅鸞", "back": "乙級星" }, { "front": "天喜", "back": "乙級星" },
+              { "front": "孤辰", "back": "乙級星" }, { "front": "寡宿", "back": "乙級星" },
+              { "front": "蜚廉", "back": "乙級星" }, { "front": "破碎", "back": "乙級星" },
+              { "front": "華蓋", "back": "乙級星" }, { "front": "咸池", "back": "乙級星" },
+              { "front": "天德", "back": "乙級星" }, { "front": "月德", "back": "乙級星" },
+              { "front": "天才", "back": "乙級星" }, { "front": "天壽", "back": "乙級星" },
+              { "front": "三台", "back": "乙級星" }, { "front": "八座", "back": "乙級星" },
+              { "front": "恩光", "back": "乙級星" }, { "front": "天貴", "back": "乙級星" }
+            ]
+          },
+          {
+            card_back_background_image:"images/back4.jpg",
+            card_face_background_image:"images/face9.jpg",
+            totalCards: 12,
+            texts: [
+              { "front": "長生", "back": "宮位" }, { "front": "沐浴", "back": "宮位" }, 
+              { "front": "冠帶", "back": "宮位" }, { "front": "臨官", "back": "宮位" },
+              { "front": "帝旺", "back": "宮位" }, { "front": "衰", "back": "宮位" }, 
+              { "front": "病", "back": "宮位" }, { "front": "死", "back": "宮位" },
+              { "front": "墓", "back": "宮位" }, { "front": "絕", "back": "宮位" }, 
+              { "front": "胎", "back": "宮位" }, { "front": "養", "back": "宮位" }
+            ]
+          }
+        ];
+
+        // 隨機抽出四張卡（每堆一張，資料記錄在 hand）
+        const hand = ref([]);
+
+        function randomizeHand() {
+          hand.value = cardDecks.map(deck => {
+            const idx = Math.floor(Math.random() * deck.texts.length);
+            return {
+              front: deck.texts[idx].front,
+              back: deck.texts[idx].back,
+              backImage: deck.card_back_background_image,
+              faceImage: deck.card_face_background_image,
+              number: null // 用戶填入數字
+            };
+          });
+        }
+
+        const handleClick = async (idx) => {
+          const { value: inputValue } = await Swal.fire({
+            title: `請輸入數字`,
+            input: 'number',
+            inputLabel: '填完數字後顯示卡牌名稱',
+            inputValue: hand.value[idx].number ?? '',
+            showCancelButton: true,
+            confirmButtonText: '確定',
+            cancelButtonText: '取消',
+            inputValidator: (value) => {
+              if (value === "") return '請輸入數字';
+              if (isNaN(Number(value))) return '必須是數字';
+              return null;
+            }
+          });
+          if (inputValue !== undefined && inputValue !== null && inputValue !== '') {
+            hand.value[idx].number = inputValue;
+          }
+        };
+
+        onMounted(randomizeHand);
+
+        return {
+          cardDecks,
+          hand,
+          handleClick,
+          randomizeHand,
+        };
+      },
+    }).mount('#app');
+  </script>
+</body>
+</html>
