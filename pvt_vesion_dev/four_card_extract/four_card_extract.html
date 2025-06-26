@@ -86,10 +86,10 @@
       color: white;
     }
     /* Deck-specific designs */
-    .deck-1 { background: linear-gradient(145deg, #3b82f6, #1d4ed8); } /* 主星 */
-    .deck-2 { background: linear-gradient(145deg, #10b981, #047857); } /* 副星 */
-    .deck-3 { background: linear-gradient(145deg, #f97316, #c2410c); } /* 乙級星 */
-    .deck-4 { background: linear-gradient(145deg, #8b5cf6, #6d28d9); } /* 宮位 */
+    .deck-1 { background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%), linear-gradient(145deg, #3b82f6, #1d4ed8); } /* 主星 */
+    .deck-2 { background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%), linear-gradient(145deg, #10b981, #047857); } /* 副星 */
+    .deck-3 { background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%), linear-gradient(145deg, #f97316, #c2410c); } /* 乙級星 */
+    .deck-4 { background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%), linear-gradient(145deg, #8b5cf6, #6d28d9); } /* 宮位 */
 
     .card-content {
       text-align: center;
@@ -103,8 +103,11 @@
         border: 1px solid currentColor;
         padding: .5rem 1.25rem;
         border-radius: 999px;
-        background: rgba(0,0,0,0.1);
+        background: rgba(255, 255, 255, 0.5);
         color: inherit;
+    }
+    .dark .deck-title {
+      background: rgba(0, 0, 0, 0.2);
     }
     .card-front-text {
       font-size: clamp(1.75rem, 4vw, 2.5rem);
