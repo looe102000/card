@@ -2,303 +2,207 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>卡牌左右卡背卡面區分+正確點擊</title>
+  <title>四牌義占卜</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
+    :root {
+      --card-width: clamp(120px, 18vw, 180px);
+      --card-aspect-ratio: 5 / 7;
+    }
+    html.dark {
+      color-scheme: dark;
+    }
     body {
-      background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
-      color: #222;
+      background-color: #f1f5f9;
+      background-image: radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0);
+      background-size: 2rem 2rem;
+      color: #1e293b;
+      transition: background-color 0.3s, color 0.3s;
     }
     .dark body {
-      background: linear-gradient(135deg, #232946 0%, #16161a 100%);
-      color: #e0e6f0;
+      background-color: #0f172a;
+      background-image: radial-gradient(circle at 1px 1px, #334155 1px, transparent 0);
+      background-size: 2rem 2rem;
+      color: #e2e8f0;
+    }
+    .card-container {
+      perspective: 1000px;
     }
     .card-vertical {
-      aspect-ratio: 5/7;
-      width: min(120px, 15vw);
-      max-width: 100%;
-      border-radius: 1.5rem;
-      box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.18), 0 1.5px 8px 0 rgba(59, 130, 246, 0.08);
-      cursor: pointer;
-      background: rgba(255,255,255,0.55);
+      width: var(--card-width);
+      aspect-ratio: var(--card-aspect-ratio);
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+      transform-style: preserve-3d;
+      border-radius: 2rem; /* Consistent border-radius */
     }
-    .dark .card-vertical {
-      background: rgba(36,41,61,0.82);
-      border-color: #444c6e;
-      box-shadow: 0 8px 32px 0 rgba(36,41,61,0.18), 0 1.5px 8px 0 rgba(80, 120, 255, 0.08);
+    .card-vertical:hover {
+      transform: translateY(-10px) scale(1.05);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
-    .card-content-modern {
+    .card-vertical.is-flipped {
+      transform: rotateY(180deg);
+    }
+    .card-face {
       position: absolute;
-      inset: 0;
       width: 100%;
       height: 100%;
-      margin: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 2rem; /* Consistent border-radius */
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 0;
-      border-radius: 1.5rem;
-      background: rgba(255,255,255,0.38);
-      box-shadow: 0 2px 12px 0 rgba(59,130,246,0.08);
-      gap: 0.2em;
-      z-index: 1;
-    }
-    .dark .card-content-modern {
-      background: rgba(36,41,61,0.38);
-      box-shadow: 0 2px 12px 0 rgba(80,120,255,0.08);
-    }
-    .card-back-modern {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #5c7fa3;
-      letter-spacing: 0.12em;
-      background: linear-gradient(90deg, #e0f2fe 60%, #f0fdfa 100%);
-      border-radius: 0.8em;
-      padding: 0.3em 1.1em;
-      margin-bottom: 0.1em;
-      box-shadow: 0 1.5px 6px 0 rgba(59,130,246,0.07);
-      text-shadow: 0 1px 2px #fff, 0 0.5px 1px #e0f2fe;
-    }
-    .card-front-modern, .card-back-modern, .card-back-modern-small {
-      white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
-      display: block;
-      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    .card-front-modern {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #38a3d9;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.1em;
-      text-shadow: 0 2px 8px #e0f2fe, 0 1px 2px #fff;
+    .dark .card-face {
+       box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3), 0 4px 6px -2px rgba(0,0,0,0.2);
+       border-color: rgba(255, 255, 255, 0.1);
     }
-    .dark .card-front-modern {
-      color: #7dcfff;
-      text-shadow: 0 2px 8px #232946, 0 1px 2px #fff2;
+    /* Updated light mode card back design */
+    .card-front {
+      background: linear-gradient(145deg, #f0f4f8 0%, #d9e2ec 100%); /* Lighter, softer gradient */
+      color: #475569;
+      border: 1px solid #c0ccda; /* Softer border */
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Simplified shadow */
     }
-    .card-back-modern-small, .vertical-text-small {
-      font-size: 1rem;
-      font-weight: 500;
-      color: #5c7fa3;
-      letter-spacing: 0.09em;
-      opacity: 0.85;
-      margin-top: 0.1em;
-      text-shadow: 0 1px 2px #e0f2fe;
-    }
-    .dark .card-back-modern-small, .dark .vertical-text-small {
-      color: #b3c7e6;
-      text-shadow: 0 1px 2px #232946;
-    }
-    .vertical-text-small {
-      font-size: 1.05rem;
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      line-height: 1.2;
-      white-space: normal;
-      display: inline-block;
-      text-align: center;
-    }
-    /* 三字自動垂直排列 */
-    .vertical-text {
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      letter-spacing: 0.15em;
-      font-size: 1.3rem;
-      line-height: 1.2;
-      white-space: normal;
-      display: inline-block;
-      color: #38a3d9;
-      font-weight: 800;
-      text-shadow: 0 2px 8px #e0f2fe, 0 1px 2px #fff;
-      text-align: center;
-    }
-    .dark .vertical-text {
-      color: #7dcfff;
-      text-shadow: 0 2px 8px #232946, 0 1px 2px #fff2;
-    }
-    @media (max-width: 768px) {
-      .card-vertical {
-        width: min(90px, 18vw);
-      }
-      .card-front-modern {
-        font-size: 1.3rem;
-      }
-      .card-back-modern {
-        font-size: 1rem;
-      }
-    }
-    @media (max-width: 480px) {
-      .card-vertical {
-        width: min(70px, 22vw);
-      }
-      .card-front-modern {
-        font-size: 1.1rem;
-      }
-      .card-back-modern {
-        font-size: 0.9rem;
-      }
-    }
-    @keyframes shuffle-anim {
-      0% { transform: translateX(0) rotate(0deg); }
-      20% { transform: translateX(-8px) rotate(-4deg); }
-      40% { transform: translateX(8px) rotate(4deg); }
-      60% { transform: translateX(-6px) rotate(-3deg); }
-      80% { transform: translateX(6px) rotate(3deg); }
-      100% { transform: translateX(0) rotate(0deg); }
-    }
-    .shuffle-anim {
-      animation: shuffle-anim 0.5s cubic-bezier(.4,2,.3,1);
-    }
-    @keyframes flip-anim {
-      0% { transform: rotateY(0deg); }
-      100% { transform: rotateY(360deg); }
-    }
-    .flip-anim {
-      animation: flip-anim 0.5s cubic-bezier(.4,2,.3,1);
-      backface-visibility: hidden;
-    }
-    .card-flip {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.8s cubic-bezier(.4,2,.3,1);
-    }
-    .flip-anim .card-flip {
-      transform: rotateY(180deg);
-    }
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      backface-visibility: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .dark .card-front {
+      background-color: #2d3a4b;
+      background-image: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%), linear-gradient(135deg, #3e4e60 0%, #2d3a4b 100%);
+      color: #aab8c2;
+      border: 1px solid #475569;
     }
     .card-back {
       transform: rotateY(180deg);
+      color: white;
+    }
+    /* Deck-specific designs */
+    .deck-1 { background: linear-gradient(145deg, #3b82f6, #1d4ed8); } /* 主星 */
+    .deck-2 { background: linear-gradient(145deg, #10b981, #047857); } /* 副星 */
+    .deck-3 { background: linear-gradient(145deg, #f97316, #c2410c); } /* 乙級星 */
+    .deck-4 { background: linear-gradient(145deg, #8b5cf6, #6d28d9); } /* 宮位 */
+
+    .card-content {
+      text-align: center;
+      /* Removed text-shadow and background for debugging */
+      padding: 0.5rem 1rem;
+    }
+    .deck-title {
+        font-weight: 600;
+        font-size: clamp(1rem, 3vw, 1.25rem);
+        letter-spacing: .1em;
+        border: 1px solid currentColor;
+        padding: .5rem 1.25rem;
+        border-radius: 999px;
+        background: rgba(0,0,0,0.1);
+        color: inherit;
+    }
+    .card-front-text {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 900;
+      letter-spacing: 0.1em;
+    }
+    .card-back-text {
+      font-size: clamp(0.875rem, 2vw, 1rem);
+      font-weight: 600;
+      opacity: 0.9;
+      margin-top: .25rem;
+    }
+    .vertical-text {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      letter-spacing: 0.2em;
+      line-height: 1.3;
+    }
+    @media (max-width: 640px) {
+      .card-vertical:hover {
+        transform: none; /* Remove lift/scale effect */
+        box-shadow: none; /* Remove box shadow on hover */
+      }
+      .dark .card-vertical:hover {
+        box-shadow: none; /* Remove box shadow on hover in dark mode */
+      }
     }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center">
-  <div id="app" class="w-full max-w-3xl p-4 md:p-12 border rounded-2xl shadow-xl bg-white">
-    <div class="flex justify-between items-center mb-4">
-      <span class="font-bold text-lg text-gray-600 dark:text-gray-200">卡牌抽取示例</span>
-      <div class="flex items-center gap-2">
-        <button @click="toggleDarkMode" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm">
-          <span v-if="!darkMode">🌙 暗</span><span v-else>☀️ 亮</span>
+<body class="min-h-screen flex flex-col items-center justify-center font-sans">
+
+  <div id="app" class="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
+    <header class="flex justify-end items-center mb-8">
+      <div class="flex items-center gap-3">
+        <button @click="toggleDarkMode" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-all backdrop-blur-sm">
+          <span v-if="!darkMode">🌙</span><span v-else>☀️</span>
         </button>
-        <button @click="randomizeHand"
-          class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
-        >重新洗牌</button>
+        <button @click="reshuffle" class="px-5 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all">
+          重新洗牌
+        </button>
       </div>
-    </div>    <div class="flex h-[70vh]">
-      <!-- 左欄 -->      <div class="flex-1 flex flex-col items-center pr-4">
-        <div class="mb-4 w-full text-center text-gray-600 font-semibold tracking-wider">選牌區</div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full">
-          <div
-            v-for="(card, idx) in hand"
-            :key="'left'+idx"
-            class="flex items-center justify-center select-none"
-          >
-            <div
-              class="card-vertical"
-              :class="[{'opacity-60 cursor-not-allowed pointer-events-none': card.number !== null}, shuffleClass]"
-              @click="card.number === null && handleClick(idx)"
-              tabindex="0"
-              style="outline:none;"
-            >
-              <div class="card-content-modern">
-                <span :class="[card.back.length === 3 ? 'vertical-text' : 'card-front-modern']">{{ card.back }}</span>
-              </div>
-              <div class="absolute inset-0 rounded-xl z-20 group-hover:ring-4 group-hover:ring-blue-400/30 pointer-events-none"></div>
+    </header>
+
+    <main class="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-6 sm:gap-8 md:gap-10 min-h-[50vh]">
+      <div
+        v-for="(card, idx) in hand"
+        :key="idx"
+        class="card-container"
+        @click="handleCardClick(idx)"
+      >
+        <div class="card-vertical" :class="{ 'is-flipped': card.flipped }">
+          <!-- Card Front (Visible Initially) -->
+          <div class="card-face card-front">
+            <div class="card-content" v-show="card.isDeck">
+              <div class="deck-title">{{ card.back }}</div>
+            </div>
+          </div>
+          <!-- Card Back (Visible on Flip) -->
+          <div class="card-face card-back" :class="['deck-' + card.deckType]">
+            <div class="card-content" v-show="!card.isDeck">
+              <div :class="['card-front-text', { 'vertical-text': card.front.length <= 3 }]">{{ card.front }}</div>
+              <div class="card-back-text">{{ card.back }}</div>
             </div>
           </div>
         </div>
       </div>
-      <!-- 中間虛線分隔 -->
-      <div class="border-l border-dashed border-gray-400 mx-2"></div>      <!-- 右欄 -->      <div class="flex-1 flex flex-col items-center pl-4">
-        <div class="mb-4 w-full text-center text-gray-600 font-semibold tracking-wider">結果區</div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full">
-          <div
-            v-for="(card, idx) in hand"
-            :key="'right'+idx"
-            class="flex items-center justify-center select-none"
-          >
-            <div
-              class="card-vertical"
-              :class="[idxFlipClass(idx)]"
-            >
-              <div class="card-flip">
-                <div class="card-front card-content-modern" v-if="card.number !== null">
-                  <span class="card-front-modern">{{ card.front }}</span>
-                  <span :class="[card.back.length === 3 ? 'vertical-text-small' : 'card-back-modern-small']">{{ card.back }}</span>
-                </div>
-                <div class="card-back card-content-modern"></div>
-              </div>
-              <div class="absolute inset-0 rounded-xl z-20 group-hover:ring-4 group-hover:ring-blue-400/30 pointer-events-none"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </main>
   </div>
+
   <script type="module">
     const { createApp, ref, onMounted } = Vue;
 
-    function getRandomInt(max) {
-      return Math.floor(Math.random() * max);
-    }
-
     createApp({
       setup() {
-        // 卡堆資料
         const cardDecks = [
-          {
-            card_back_background_image:"images/back3.jpg",
-            card_face_background_image:"images/face10.jpg",
-            totalCards: 14,
+          { // deckType: 1
             texts: [
-              { "front": "紫微", "back": "主星" }, { "front": "天機", "back": "主星" }, 
+              { "front": "紫微", "back": "主星" }, { "front": "天機", "back": "主星" },
               { "front": "太陽", "back": "主星" }, { "front": "武曲", "back": "主星" },
-              { "front": "天同", "back": "主星" }, { "front": "廉貞", "back": "主星" }, 
+              { "front": "天同", "back": "主星" }, { "front": "廉貞", "back": "主星" },
               { "front": "天府", "back": "主星" }, { "front": "太陰", "back": "主星" },
-              { "front": "貪狼", "back": "主星" }, { "front": "巨門", "back": "主星" }, 
+              { "front": "貪狼", "back": "主星" }, { "front": "巨門", "back": "主星" },
               { "front": "天相", "back": "主星" }, { "front": "天梁", "back": "主星" },
               { "front": "七殺", "back": "主星" }, { "front": "破軍", "back": "主星" }
             ]
           },
-          {
-            card_back_background_image:"images/back2.jpg",
-            card_face_background_image:"images/face16.jpg",
-            totalCards: 14,
+          { // deckType: 2
             texts: [
-              { "front": "文昌", "back": "副星" }, { "front": "文曲", "back": "副星" }, 
+              { "front": "文昌", "back": "副星" }, { "front": "文曲", "back": "副星" },
               { "front": "左輔", "back": "副星" }, { "front": "右弼", "back": "副星" },
-              { "front": "天魁", "back": "副星" }, { "front": "天鉞", "back": "副星" }, 
+              { "front": "天魁", "back": "副星" }, { "front": "天鉞", "back": "副星" },
               { "front": "地空", "back": "副星" }, { "front": "地劫", "back": "副星" },
-              { "front": "火星", "back": "副星" }, { "front": "鈴星", "back": "副星" }, 
+              { "front": "火星", "back": "副星" }, { "front": "鈴星", "back": "副星" },
               { "front": "擎羊", "back": "副星" }, { "front": "陀羅", "back": "副星" },
               { "front": "天馬", "back": "副星" }, { "front": "祿存", "back": "副星" }
             ]
           },
-          {
-            card_back_background_image:"images/back1.jpg",
-            card_face_background_image:"images/face17.jpg",
-            totalCards: 32,
+          { // deckType: 3
             texts: [
               { "front": "天官", "back": "乙級星" }, { "front": "天福", "back": "乙級星" },
               { "front": "天廚", "back": "乙級星" }, { "front": "天刑", "back": "乙級星" },
@@ -318,96 +222,149 @@
               { "front": "恩光", "back": "乙級星" }, { "front": "天貴", "back": "乙級星" }
             ]
           },
-          {
-            card_back_background_image:"images/back4.jpg",
-            card_face_background_image:"images/face9.jpg",
-            totalCards: 12,
+          { // deckType: 4
             texts: [
-              { "front": "長生", "back": "宮位" }, { "front": "沐浴", "back": "宮位" }, 
+              { "front": "長生", "back": "宮位" }, { "front": "沐浴", "back": "宮位" },
               { "front": "冠帶", "back": "宮位" }, { "front": "臨官", "back": "宮位" },
-              { "front": "帝旺", "back": "宮位" }, { "front": "衰", "back": "宮位" }, 
+              { "front": "帝旺", "back": "宮位" }, { "front": "衰", "back": "宮位" },
               { "front": "病", "back": "宮位" }, { "front": "死", "back": "宮位" },
-              { "front": "墓", "back": "宮位" }, { "front": "絕", "back": "宮位" }, 
+              { "front": "墓", "back": "宮位" }, { "front": "絕", "back": "宮位" },
               { "front": "胎", "back": "宮位" }, { "front": "養", "back": "宮位" }
             ]
           }
         ];
 
-        // 隨機抽出四張卡（每堆一張，資料記錄在 hand）
         const hand = ref([]);
-        const shuffleClass = ref("");
-        const flipArr = ref([false, false, false, false]);
-        async function randomizeHand() {
-          shuffleClass.value = "shuffle-anim";
-          flipArr.value = [true, true, true, true];
-          await new Promise(r => setTimeout(r, 500));
-          hand.value = cardDecks.map(deck => {
-            const idx = Math.floor(Math.random() * deck.texts.length);
-            return {
-              front: deck.texts[idx].front,
-              back: deck.texts[idx].back,
-              backImage: deck.card_back_background_image,
-              faceImage: deck.card_face_background_image,
-              number: null // 用戶填入數字
-            };
-          });
-          shuffleClass.value = "";
-          flipArr.value = [false, false, false, false];
-        }        const handleClick = async (idx) => {
-          const deck = cardDecks[idx];
-          const maxNumber = deck.texts.length;
-          const { value: inputValue } = await Swal.fire({
-            title: `請輸入數字`,
-            input: 'number',
-            inputLabel: `填完數字後顯示卡牌名稱 (可選範圍: 1~${maxNumber})`,
-            inputValue: hand.value[idx].number ?? '',
-            showCancelButton: true,
-            confirmButtonText: '確定',
-            cancelButtonText: '取消',
-            inputValidator: (value) => {
-              if (value === "") return '請輸入數字';
-              if (isNaN(Number(value))) return '必須是數字';
-              const num = Number(value);
-              if (num < 1 || num > maxNumber) return `數字必須在 1~${maxNumber} 範圍內`;
-              return null;
-            }
-          });
-          if (inputValue !== undefined && inputValue !== null && inputValue !== '') {
-            hand.value[idx].number = inputValue;
-          }
+        const darkMode = ref(false);
+
+        const setupDecks = () => {
+          hand.value = cardDecks.map((deck, index) => ({
+            front: '',
+            back: deck.texts[0].back,
+            flipped: false,
+            isDeck: true,
+            deckType: index + 1,
+          }));
         };
 
-        onMounted(randomizeHand);
+        const drawFromDeck = (deckIndex, cardIndex = null) => {
+            const deck = cardDecks[deckIndex];
+            const finalCardIndex = (cardIndex === null) 
+                ? Math.floor(Math.random() * deck.texts.length)
+                : cardIndex;
 
-        function idxFlipClass(idx) {
-          return flipArr.value[idx] ? 'flip-anim' : '';
-        }
+            const drawnCard = deck.texts[finalCardIndex];
 
-        const darkMode = ref(false);
-        function toggleDarkMode() {
+            hand.value[deckIndex] = {
+                ...hand.value[deckIndex],
+                front: drawnCard.front,
+                back: drawnCard.back,
+                flipped: true,
+                isDeck: false
+            };
+        };
+
+        const handleCardClick = async (idx) => {
+          const currentCard = hand.value[idx];
+          if (!currentCard.isDeck) return;
+
+          const { value: selectionMethod } = await Swal.fire({
+            title: '請選擇抽牌方式',
+            text: `您正在從「${currentCard.back}」牌組抽牌`,
+            showDenyButton: true,
+            confirmButtonText: '隨機抽牌',
+            denyButtonText: '指定數字',
+            icon: 'question',
+            customClass: {
+              popup: darkMode.value ? 'swal2-dark' : ''
+            }
+          });
+
+          if (selectionMethod === true) { // Random draw
+            drawFromDeck(idx);
+          } else if (selectionMethod === false) { // Specify number
+            const deck = cardDecks[idx];
+            const maxNumber = deck.texts.length;
+            const { value: inputValue } = await Swal.fire({
+              title: `請輸入數字`,
+              input: 'number',
+              inputLabel: `從「${currentCard.back}」牌組指定牌 (範圍: 1~${maxNumber})`,
+              inputPlaceholder: `1~${maxNumber}`,
+              showCancelButton: true,
+              confirmButtonText: '確定',
+              cancelButtonText: '取消',
+              inputValidator: (value) => {
+                if (!value) return '請輸入數字';
+                const num = Number(value);
+                if (isNaN(num) || !Number.isInteger(num) || num < 1 || num > maxNumber) {
+                  return `數字必須是 1 到 ${maxNumber} 之間的整數`;
+                }
+                return null;
+              },
+              customClass: {
+                popup: darkMode.value ? 'swal2-dark' : ''
+              }
+            });
+
+            if (inputValue) {
+              drawFromDeck(idx, Number(inputValue) - 1);
+            }
+          }
+        };
+        
+        const reshuffle = () => {
+          hand.value.forEach((card) => {
+            if (card.flipped) {
+              card.flipped = false;
+            }
+          });
+          setTimeout(() => {
+            setupDecks();
+          }, 600); // Increased timeout for flip animation
+        };
+
+        const toggleDarkMode = () => {
           darkMode.value = !darkMode.value;
           document.documentElement.classList.toggle('dark', darkMode.value);
-        }
+          document.body.classList.toggle('swal2-dark-theme', darkMode.value);
+        };
+
         onMounted(() => {
-          if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          setupDecks();
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             darkMode.value = true;
             document.documentElement.classList.add('dark');
+            document.body.classList.add('swal2-dark-theme');
           }
         });
 
         return {
-          cardDecks,
           hand,
-          handleClick,
-          randomizeHand,
-          shuffleClass,
-          flipArr,
-          idxFlipClass,
           darkMode,
+          handleCardClick,
+          reshuffle,
           toggleDarkMode,
         };
       },
     }).mount('#app');
   </script>
+  <style>
+    /* SweetAlert2 Dark Theme */
+    .swal2-dark-theme .swal2-popup {
+      background-color: #1e293b !important;
+      color: #e2e8f0 !important;
+    }
+    .swal2-dark-theme .swal2-title {
+      color: #f1f5f9 !important;
+    }
+    .swal2-dark-theme .swal2-html-container {
+      color: #cbd5e1 !important;
+    }
+    .swal2-dark-theme .swal2-input {
+      background-color: #334155 !important;
+      color: #e2e8f0 !important;
+      border-color: #475569 !important;
+    }
+  </style>
 </body>
 </html>
