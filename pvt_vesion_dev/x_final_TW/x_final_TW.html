@@ -192,7 +192,7 @@
       </div>
 
       <!-- 中央區域 -->
-      <div class="relative col-start-2 col-span-2 row-start-2 row-span-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-2 md:p-3 h-full flex flex-col min-h-0">
+      <div class="relative col-start-2 col-span-2 row-start-2 row-span-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-2 md:p-3 h-full flex flex-col min-h-0" style="min-height: 120px;">
         <div class="flex justify-between items-start mb-2">
           <div class="flex flex-wrap gap-x-2 gap-y-1 text-gray-700 text-xs md:text-sm">
             <div><span class="font-medium">性別：</span>{{ formData.gender || '—' }}</div>
@@ -205,21 +205,91 @@
           <p class="font-medium">描述：</p>
           <p class="whitespace-pre-wrap text-ellipsis overflow-hidden">{{ formData.description || '—' }}</p>
         </div>
-        <div class="border-2 border-dashed border-accent/50 rounded-lg p-1 flex-shrink-0"
-             @dragover.prevent="dragOver" @drop="onDrop($event, 'center')">
-          <div class="flex flex-wrap">
-            <div v-for="card in getCardsInCell('center')" :key="card.id"
-              class="w-16 h-20 md:w-18 md:h-24 card-container z-10 m-1 rounded-xl"
-               :class="{ 'cursor-pointer': isGameFinished }"
-               @click.stop="flipCard(card)"
-            >
-              <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-                <div class="card-front" :style="{ backgroundImage: `url(${card.frontImage})` }">
-                  <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-sm p-1 bg-black/30">{{ card.frontText }}</div>
+        
+        <!-- Tab 系統 -->
+        <div class="mb-2 flex-shrink-0">
+          <div class="flex space-x-2 border-b border-gray-200">
+            <button @click="activeTab = 'cards'" :class="{ 'border-b-2 border-accent text-accent': activeTab === 'cards', 'text-gray-500': activeTab !== 'cards' }" class="px-2 py-1 text-xs font-medium">卡牌區域</button>
+            <button @click="activeTab = 'rules'" :class="{ 'border-b-2 border-accent text-accent': activeTab === 'rules', 'text-gray-500': activeTab !== 'rules' }" class="px-2 py-1 text-xs font-medium">規則說明</button>
+            <button @click="activeTab = 'draw'" :class="{ 'border-b-2 border-accent text-accent': activeTab === 'draw', 'text-gray-500': activeTab !== 'draw' }" class="px-2 py-1 text-xs font-medium">抽牌說明</button>
+            <button @click="activeTab = 'links'" :class="{ 'border-b-2 border-accent text-accent': activeTab === 'links', 'text-gray-500': activeTab !== 'links' }" class="px-2 py-1 text-xs font-medium">相關連結</button>
+          </div>
+        </div>
+        
+        <!-- Tab 內容 -->
+        <div class="flex-1 overflow-hidden">
+          <!-- 卡牌區域 Tab -->
+          <div v-if="activeTab === 'cards'" class="h-full">
+            <div class="border-2 border-dashed border-accent/50 rounded-lg p-1 h-full"
+                 @dragover.prevent="dragOver" @drop="onDrop($event, 'center')">
+              <div class="flex flex-wrap">
+                <div v-for="card in getCardsInCell('center')" :key="card.id"
+                  class="w-16 h-20 md:w-18 md:h-24 card-container z-10 m-1 rounded-xl"
+                   :class="{ 'cursor-pointer': isGameFinished }"
+                   @click.stop="flipCard(card)"
+                >
+                  <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                    <div class="card-front" :style="{ backgroundImage: `url(${card.frontImage})` }">
+                      <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-sm p-1 bg-black/30">{{ card.frontText }}</div>
+                    </div>
+                    <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
+                  </div>
+                  <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
                 </div>
-                <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
               </div>
-              <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+            </div>
+          </div>
+          
+          <!-- 規則說明 Tab -->
+          <div v-if="activeTab === 'rules'" class="h-full overflow-y-auto">
+            <div class="prose prose-sm max-w-none text-left">
+              <p class="text-xs md:text-sm mb-2">1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</p>
+              <p class="text-xs md:text-sm mb-2">2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？</p>
+              <p class="text-xs md:text-sm mb-2">3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）</p>
+              <p class="text-xs md:text-sm mb-2">4. 健康、失物、賭博、代問，將不予回答。</p>
+              <p class="text-xs md:text-sm mb-2">5. 不清楚不明確的問題，也將不予回答。</p>
+              <p class="text-xs md:text-sm mb-2">6. 出國讀書和遊學打工，要先設定國家再問。</p>
+              <p class="text-xs md:text-sm mb-2">7. 提問之前，自己最好先有想法，結果會更為精確。</p>
+              <p class="text-xs md:text-sm font-medium mb-1">例如：</p>
+              <p class="text-xs md:text-sm mb-1">●我XXX想知道是否可以在十月底前賣掉房子？</p>
+              <p class="text-xs md:text-sm mb-1">●我XXX是否可以在三個月內和XXX發展感情？</p>
+              <p class="text-xs md:text-sm mb-1">●我XXX在七月有XXX的考試，想知道考運如何？</p>
+            </div>
+          </div>
+          
+          <!-- 抽牌說明 Tab -->
+          <div v-if="activeTab === 'draw'" class="h-full overflow-y-auto">
+            <div class="prose prose-sm max-w-none text-left">
+              <p class="text-xs md:text-sm mb-2">1. 總共4副牌，共抽8張牌。</p>
+              <p class="text-xs md:text-sm mb-2">2. 第1輪共14張，抽2張，並選12宮位則一放。如1放酉，8放亥。</p>
+              <p class="text-xs md:text-sm mb-2">3. 卡片放置位置可以重覆。</p>
+              <p class="text-xs md:text-sm mb-2">4. 第2輪共14張，抽2張，並選12宮位則一放，與第1輪相同。如3放酉，12放申。</p>
+              <p class="text-xs md:text-sm mb-2">5. 第3輪共32張，抽3張，並選12宮位則一放，放置位置可以重覆，與前二輪相同。</p>
+              <p class="text-xs md:text-sm mb-2">6. 最後1輪‧，數字1-12擇1即可。</p>
+            </div>
+          </div>
+          
+          <!-- 相關連結 Tab -->
+          <div v-if="activeTab === 'links'" class="h-full overflow-y-auto">
+            <div class="flex flex-col md:flex-row justify-around items-center gap-2 md:gap-4">
+              <div class="text-center">
+                <p class="font-semibold text-xs md:text-sm">問卷</p>
+                <a href="https://forms.gle/LcBrCzUvLagm7R5Z8" target="_blank">
+                  <img src="images/feedbackQR.jpg" alt="問卷連結" class="w-16 h-16 md:w-24 md:h-24 object-contain">
+                </a>
+              </div>
+              <div class="text-center">
+                <p class="font-semibold text-xs md:text-sm">好友＠035huiof</p>
+                <a href="https://lin.ee/seLphIC" target="_blank">
+                  <img src="images/@035huiof.png" alt="好友" class="w-16 h-16 md:w-24 md:h-24 object-contain">
+                </a>
+              </div>
+              <div class="text-center">
+                <p class="font-semibold text-xs md:text-sm">社群</p>
+                <a href="https://line.me/ti/g2/1DKrqd7y118-txklw0DKV0XkdIqBmLKTDIiu8A?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank">
+                  <img src="images/LINEgroup.jpg" alt="社群" class="w-16 h-16 md:w-24 md:h-24 object-contain">
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -270,86 +340,6 @@
       </div>
     </div>
 
-    <!-- Info Buttons -->
-    <div class="flex justify-center space-x-2 mt-2 flex-shrink-0">
-        <button @click="showRulesModal = true" class="px-2 py-1 md:px-3 md:py-2 bg-gray-200 text-gray-700 text-xs md:text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">規則說明</button>
-        <button @click="showDrawInfoModal = true" class="px-2 py-1 md:px-3 md:py-2 bg-gray-200 text-gray-700 text-xs md:text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">抽牌說明</button>
-        <button @click="showLinksModal = true" class="px-2 py-1 md:px-3 md:py-2 bg-gray-200 text-gray-700 text-xs md:text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">相關連結</button>
-    </div>
-
-    <!-- 控制按鈕 -->
-    <div class="flex justify-center space-x-2 mt-2 flex-shrink-0">
-        <button @click="explorerNow" v-if="isGameFinished" class="px-3 py-1 md:px-4 md:py-2 bg-blue-600 text-white text-xs md:text-sm font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">匯出紀錄</button>
-        <button @click="refreshPage" v-if="isGameFinished" class="px-3 py-1 md:px-4 md:py-2 bg-gray-600 text-white text-xs md:text-sm font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">再抽一次</button>
-        <button @click="addExtraCards" v-if="isGameFinished && !isExtraDrawMode" class="px-3 py-1 md:px-4 md:py-2 bg-green-500 text-white text-xs md:text-sm font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">加抽</button>
-        <button @click="endExtraDraw" v-if="isExtraDrawMode" class="px-3 py-1 md:px-4 md:py-2 bg-red-500 text-white text-xs md:text-sm font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">結束加抽</button>
-    </div>
-
-    <!-- 規則說明 Modal -->
-    <div v-if="showRulesModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="showRulesModal = false">
-      <div class="bg-white p-4 md:p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-800">規則說明</h3>
-        <div class="prose text-left">
-            <p>1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</p>
-            <p>2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？</p>
-            <p>3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）</p>
-            <p>4. 健康、失物、賭博、代問，將不予回答。</p>
-            <p>5. 不清楚不明確的問題，也將不予回答。</p>
-            <p>6. 出國讀書和遊學打工，要先設定國家再問。</p>
-            <p>7. 提問之前，自己最好先有想法，結果會更為精確。</p>
-            <p>例如：</p>
-            <p>●我XXX想知道是否可以在十月底前賣掉房子？</p>
-            <p>●我XXX是否可以在三個月內和XXX發展感情？</p>
-            <p>●我XXX在七月有XXX的考試，想知道考運如何？</p>
-        </div>
-        <button @click="showRulesModal = false" class="mt-8 bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
-      </div>
-    </div>
-
-    <!-- 抽牌說明 Modal -->
-    <div v-if="showDrawInfoModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="showDrawInfoModal = false">
-      <div class="bg-white p-4 md:p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-800">抽牌說明</h3>
-        <div class="prose text-left">
-          <p>1. 總共4副牌，共抽8張牌。</p>
-          <p>2. 第1輪共14張，抽2張，並選12宮位則一放。如1放酉，8放亥。</p>
-          <p>3. 卡片放置位置可以重覆。</p>
-          <p>4. 第2輪共14張，抽2張，並選12宮位則一放，與第1輪相同。如3放酉，12放申。</p>
-          <p>5. 第3輪共32張，抽3張，並選12宮位則一放，放置位置可以重覆，與前二輪相同。</p>
-          <p>6. 最後1輪‧，數字1-12擇1即可。</p>
-        </div>
-        <button @click="showDrawInfoModal = false" class="mt-4 md:mt-6 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
-      </div>
-    </div>
-
-    <!-- 相關連結 Modal -->
-    <div v-if="showLinksModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="showLinksModal = false">
-      <div class="bg-white p-4 md:p-6 rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] overflow-y-auto">
-        <h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-800">相關連結</h3>
-        <div class="flex flex-col md:flex-row justify-around items-center gap-4">
-          <div class="text-center">
-            <p class="font-semibold">問卷</p>
-            <a href="https://forms.gle/LcBrCzUvLagm7R5Z8" target="_blank">
-              <img src="images/feedbackQR.jpg" alt="問卷連結" class="w-32 h-32 md:w-48 md:h-48 object-contain">
-            </a>
-          </div>
-          <div class="text-center">
-            <p class="font-semibold">好友＠035huiof</p>
-            <a href="https://lin.ee/seLphIC" target="_blank">
-              <img src="images/@035huiof.png" alt="好友" class="w-32 h-32 md:w-48 md:h-48 object-contain">
-            </a>
-          </div>
-          <div class="text-center">
-            <p class="font-semibold">社群</p>
-            <a href="https://line.me/ti/g2/1DKrqd7y118-txklw0DKV0XkdIqBmLKTDIiu8A?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank">
-              <img src="images/LINEgroup.jpg" alt="社群" class="w-32 h-32 md:w-48 md:h-48 object-contain">
-            </a>
-          </div>
-        </div>
-        <button @click="showLinksModal = false" class="mt-4 md:mt-6 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
-      </div>
-    </div>
-
     <!-- 加抽牌組選擇 Modal -->
     <div v-if="isSelectingDeck" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="endExtraDraw">
       <div class="bg-white p-4 md:p-6 rounded-lg shadow-xl text-center transform transition-all scale-100 opacity-100">
@@ -384,11 +374,7 @@
         const isExtraDrawMode = ref(false);
         const isSelectingDeck = ref(false);
         const isLoading = ref(false);
-
-        // --- Info Modals ---
-        const showRulesModal = ref(false);
-        const showDrawInfoModal = ref(false);
-        const showLinksModal = ref(false);
+        const activeTab = ref('cards');
 
         // --- 表單相關 ---
         const showModal = ref(true);
@@ -742,8 +728,7 @@
         };
 
         return {
-          cards, roundStatus, showModal, formData, tempForm, zodiacBoxes, isGameFinished, isExtraDrawMode, isSelectingDeck, selectedCardId, isLoading,
-          showRulesModal, showDrawInfoModal, showLinksModal,
+          cards, roundStatus, showModal, formData, tempForm, zodiacBoxes, isGameFinished, isExtraDrawMode, isSelectingDeck, selectedCardId, isLoading, activeTab,
           openModal, saveForm, onDragStart, onDrop, dragOver, flipCard, selectCard,
           unassignedCards, getCardsInCell,
           explorerNow, refreshPage, addExtraCards, endExtraDraw, selectDeckForExtra
