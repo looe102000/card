@@ -23,6 +23,8 @@
   <style>
     .card-container {
       perspective: 1000px;
+      border-radius: 0.75rem;
+      overflow: hidden;
     }
     .card-inner {
       position: relative;
@@ -30,6 +32,7 @@
       height: 100%;
       transition: transform 0.7s;
       transform-style: preserve-3d;
+      border-radius: 0.75rem;
     }
     .card-inner.is-flipped {
       transform: rotateY(180deg);
@@ -50,6 +53,7 @@
       justify-content: center;
       text-align: center;
       padding: 4px;
+      overflow: hidden;
     }
     .card-front {
       transform: rotateY(180deg);
@@ -67,6 +71,47 @@
         font-weight: bold;
         color: #E0E0E0;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+    
+    /* Loading 動畫 */
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 10rem;
+        opacity: 1;
+        transition: opacity 0.3s ease-in-out;
+    }
+    
+    .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #e5e7eb;
+        border-top: 4px solid #4299E1;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 16px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* 卡片區域淡入淡出 */
+    .cards-area {
+        transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+    }
+    
+    .cards-area.fade-out {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    
+    .cards-area.fade-in {
+        opacity: 1;
+        transform: translateY(0);
     }
   </style>
 </head>
@@ -110,7 +155,7 @@
         <span class="absolute top-2 left-2 text-gray-300 text-4xl md:text-5xl select-none z-0 font-bold">{{ box.label }}</span>
         <div class="absolute inset-0 flex flex-wrap items-end justify-start p-2 space-x-2">
           <div v-for="card in getCardsInCell(box.id)" :key="card.id"
-            class="w-20 h-28 md:w-24 md:h-32 card-container z-10"
+            class="w-20 h-28 md:w-24 md:h-32 card-container z-10 rounded-xl"
             :class="{ 'cursor-pointer': isGameFinished }"
             @click.stop="flipCard(card)"
           >
@@ -143,7 +188,7 @@
              @dragover.prevent="dragOver" @drop="onDrop($event, 'center')">
           <div class="flex flex-wrap">
             <div v-for="card in getCardsInCell('center')" :key="card.id"
-              class="w-20 h-28 md:w-24 md:h-32 card-container z-10 m-1"
+              class="w-20 h-28 md:w-24 md:h-32 card-container z-10 m-1 rounded-xl"
                :class="{ 'cursor-pointer': isGameFinished }"
                @click.stop="flipCard(card)"
             >
@@ -172,25 +217,35 @@
     </div>
 
     <!-- 底部：未放置卡片 -->
-    <div class="border-2 border-dashed border-accent bg-white rounded-lg mt-8 p-4 flex flex-wrap gap-4 justify-center min-h-[10rem]"
+    <div v-if="!isGameFinished" class="border-2 border-dashed border-accent bg-white rounded-lg mt-8 p-4 min-h-[10rem] cards-area"
     >
-      <div v-for="card in unassignedCards" :key="card.id"
-        class="w-20 h-28 md:w-24 md:h-32 card-container transition-transform ease-in-out duration-300"
-        :class="{
-            '-translate-y-5 shadow-xl': card.id === selectedCardId,
-            'cursor-grab': card.id === selectedCardId,
-            'cursor-pointer': card.id !== selectedCardId
-        }"
-        @click="selectCard(card)"
-        :draggable="card.id === selectedCardId" @dragstart="onDragStart($event, card)"
-      >
-        <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
-          <div class="card-front" :style="{ backgroundImage: `url(${card.frontImage})` }">
-            <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-sm p-1 bg-black/30">{{ card.frontText }}</div>
+      <!-- Loading 狀態 -->
+      <div v-if="isLoading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p class="text-lg font-medium text-gray-600">{{ roundStatus }}</p>
+        <p class="text-sm text-gray-500 mt-2">正在準備新的卡片...</p>
+      </div>
+      
+      <!-- 卡片區域 -->
+      <div v-else class="flex flex-wrap gap-4 justify-center">
+        <div v-for="card in unassignedCards" :key="card.id"
+          class="w-20 h-28 md:w-24 md:h-32 card-container transition-transform ease-in-out duration-300 rounded-xl"
+          :class="{
+              '-translate-y-5 shadow-xl': card.id === selectedCardId,
+              'cursor-grab': card.id === selectedCardId,
+              'cursor-pointer': card.id !== selectedCardId
+          }"
+          @click="selectCard(card)"
+          :draggable="card.id === selectedCardId" @dragstart="onDragStart($event, card)"
+        >
+          <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+            <div class="card-front" :style="{ backgroundImage: `url(${card.frontImage})` }">
+              <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-sm p-1 bg-black/30">{{ card.frontText }}</div>
+            </div>
+            <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
           </div>
-          <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
+          <div class="absolute top-1 left-1 text-white text-lg font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
         </div>
-        <div class="absolute top-1 left-1 text-white text-lg font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
       </div>
     </div>
 
@@ -307,6 +362,7 @@
         const selectedCardId = ref(null);
         const isExtraDrawMode = ref(false);
         const isSelectingDeck = ref(false);
+        const isLoading = ref(false);
 
         // --- Info Modals ---
         const showRulesModal = ref(false);
@@ -414,7 +470,8 @@
             for (let i = 0; i < roundData.totalCards; i++) {
                 newCards.push({
                     id: `r${currentRound.value}-${i}`,
-                    number: i + 1,
+                    number: i + 1, // 顯示編號，稍後會重新編號
+                    originalNumber: i + 1, // 保存原始編號用於加抽檢查
                     frontText: texts.length > 0 ? (texts[i]?.front || '') : `${i+1}`,
                     backText: texts.length > 0 ? (texts[i]?.back || '') : '',
                     isFlipped: false,
@@ -425,21 +482,53 @@
                 });
             }
             shuffleArray(newCards);
+            
+            // 洗牌後重新編號
+            newCards.forEach((card, index) => {
+                card.number = index + 1;
+            });
+            
             cards.value = newCards;
             updateRoundStatus();
         };
 
         const nextRound = () => {
-            currentRound.value++;
-            if (currentRound.value < rounds.length) {
-                const placedCards = cards.value.filter(c => c.boxId !== 'bottom');
-                initRound();
-                cards.value.push(...placedCards);
-            } else {
-                roundStatus.value = "所有回合已完成！";
-                isGameFinished.value = true;
-                saveOperation("所有回合已完成！");
+            // 開始轉場效果
+            isLoading.value = true;
+            roundStatus.value = "準備下一回合...";
+            
+            // 淡出當前卡片
+            const cardsArea = document.querySelector('.cards-area');
+            if (cardsArea) {
+                cardsArea.classList.add('fade-out');
             }
+            
+            setTimeout(() => {
+                currentRound.value++;
+                if (currentRound.value < rounds.length) {
+                    const placedCards = cards.value.filter(c => c.boxId !== 'bottom');
+                    initRound();
+                    cards.value.push(...placedCards);
+                    
+                    // 淡入新卡片
+                    setTimeout(() => {
+                        if (cardsArea) {
+                            cardsArea.classList.remove('fade-out');
+                            cardsArea.classList.add('fade-in');
+                        }
+                        isLoading.value = false;
+                    }, 200);
+                } else {
+                    roundStatus.value = "所有回合已完成！";
+                    isGameFinished.value = true;
+                    isLoading.value = false;
+                    saveOperation("所有回合已完成！");
+                    
+                    if (cardsArea) {
+                        cardsArea.classList.remove('fade-out');
+                    }
+                }
+            }, 600);
         };
 
         const updateRoundStatus = () => {
@@ -482,6 +571,13 @@
 
           if (!card || card.boxId !== 'bottom') return;
           
+          // 第1-3回合不能放到中央區域
+          if (currentRound.value < 3 && slotId === 'center') {
+            alert('前三回合的牌只能放置在宮位格子中！');
+            draggingCard.value = null;
+            return;
+          }
+          
           // 第四回合只能放到中間
           if (currentRound.value === 3 && slotId !== 'center') {
             alert('第四回合的牌只能放置在中間區域！');
@@ -511,7 +607,8 @@
                 saveOperation(`第 ${currentRound.value + 1} 回合，將 ${card.number}號牌 放置到 ${locationName} 宮`);
                 
                 if (draggedCount.value === roundData.drawCount) {
-                    setTimeout(nextRound, 1000);
+                    // 移除原本的 setTimeout，直接呼叫 nextRound
+                    nextRound();
                 } else {
                     updateRoundStatus();
                 }
@@ -567,7 +664,7 @@
             const usedNumbers = new Set(
                 cards.value
                     .filter(c => c.deckIndex === deckIndex)
-                    .map(c => c.number)
+                    .map(c => c.originalNumber || c.number) // 使用原始編號來檢查
             );
 
             const availableNumbers = Array.from({ length: deckData.totalCards }, (_, i) => i + 1)
@@ -579,8 +676,24 @@
                 return;
             }
 
-            const numberToDraw = availableNumbers[Math.floor(Math.random() * availableNumbers.length)];
-            const newCard = createCardObject(deckData, numberToDraw, deckIndex);
+            const originalNumber = availableNumbers[Math.floor(Math.random() * availableNumbers.length)];
+            
+            // 找出目前最大的顯示編號
+            const maxDisplayNumber = Math.max(...cards.value.map(c => c.number), 0);
+            
+            const newCard = {
+                id: `card-${Date.now()}-${Math.random()}`,
+                deckIndex,
+                number: maxDisplayNumber + 1, // 新的顯示編號
+                originalNumber: originalNumber, // 保存原始編號用於檢查
+                boxId: 'bottom',
+                isFlipped: false,
+                backImage: deckData.backImage,
+                frontImage: deckData.frontImage,
+                frontText: deckData.texts[originalNumber - 1]?.front || ``,
+                backText: deckData.texts[originalNumber - 1]?.back || ``,
+            };
+            
             cards.value.push(newCard);
 
             roundStatus.value = "加抽模式：請將下方新抽出的卡片放置到宮位。";
@@ -608,7 +721,7 @@
         };
 
         return {
-          cards, roundStatus, showModal, formData, tempForm, zodiacBoxes, isGameFinished, isExtraDrawMode, isSelectingDeck, selectedCardId,
+          cards, roundStatus, showModal, formData, tempForm, zodiacBoxes, isGameFinished, isExtraDrawMode, isSelectingDeck, selectedCardId, isLoading,
           showRulesModal, showDrawInfoModal, showLinksModal,
           openModal, saveForm, onDragStart, onDrop, dragOver, flipCard, selectCard,
           unassignedCards, getCardsInCell,
