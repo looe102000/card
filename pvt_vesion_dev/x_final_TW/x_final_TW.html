@@ -59,15 +59,15 @@
       transform: rotateY(180deg);
     }
     .card-text {
-        font-size: 1.1rem;
+        font-size: 0.7rem;
         font-weight: bold;
         text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
     }
     .card-number {
         position: absolute;
-        top: 4px;
-        left: 6px;
-        font-size: 0.8rem;
+        top: 2px;
+        left: 3px;
+        font-size: 0.6rem;
         font-weight: bold;
         color: #E0E0E0;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
@@ -79,19 +79,19 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        min-height: 10rem;
+        min-height: 6rem;
         opacity: 1;
         transition: opacity 0.3s ease-in-out;
     }
     
     .loading-spinner {
-        width: 48px;
-        height: 48px;
-        border: 4px solid #e5e7eb;
-        border-top: 4px solid #4299E1;
+        width: 32px;
+        height: 32px;
+        border: 3px solid #e5e7eb;
+        border-top: 3px solid #4299E1;
         border-radius: 50%;
         animation: spin 1s linear infinite;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
     }
     
     @keyframes spin {
@@ -113,10 +113,31 @@
         opacity: 1;
         transform: translateY(0);
     }
+    
+    /* 響應式調整 */
+    @media (max-height: 600px) {
+        .loading-container {
+            min-height: 4rem;
+        }
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 8px;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .card-text {
+            font-size: 0.6rem;
+        }
+        .card-number {
+            font-size: 0.5rem;
+        }
+    }
   </style>
 </head>
-<body class="bg-bg text-gray-800">
-  <div id="app" class="max-w-screen-2xl mx-auto p-4 md:p-6">
+<body class="bg-bg text-gray-800 h-screen overflow-hidden">
+  <div id="app" class="h-full flex flex-col max-w-screen-2xl mx-auto p-2 md:p-4">
     
     <!-- Modal 編輯表單 -->
     <div v-if="showModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
@@ -145,17 +166,17 @@
     </div>
 
     <!-- 主畫面 Grid -->
-    <div class="grid grid-cols-4 grid-rows-[auto,auto,auto,auto] gap-4">
+    <div class="flex-1 grid grid-cols-4 grid-rows-4 gap-2 md:gap-3 min-h-0">
       <!-- 宮位格子 -->
       <div v-for="box in zodiacBoxes" :key="box.id"
         :class="box.gridClass"
-        class="relative border-2 border-dashed border-gray-300 bg-white rounded-lg min-h-[10rem] p-2"
+        class="relative border-2 border-dashed border-gray-300 bg-white rounded-lg min-h-0 p-1 md:p-2"
         @dragover.prevent="dragOver" @drop="onDrop($event, box.id)"
       >
-        <span class="absolute top-2 left-2 text-gray-300 text-4xl md:text-5xl select-none z-0 font-bold">{{ box.label }}</span>
-        <div class="absolute inset-0 flex flex-wrap items-end justify-start p-2 space-x-2">
+        <span class="absolute top-1 left-1 text-gray-300 text-2xl md:text-3xl select-none z-0 font-bold">{{ box.label }}</span>
+        <div class="absolute inset-0 flex flex-wrap items-end justify-start p-1 space-x-1">
           <div v-for="card in getCardsInCell(box.id)" :key="card.id"
-            class="w-20 h-28 md:w-24 md:h-32 card-container z-10 rounded-xl"
+            class="w-16 h-20 md:w-18 md:h-24 card-container z-10 rounded-xl"
             :class="{ 'cursor-pointer': isGameFinished }"
             @click.stop="flipCard(card)"
           >
@@ -165,30 +186,30 @@
               </div>
               <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
             </div>
-            <div class="absolute top-1 left-1 text-white text-lg font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+            <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
           </div>
         </div>
       </div>
 
       <!-- 中央區域 -->
-      <div class="relative col-start-2 col-span-2 row-start-2 row-span-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-4 md:p-6 h-full flex flex-col">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex flex-wrap gap-x-4 gap-y-1 text-gray-700 text-sm md:text-base">
+      <div class="relative col-start-2 col-span-2 row-start-2 row-span-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-2 md:p-3 h-full flex flex-col min-h-0">
+        <div class="flex justify-between items-start mb-2">
+          <div class="flex flex-wrap gap-x-2 gap-y-1 text-gray-700 text-xs md:text-sm">
             <div><span class="font-medium">性別：</span>{{ formData.gender || '—' }}</div>
             <div><span class="font-medium">姓名：</span>{{ formData.name || '—' }}</div>
             <div><span class="font-medium">主題：</span>{{ formData.topic || '—' }}</div>
           </div>
-          <button @click="openModal" class="px-4 py-2 bg-gray-200 text-sm rounded-lg hover:bg-gray-300 transition">編輯</button>
+          <button @click="openModal" class="px-2 py-1 bg-gray-200 text-xs rounded hover:bg-gray-300 transition">編輯</button>
         </div>
-        <div class="mb-4 text-gray-600 text-sm md:text-base flex-grow">
+        <div class="mb-2 text-gray-600 text-xs md:text-sm flex-1 overflow-hidden">
           <p class="font-medium">描述：</p>
-          <p class="whitespace-pre-wrap">{{ formData.description || '—' }}</p>
+          <p class="whitespace-pre-wrap text-ellipsis overflow-hidden">{{ formData.description || '—' }}</p>
         </div>
-        <div class="border-2 border-dashed border-accent/50 rounded-lg p-2 min-h-[100px]"
+        <div class="border-2 border-dashed border-accent/50 rounded-lg p-1 flex-shrink-0"
              @dragover.prevent="dragOver" @drop="onDrop($event, 'center')">
           <div class="flex flex-wrap">
             <div v-for="card in getCardsInCell('center')" :key="card.id"
-              class="w-20 h-28 md:w-24 md:h-32 card-container z-10 m-1 rounded-xl"
+              class="w-16 h-20 md:w-18 md:h-24 card-container z-10 m-1 rounded-xl"
                :class="{ 'cursor-pointer': isGameFinished }"
                @click.stop="flipCard(card)"
             >
@@ -198,7 +219,7 @@
                 </div>
                 <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
               </div>
-              <div class="absolute top-1 left-1 text-white text-lg font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+              <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
             </div>
           </div>
         </div>
@@ -206,32 +227,32 @@
     </div>
 
     <!-- 狀態顯示 & 控制按鈕 -->
-    <div class="bg-white rounded-lg shadow p-4 mt-8 text-center">
-        <p class="text-xl font-bold text-primary mb-4">{{ roundStatus }}</p>
-        <div v-if="isGameFinished" class="flex flex-wrap justify-center gap-4">
-            <button @click="explorerNow" class="px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90">匯出本次操作紀錄</button>
-            <button @click="refreshPage" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">再抽一次</button>
-            <button @click="addExtraCards" v-if="isGameFinished && !isExtraDrawMode" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">加抽</button>
-            <button @click="endExtraDraw" v-if="isExtraDrawMode" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">結束加抽</button>
+    <div class="bg-white rounded-lg shadow p-2 md:p-3 mt-2 text-center flex-shrink-0">
+        <p class="text-lg md:text-xl font-bold text-primary mb-2">{{ roundStatus }}</p>
+        <div v-if="isGameFinished" class="flex flex-wrap justify-center gap-2">
+            <button @click="explorerNow" class="px-3 py-1 md:px-4 md:py-2 bg-accent text-white text-sm rounded-lg hover:bg-accent/90">匯出本次操作紀錄</button>
+            <button @click="refreshPage" class="px-3 py-1 md:px-4 md:py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700">再抽一次</button>
+            <button @click="addExtraCards" v-if="isGameFinished && !isExtraDrawMode" class="px-3 py-1 md:px-4 md:py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600">加抽</button>
+            <button @click="endExtraDraw" v-if="isExtraDrawMode" class="px-3 py-1 md:px-4 md:py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600">結束加抽</button>
         </div>
     </div>
 
     <!-- 底部：未放置卡片 -->
-    <div v-if="!isGameFinished" class="border-2 border-dashed border-accent bg-white rounded-lg mt-8 p-4 min-h-[10rem] cards-area"
+    <div v-if="!isGameFinished" class="border-2 border-dashed border-accent bg-white rounded-lg mt-2 p-2 md:p-3 flex-shrink-0 cards-area"
     >
       <!-- Loading 狀態 -->
       <div v-if="isLoading" class="loading-container">
         <div class="loading-spinner"></div>
-        <p class="text-lg font-medium text-gray-600">{{ roundStatus }}</p>
-        <p class="text-sm text-gray-500 mt-2">正在準備新的卡片...</p>
+        <p class="text-base md:text-lg font-medium text-gray-600">{{ roundStatus }}</p>
+        <p class="text-xs md:text-sm text-gray-500 mt-2">正在準備新的卡片...</p>
       </div>
       
       <!-- 卡片區域 -->
-      <div v-else class="flex flex-wrap gap-4 justify-center">
+      <div v-else class="flex flex-wrap gap-2 md:gap-3 justify-center">
         <div v-for="card in unassignedCards" :key="card.id"
-          class="w-20 h-28 md:w-24 md:h-32 card-container transition-transform ease-in-out duration-300 rounded-xl"
+          class="w-16 h-20 md:w-20 md:h-28 card-container transition-transform ease-in-out duration-300 rounded-xl"
           :class="{
-              '-translate-y-5 shadow-xl': card.id === selectedCardId,
+              '-translate-y-3 shadow-xl': card.id === selectedCardId,
               'cursor-grab': card.id === selectedCardId,
               'cursor-pointer': card.id !== selectedCardId
           }"
@@ -244,30 +265,30 @@
             </div>
             <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
           </div>
-          <div class="absolute top-1 left-1 text-white text-lg font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+          <div class="absolute top-0.5 left-0.5 text-white text-xs md:text-sm font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
         </div>
       </div>
     </div>
 
     <!-- Info Buttons -->
-    <div class="flex justify-center space-x-4 mt-4">
-        <button @click="showRulesModal = true" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">規則說明</button>
-        <button @click="showDrawInfoModal = true" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">抽牌說明</button>
-        <button @click="showLinksModal = true" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">相關連結</button>
+    <div class="flex justify-center space-x-2 mt-2 flex-shrink-0">
+        <button @click="showRulesModal = true" class="px-2 py-1 md:px-3 md:py-2 bg-gray-200 text-gray-700 text-xs md:text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">規則說明</button>
+        <button @click="showDrawInfoModal = true" class="px-2 py-1 md:px-3 md:py-2 bg-gray-200 text-gray-700 text-xs md:text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">抽牌說明</button>
+        <button @click="showLinksModal = true" class="px-2 py-1 md:px-3 md:py-2 bg-gray-200 text-gray-700 text-xs md:text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">相關連結</button>
     </div>
 
     <!-- 控制按鈕 -->
-    <div class="flex justify-center space-x-4 mt-4">
-        <button @click="explorerNow" v-if="isGameFinished" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">匯出紀錄</button>
-        <button @click="refreshPage" v-if="isGameFinished" class="px-6 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">再抽一次</button>
-        <button @click="addExtraCards" v-if="isGameFinished && !isExtraDrawMode" class="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">加抽</button>
-        <button @click="endExtraDraw" v-if="isExtraDrawMode" class="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">結束加抽</button>
+    <div class="flex justify-center space-x-2 mt-2 flex-shrink-0">
+        <button @click="explorerNow" v-if="isGameFinished" class="px-3 py-1 md:px-4 md:py-2 bg-blue-600 text-white text-xs md:text-sm font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">匯出紀錄</button>
+        <button @click="refreshPage" v-if="isGameFinished" class="px-3 py-1 md:px-4 md:py-2 bg-gray-600 text-white text-xs md:text-sm font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">再抽一次</button>
+        <button @click="addExtraCards" v-if="isGameFinished && !isExtraDrawMode" class="px-3 py-1 md:px-4 md:py-2 bg-green-500 text-white text-xs md:text-sm font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">加抽</button>
+        <button @click="endExtraDraw" v-if="isExtraDrawMode" class="px-3 py-1 md:px-4 md:py-2 bg-red-500 text-white text-xs md:text-sm font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">結束加抽</button>
     </div>
 
     <!-- 規則說明 Modal -->
     <div v-if="showRulesModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="showRulesModal = false">
-      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <h3 class="text-2xl font-bold mb-6 text-gray-800">規則說明</h3>
+      <div class="bg-white p-4 md:p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-800">規則說明</h3>
         <div class="prose text-left">
             <p>1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</p>
             <p>2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？</p>
@@ -287,8 +308,8 @@
 
     <!-- 抽牌說明 Modal -->
     <div v-if="showDrawInfoModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="showDrawInfoModal = false">
-      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <h3 class="text-2xl font-bold mb-6 text-gray-800">抽牌說明</h3>
+      <div class="bg-white p-4 md:p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-800">抽牌說明</h3>
         <div class="prose text-left">
           <p>1. 總共4副牌，共抽8張牌。</p>
           <p>2. 第1輪共14張，抽2張，並選12宮位則一放。如1放酉，8放亥。</p>
@@ -297,42 +318,42 @@
           <p>5. 第3輪共32張，抽3張，並選12宮位則一放，放置位置可以重覆，與前二輪相同。</p>
           <p>6. 最後1輪‧，數字1-12擇1即可。</p>
         </div>
-        <button @click="showDrawInfoModal = false" class="mt-8 bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
+        <button @click="showDrawInfoModal = false" class="mt-4 md:mt-6 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
       </div>
     </div>
 
     <!-- 相關連結 Modal -->
     <div v-if="showLinksModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="showLinksModal = false">
-      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] overflow-y-auto">
-        <h3 class="text-2xl font-bold mb-6 text-gray-800">相關連結</h3>
-        <div class="flex justify-around items-start gap-4">
+      <div class="bg-white p-4 md:p-6 rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] overflow-y-auto">
+        <h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-800">相關連結</h3>
+        <div class="flex flex-col md:flex-row justify-around items-center gap-4">
           <div class="text-center">
             <p class="font-semibold">問卷</p>
             <a href="https://forms.gle/LcBrCzUvLagm7R5Z8" target="_blank">
-              <img src="images/feedbackQR.jpg" alt="問卷連結" class="w-48 h-48 object-contain">
+              <img src="images/feedbackQR.jpg" alt="問卷連結" class="w-32 h-32 md:w-48 md:h-48 object-contain">
             </a>
           </div>
           <div class="text-center">
             <p class="font-semibold">好友＠035huiof</p>
             <a href="https://lin.ee/seLphIC" target="_blank">
-              <img src="images/@035huiof.png" alt="好友" class="w-48 h-48 object-contain">
+              <img src="images/@035huiof.png" alt="好友" class="w-32 h-32 md:w-48 md:h-48 object-contain">
             </a>
           </div>
           <div class="text-center">
             <p class="font-semibold">社群</p>
             <a href="https://line.me/ti/g2/1DKrqd7y118-txklw0DKV0XkdIqBmLKTDIiu8A?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank">
-              <img src="images/LINEgroup.jpg" alt="社群" class="w-48 h-48 object-contain">
+              <img src="images/LINEgroup.jpg" alt="社群" class="w-32 h-32 md:w-48 md:h-48 object-contain">
             </a>
           </div>
         </div>
-        <button @click="showLinksModal = false" class="mt-8 bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
+        <button @click="showLinksModal = false" class="mt-4 md:mt-6 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
       </div>
     </div>
 
     <!-- 加抽牌組選擇 Modal -->
     <div v-if="isSelectingDeck" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="endExtraDraw">
-      <div class="bg-white p-8 rounded-lg shadow-xl text-center transform transition-all scale-100 opacity-100">
-        <h3 class="text-2xl font-bold mb-6 text-gray-800">請選擇要加抽的牌組</h3>
+      <div class="bg-white p-4 md:p-6 rounded-lg shadow-xl text-center transform transition-all scale-100 opacity-100">
+        <h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-800">請選擇要加抽的牌組</h3>
         <div class="grid grid-cols-2 gap-4">
           <button v-for="(deck, index) in rounds" :key="index"
                   @click="selectDeckForExtra(index)"
