@@ -189,7 +189,7 @@
         @dragover.prevent="dragOver" @drop="onDrop($event, box.id)"
       >
         <span class="absolute top-1 left-1 text-gray-300 text-2xl md:text-3xl select-none z-0 font-bold">{{ box.label }}</span>
-        <div class="absolute inset-0 flex flex-wrap items-end justify-start p-1 gap-1">
+        <div class="absolute inset-0 flex flex-wrap items-start justify-start p-1 gap-1">
           <div v-for="card in getCardsInCell(box.id)" :key="card.id"
             class="w-14 h-16 card-container z-10 rounded-xl flex-shrink-0"
             :class="{ 'cursor-pointer': isGameFinished }"
@@ -201,7 +201,7 @@
               </div>
               <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
             </div>
-            <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+            <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.displayNumber || card.number }}</div>
           </div>
         </div>
       </div>
@@ -256,7 +256,7 @@
                     </div>
                     <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
                   </div>
-                  <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+                  <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.displayNumber || card.number }}</div>
                 </div>
               </div>
             </div>
@@ -357,7 +357,7 @@
             </div>
             <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
           </div>
-          <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+          <div class="absolute top-0.5 left-0.5 text-white text-xs font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.displayNumber || card.number }}</div>
         </div>
       </div>
     </div>
@@ -397,6 +397,7 @@
         const isSelectingDeck = ref(false);
         const isLoading = ref(false);
         const activeTab = ref('info');
+        const placedCardCounter = ref(0); // 放置順序計數器
 
         // --- 表單相關 ---
         const showModal = ref(true);
@@ -630,18 +631,24 @@
           const locationName = locations[slotId] || '中央';
 
           if (isExtraDrawMode.value) {
+              placedCardCounter.value++; // 增加放置計數器
               card.boxId = slotId;
               card.isFlipped = true; // 放置後翻牌
-              saveOperation(`加抽，將 ${card.number}號牌 放置到 ${locationName} 宮`);
+              card.placedOrder = placedCardCounter.value; // 記錄放置順序
+              card.displayNumber = placedCardCounter.value; // 顯示編號改為放置順序
+              saveOperation(`加抽，將 ${card.displayNumber}號牌 放置到 ${locationName} 宮`);
               draggingCard.value = null;
               roundStatus.value = '加抽模式：可點擊「加抽」按鈕繼續抽牌，或點擊「結束加抽」。';
           } else {
               const roundData = rounds[currentRound.value];
               if (draggedCount.value < roundData.drawCount) {
+                placedCardCounter.value++; // 增加放置計數器
                 card.boxId = slotId;
                 card.isFlipped = true; // 放置後翻牌
+                card.placedOrder = placedCardCounter.value; // 記錄放置順序
+                card.displayNumber = placedCardCounter.value; // 顯示編號改為放置順序
                 draggedCount.value++;
-                saveOperation(`第 ${currentRound.value + 1} 回合，將 ${card.number}號牌 放置到 ${locationName} 宮`);
+                saveOperation(`第 ${currentRound.value + 1} 回合，將 ${card.displayNumber}號牌 放置到 ${locationName} 宮`);
                 
                 if (draggedCount.value === roundData.drawCount) {
                     // 移除原本的 setTimeout，直接呼叫 nextRound
@@ -662,7 +669,8 @@
                 card.isFlipped = !card.isFlipped;
                 const action = card.isFlipped ? '翻開' : '蓋上';
                 const locationName = card.boxId === 'center' ? '中央' : `${locations[card.boxId]} 宮`;
-                saveOperation(`將位於 ${locationName} 的 ${card.number}號牌 ${action} (${card.frontText})`);
+                const cardNumber = card.displayNumber || card.number; // 使用顯示編號或原編號
+                saveOperation(`將位於 ${locationName} 的 ${cardNumber}號牌 ${action} (${card.frontText})`);
             }
         };
 
@@ -770,7 +778,11 @@
         const unassignedCards = computed(() => cards.value.filter(c => c.boxId === 'bottom'));
 
         const getCardsInCell = (boxId) => {
-          return computed(() => cards.value.filter(c => c.boxId === boxId)).value;
+          return computed(() => 
+            cards.value
+              .filter(c => c.boxId === boxId)
+              .sort((a, b) => (a.placedOrder || a.displayNumber || 0) - (b.placedOrder || b.displayNumber || 0))
+          ).value;
         };
 
         return {
