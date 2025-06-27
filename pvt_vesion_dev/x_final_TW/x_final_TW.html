@@ -324,13 +324,14 @@
         <div v-if="isGameFinished" class="flex flex-wrap justify-center gap-2">
             <button @click="explorerNow" class="px-3 py-1 md:px-4 md:py-2 bg-accent text-white text-sm rounded-lg hover:bg-accent/90">匯出本次操作紀錄</button>
             <button @click="refreshPage" class="px-3 py-1 md:px-4 md:py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700">再抽一次</button>
-            <button @click="addExtraCards" v-if="isGameFinished && !isExtraDrawMode" class="px-3 py-1 md:px-4 md:py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600">加抽</button>
+            <button @click="addExtraCards" v-if="!isExtraDrawMode" class="px-3 py-1 md:px-4 md:py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600">加抽</button>
+            <button @click="continueExtraDraw" v-if="isExtraDrawMode && extraCards.length === 0" class="px-3 py-1 md:px-4 md:py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600">繼續加抽</button>
             <button @click="endExtraDraw" v-if="isExtraDrawMode" class="px-3 py-1 md:px-4 md:py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600">結束加抽</button>
         </div>
     </div>
 
     <!-- 底部：未放置卡片 -->
-    <div v-if="!isGameFinished || (isExtraDrawMode && unassignedCards.length > 0) || unassignedCards.length > 0" class="border-2 border-dashed border-accent bg-white rounded-lg mt-2 p-3 md:p-4 flex-shrink-0 cards-area"
+    <div v-if="(!isGameFinished && unassignedCards.length > 0) || (isExtraDrawMode && extraCards.length > 0)" class="border-2 border-dashed border-accent bg-white rounded-lg mt-2 p-3 md:p-4 flex-shrink-0 cards-area"
     >
       <!-- Loading 狀態 -->
       <div v-if="isLoading" class="loading-container">
@@ -349,7 +350,8 @@
               'cursor-pointer': card.id !== selectedCardId
           }"
           @click="selectCard(card)"
-          :draggable="card.id === selectedCardId" @dragstart="onDragStart($event, card)"
+          :draggable="card.id === selectedCardId" 
+          @dragstart="onDragStart($event, card)"
         >
           <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
             <div class="card-front" :style="{ backgroundImage: `url(${card.frontImage})` }">
@@ -398,6 +400,8 @@
         const isLoading = ref(false);
         const activeTab = ref('info');
         const placedCardCounter = ref(0); // 放置順序計數器
+        const selectedDeckIndex = ref(null); // 當前加抽選擇的牌組
+        const extraCards = ref([]); // 加抽時顯示的卡片
 
         // --- 表單相關 ---
         const showModal = ref(true);
@@ -570,7 +574,7 @@
 
         const selectCard = (card) => {
             if (!hasStarted.value || card.boxId !== 'bottom') return;
-            // 在加抽模式下允許選擇卡片
+            // 在加抽模式下也允許選擇卡片
             if (isGameFinished.value && !isExtraDrawMode.value) return;
             
             if (selectedCardId.value === card.id) {
@@ -581,15 +585,23 @@
         };
 
         const onDragStart = (e, card) => {
-          if (!hasStarted.value || card.boxId !== 'bottom' || card.id !== selectedCardId.value) {
+          if (!hasStarted.value || card.boxId !== 'bottom') {
             e.preventDefault();
             return;
           }
+          
+          // 所有模式下都需要先選擇卡片才能拖拽
+          if (card.id !== selectedCardId.value) {
+            e.preventDefault();
+            return;
+          }
+          
           // 在加抽模式下允許拖拽
           if (isGameFinished.value && !isExtraDrawMode.value) {
             e.preventDefault();
             return;
           }
+          
           draggingCard.value = card;
           e.dataTransfer.setData('text/plain', card.id);
         };
@@ -605,22 +617,30 @@
           if (!draggingCard.value) return;
 
           const cardId = e.dataTransfer.getData('text/plain');
-          const card = cards.value.find(c => c.id === cardId);
+          let card = cards.value.find(c => c.id === cardId);
+          
+          // 如果在主卡片陣列中找不到，則在加抽卡片中找尋
+          if (!card && isExtraDrawMode.value) {
+              card = extraCards.value.find(c => c.id === cardId);
+          }
 
           if (!card || card.boxId !== 'bottom') return;
           
-          // 第1-3回合不能放到中央區域
-          if (currentRound.value < 3 && slotId === 'center') {
-            alert('前三回合的牌只能放置在宮位格子中！');
-            draggingCard.value = null;
-            return;
-          }
-          
-          // 第四回合只能放到中間
-          if (currentRound.value === 3 && slotId !== 'center') {
-            alert('第四回合的牌只能放置在中間區域！');
-            draggingCard.value = null;
-            return;
+          // 正常模式的限制
+          if (!isExtraDrawMode.value) {
+              // 第1-3回合不能放到中央區域
+              if (currentRound.value < 3 && slotId === 'center') {
+                alert('前三回合的牌只能放置在宮位格子中！');
+                draggingCard.value = null;
+                return;
+              }
+              
+              // 第四回合只能放到中間
+              if (currentRound.value === 3 && slotId !== 'center') {
+                alert('第四回合的牌只能放置在中間區域！');
+                draggingCard.value = null;
+                return;
+              }
           }
 
           if (slotId === 'bottom') {
@@ -636,9 +656,22 @@
               card.isFlipped = true; // 放置後翻牌
               card.placedOrder = placedCardCounter.value; // 記錄放置順序
               card.displayNumber = placedCardCounter.value; // 顯示編號改為放置順序
-              saveOperation(`加抽，將 ${card.displayNumber}號牌 放置到 ${locationName} 宮`);
+              
+              // 將加抽卡片移動到主卡片陣列
+              if (card.isExtraCard) {
+                  cards.value.push(card);
+                  extraCards.value = extraCards.value.filter(c => c.id !== card.id);
+              }
+              
+              saveOperation(`加抽，將 ${card.displayNumber}號牌 (${card.frontText}) 放置到 ${locationName} 宮`);
               draggingCard.value = null;
-              roundStatus.value = '加抽模式：可點擊「加抽」按鈕繼續抽牌，或點擊「結束加抽」。';
+              
+              // 檢查是否還有剩餘的加抽卡片
+              if (extraCards.value.length === 0) {
+                  roundStatus.value = '本次加抽完成，可點擊「繼續加抽」選擇其他牌組，或點擊「結束加抽」。';
+              } else {
+                  roundStatus.value = `加抽模式：第 ${selectedDeckIndex.value + 1} 副牌，剩餘 ${extraCards.value.length} 張牌可選擇。`;
+              }
           } else {
               const roundData = rounds[currentRound.value];
               if (draggedCount.value < roundData.drawCount) {
@@ -704,9 +737,10 @@
 
         const selectDeckForExtra = (deckIndex) => {
             isSelectingDeck.value = false;
+            selectedDeckIndex.value = deckIndex;
 
             const deckData = rounds[deckIndex];
-            // 只統計已放置在宮位上的卡片（排除 boxId 為 'bottom' 的卡片）
+            // 找出已放置在宮位上的該牌組卡片
             const placedCards = cards.value.filter(c => 
                 c.deckIndex === deckIndex && c.boxId !== 'bottom'
             );
@@ -714,68 +748,67 @@
                 placedCards.map(c => c.originalNumber || c.number)
             );
 
+            // 生成該牌組的所有剩餘卡片
             const availableNumbers = Array.from({ length: deckData.totalCards }, (_, i) => i + 1)
                                           .filter(n => !usedNumbers.has(n));
 
             if (availableNumbers.length === 0) {
                 alert(`第 ${deckIndex + 1} 副牌的卡片已經全部使用完畢。`);
-                isSelectingDeck.value = true; // allow choosing another
+                isExtraDrawMode.value = false;
+                selectedDeckIndex.value = null;
                 return;
             }
 
-            const originalNumber = availableNumbers[Math.floor(Math.random() * availableNumbers.length)];
-            
-            // 找出目前最大的顯示編號
-            const maxDisplayNumber = Math.max(...cards.value.map(c => c.number), 0);
-            
-            const newCard = {
-                id: `card-${Date.now()}-${Math.random()}`,
-                deckIndex,
-                number: maxDisplayNumber + 1, // 新的顯示編號
-                originalNumber: originalNumber, // 保存原始編號用於檢查
-                boxId: 'bottom',
-                isFlipped: false,
-                isExtraCard: true, // 標記為加抽卡片
-                backImage: deckData.backImage,
-                frontImage: deckData.frontImage,
-                frontText: deckData.texts[originalNumber - 1]?.front || `第${originalNumber}張卡`,
-                backText: deckData.texts[originalNumber - 1]?.back || ``,
-            };
-            
-            // 使用更明確的方式添加卡片以確保響應式更新
-            cards.value = [...cards.value, newCard];
-            
-            // 強制更新狀態以觸發底部區域顯示
-            roundStatus.value = "加抽模式：請將下方新抽出的卡片放置到宮位。";
-            saveOperation(`從第 ${deckIndex + 1} 副牌加抽了 1 張牌 (${newCard.frontText})`);
-            
-            // 詳細的除錯資訊
-            console.log('選擇的牌組:', deckIndex + 1, deckData);
-            console.log('已放置在宮位的卡片數:', placedCards.length);
-            console.log('已用編號:', Array.from(usedNumbers));
-            console.log('可用編號:', availableNumbers);
-            console.log('選中編號:', originalNumber);
-            console.log('新卡片:', newCard);
-            console.log('卡片總數:', cards.value.length);
-            console.log('未分配卡片:', cards.value.filter(c => c.boxId === 'bottom'));
-            
-            // 強制觸發 nextTick 確保 DOM 更新
-            nextTick(() => {
-                console.log('DOM 更新後 - 未分配卡片數量:', unassignedCards.value.length);
+            // 清空之前的加抽卡片
+            extraCards.value = [];
+
+            // 創建所有剩餘的卡片
+            availableNumbers.forEach((originalNumber, index) => {
+                const newCard = {
+                    id: `extra-${deckIndex}-${originalNumber}-${Date.now()}-${Math.random()}`,
+                    deckIndex,
+                    number: index + 1, // 加抽卡片從1開始編號
+                    originalNumber: originalNumber, // 保存原始編號
+                    boxId: 'bottom',
+                    isFlipped: false,
+                    isExtraCard: true, // 標記為加抽卡片
+                    backImage: deckData.backImage,
+                    frontImage: deckData.frontImage,
+                    frontText: deckData.texts[originalNumber - 1]?.front || `第${originalNumber}張卡`,
+                    backText: deckData.texts[originalNumber - 1]?.back || ``,
+                };
+                extraCards.value.push(newCard);
             });
+            
+            roundStatus.value = `加抽模式：第 ${deckIndex + 1} 副牌，剩餘 ${availableNumbers.length} 張牌可選擇。`;
+            saveOperation(`開始從第 ${deckIndex + 1} 副牌加抽，剩餘 ${availableNumbers.length} 張牌`);
         };
 
         const endExtraDraw = () => {
             isExtraDrawMode.value = false;
             isSelectingDeck.value = false;
-            // 只移除未放置的加抽卡片
-            cards.value = cards.value.filter(c => c.boxId !== 'bottom' || !c.isExtraCard);
+            selectedDeckIndex.value = null;
+            extraCards.value = []; // 清空加抽卡片
             roundStatus.value = "牌局已結束，可匯出紀錄或重玩。";
             saveOperation('結束加抽模式。');
         };
 
+        const continueExtraDraw = () => {
+            // 清空當前加抽卡片，重新選擇牌組
+            extraCards.value = [];
+            selectedDeckIndex.value = null;
+            isSelectingDeck.value = true;
+            roundStatus.value = "加抽模式：請選擇要從哪副牌加抽。";
+        };
+
         // --- Computed Properties ---
-        const unassignedCards = computed(() => cards.value.filter(c => c.boxId === 'bottom'));
+        const unassignedCards = computed(() => {
+            if (isExtraDrawMode.value) {
+                return extraCards.value; // 加抽模式下顯示加抽卡片
+            } else {
+                return cards.value.filter(c => c.boxId === 'bottom'); // 正常模式下顯示未分配的卡片
+            }
+        });
 
         const getCardsInCell = (boxId) => {
           return computed(() => 
@@ -786,10 +819,10 @@
         };
 
         return {
-          cards, roundStatus, showModal, formData, tempForm, zodiacBoxes, rounds, isGameFinished, isExtraDrawMode, isSelectingDeck, selectedCardId, isLoading, activeTab,
+          cards, roundStatus, showModal, formData, tempForm, zodiacBoxes, rounds, isGameFinished, isExtraDrawMode, isSelectingDeck, selectedCardId, isLoading, activeTab, selectedDeckIndex, extraCards,
           openModal, saveForm, onDragStart, onDrop, dragOver, flipCard, selectCard,
           unassignedCards, getCardsInCell,
-          explorerNow, refreshPage, addExtraCards, endExtraDraw, selectDeckForExtra
+          explorerNow, refreshPage, addExtraCards, endExtraDraw, selectDeckForExtra, continueExtraDraw
         };
       }
     }).mount('#app');
