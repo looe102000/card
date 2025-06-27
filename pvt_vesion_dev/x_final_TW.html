@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>紫微牌抽卡應用</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4A5568', // 深灰藍
+            accent: '#4299E1', // 藍
+            bg: '#F7FAFC',
+            cardBg: '#FFFFFF'
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    .card-container {
+      perspective: 1000px;
+    }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.7s;
+      transform-style: preserve-3d;
+    }
+    .card-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+    .card-front,
+    .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 0.75rem;
+      background-size: cover;
+      background-position: center;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4px;
+    }
+    .card-front {
+      transform: rotateY(180deg);
+    }
+    .card-text {
+        font-size: 1.1rem;
+        font-weight: bold;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+    }
+    .card-number {
+        position: absolute;
+        top: 4px;
+        left: 6px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: #E0E0E0;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+  </style>
+</head>
+<body class="bg-bg text-gray-800">
+  <div id="app" class="max-w-screen-2xl mx-auto p-4 md:p-6">
+    
+    <!-- Modal 編輯表單 -->
+    <div v-if="showModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl shadow-2xl w-full md:w-1/2 lg:w-1/3 p-6">
+        <h2 class="text-2xl font-bold mb-6 text-primary">請填寫本次提問資訊</h2>
+        <div class="space-y-4">
+            <select v-model="tempForm.gender" class="w-full p-2 border rounded">
+                <option value="" disabled>性別</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+            </select>
+            <input type="text" v-model="tempForm.name" placeholder="姓名" class="w-full p-2 border rounded">
+            <select v-model="tempForm.topic" class="w-full p-2 border rounded">
+                <option value="" disabled>主題</option>
+                <option value="工作">工作</option>
+                <option value="感情">感情</option>
+                <option value="財運">財運</option>
+                <option value="其他">其他</option>
+            </select>
+            <textarea v-model="tempForm.description" rows="4" placeholder="問題描述，請詳述人、事、時。" class="w-full p-2 border rounded"></textarea>
+        </div>
+        <div class="flex justify-end space-x-4 mt-6">
+          <button @click="saveForm" class="px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition">儲存並開始</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主畫面 Grid -->
+    <div class="grid grid-cols-4 grid-rows-[auto,auto,auto,auto] gap-4">
+      <!-- 宮位格子 -->
+      <div v-for="box in zodiacBoxes" :key="box.id"
+        :class="box.gridClass"
+        class="relative border-2 border-dashed border-gray-300 bg-white rounded-lg min-h-[10rem] p-2"
+        @dragover.prevent="dragOver" @drop="onDrop($event, box.id)"
+      >
+        <span class="absolute top-2 left-2 text-gray-300 text-4xl md:text-5xl select-none z-0 font-bold">{{ box.label }}</span>
+        <div class="absolute inset-0 flex flex-wrap items-end justify-start p-2 space-x-2">
+          <div v-for="card in getCardsInCell(box.id)" :key="card.id"
+            class="w-20 h-28 md:w-24 md:h-32 card-container z-10"
+            :class="{ 'cursor-pointer': isGameFinished }"
+            @click.stop="flipCard(card)"
+          >
+            <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+              <div class="card-front" :style="{ backgroundImage: `url(${card.frontImage})` }">
+                <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-sm p-1 bg-black/30">{{ card.frontText }}</div>
+              </div>
+              <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
+            </div>
+            <div class="absolute top-1 left-1 text-white text-lg font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中央區域 -->
+      <div class="relative col-start-2 col-span-2 row-start-2 row-span-2 bg-white border border-gray-200 rounded-2xl shadow-lg p-4 md:p-6 h-full flex flex-col">
+        <div class="flex justify-between items-start mb-4">
+          <div class="flex flex-wrap gap-x-4 gap-y-1 text-gray-700 text-sm md:text-base">
+            <div><span class="font-medium">性別：</span>{{ formData.gender || '—' }}</div>
+            <div><span class="font-medium">姓名：</span>{{ formData.name || '—' }}</div>
+            <div><span class="font-medium">主題：</span>{{ formData.topic || '—' }}</div>
+          </div>
+          <button @click="openModal" class="px-4 py-2 bg-gray-200 text-sm rounded-lg hover:bg-gray-300 transition">編輯</button>
+        </div>
+        <div class="mb-4 text-gray-600 text-sm md:text-base flex-grow">
+          <p class="font-medium">描述：</p>
+          <p class="whitespace-pre-wrap">{{ formData.description || '—' }}</p>
+        </div>
+        <div class="border-2 border-dashed border-accent/50 rounded-lg p-2 min-h-[100px]"
+             @dragover.prevent="dragOver" @drop="onDrop($event, 'center')">
+          <div class="flex flex-wrap">
+            <div v-for="card in getCardsInCell('center')" :key="card.id"
+              class="w-20 h-28 md:w-24 md:h-32 card-container z-10 m-1"
+               :class="{ 'cursor-pointer': isGameFinished }"
+               @click.stop="flipCard(card)"
+            >
+              <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+                <div class="card-front" :style="{ backgroundImage: `url(${card.frontImage})` }">
+                  <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-sm p-1 bg-black/30">{{ card.frontText }}</div>
+                </div>
+                <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
+              </div>
+              <div class="absolute top-1 left-1 text-white text-lg font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 狀態顯示 & 控制按鈕 -->
+    <div class="bg-white rounded-lg shadow p-4 mt-8 text-center">
+        <p class="text-xl font-bold text-primary mb-4">{{ roundStatus }}</p>
+        <div v-if="isGameFinished" class="flex flex-wrap justify-center gap-4">
+            <button @click="explorerNow" class="px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90">匯出本次操作紀錄</button>
+            <button @click="refreshPage" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">再抽一次</button>
+            <button @click="addExtraCards" v-if="isGameFinished && !isExtraDrawMode" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">加抽</button>
+            <button @click="endExtraDraw" v-if="isExtraDrawMode" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">結束加抽</button>
+        </div>
+    </div>
+
+    <!-- 底部：未放置卡片 -->
+    <div class="border-2 border-dashed border-accent bg-white rounded-lg mt-8 p-4 flex flex-wrap gap-4 justify-center min-h-[10rem]"
+    >
+      <div v-for="card in unassignedCards" :key="card.id"
+        class="w-20 h-28 md:w-24 md:h-32 card-container transition-transform ease-in-out duration-300"
+        :class="{
+            '-translate-y-5 shadow-xl': card.id === selectedCardId,
+            'cursor-grab': card.id === selectedCardId,
+            'cursor-pointer': card.id !== selectedCardId
+        }"
+        @click="selectCard(card)"
+        :draggable="card.id === selectedCardId" @dragstart="onDragStart($event, card)"
+      >
+        <div class="card-inner" :class="{ 'is-flipped': card.isFlipped }">
+          <div class="card-front" :style="{ backgroundImage: `url(${card.frontImage})` }">
+            <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-sm p-1 bg-black/30">{{ card.frontText }}</div>
+          </div>
+          <div class="card-back" :style="{ backgroundImage: `url(${card.backImage})` }"></div>
+        </div>
+        <div class="absolute top-1 left-1 text-white text-lg font-bold" style="text-shadow: 1px 1px 2px black;">{{ card.number }}</div>
+      </div>
+    </div>
+
+    <!-- Info Buttons -->
+    <div class="flex justify-center space-x-4 mt-4">
+        <button @click="showRulesModal = true" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">規則說明</button>
+        <button @click="showDrawInfoModal = true" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">抽牌說明</button>
+        <button @click="showLinksModal = true" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">相關連結</button>
+    </div>
+
+    <!-- 控制按鈕 -->
+    <div class="flex justify-center space-x-4 mt-4">
+        <button @click="explorerNow" v-if="isGameFinished" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">匯出紀錄</button>
+        <button @click="refreshPage" v-if="isGameFinished" class="px-6 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">再抽一次</button>
+        <button @click="addExtraCards" v-if="isGameFinished && !isExtraDrawMode" class="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">加抽</button>
+        <button @click="endExtraDraw" v-if="isExtraDrawMode" class="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">結束加抽</button>
+    </div>
+
+    <!-- 規則說明 Modal -->
+    <div v-if="showRulesModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="showRulesModal = false">
+      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-6 text-gray-800">規則說明</h3>
+        <div class="prose text-left">
+            <p>1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</p>
+            <p>2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？</p>
+            <p>3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）</p>
+            <p>4. 健康、失物、賭博、代問，將不予回答。</p>
+            <p>5. 不清楚不明確的問題，也將不予回答。</p>
+            <p>6. 出國讀書和遊學打工，要先設定國家再問。</p>
+            <p>7. 提問之前，自己最好先有想法，結果會更為精確。</p>
+            <p>例如：</p>
+            <p>●我XXX想知道是否可以在十月底前賣掉房子？</p>
+            <p>●我XXX是否可以在三個月內和XXX發展感情？</p>
+            <p>●我XXX在七月有XXX的考試，想知道考運如何？</p>
+        </div>
+        <button @click="showRulesModal = false" class="mt-8 bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
+      </div>
+    </div>
+
+    <!-- 抽牌說明 Modal -->
+    <div v-if="showDrawInfoModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="showDrawInfoModal = false">
+      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-6 text-gray-800">抽牌說明</h3>
+        <div class="prose text-left">
+          <p>1. 總共4副牌，共抽8張牌。</p>
+          <p>2. 第1輪共14張，抽2張，並選12宮位則一放。如1放酉，8放亥。</p>
+          <p>3. 卡片放置位置可以重覆。</p>
+          <p>4. 第2輪共14張，抽2張，並選12宮位則一放，與第1輪相同。如3放酉，12放申。</p>
+          <p>5. 第3輪共32張，抽3張，並選12宮位則一放，放置位置可以重覆，與前二輪相同。</p>
+          <p>6. 最後1輪‧，數字1-12擇1即可。</p>
+        </div>
+        <button @click="showDrawInfoModal = false" class="mt-8 bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
+      </div>
+    </div>
+
+    <!-- 相關連結 Modal -->
+    <div v-if="showLinksModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="showLinksModal = false">
+      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-6 text-gray-800">相關連結</h3>
+        <div class="flex justify-around items-start gap-4">
+          <div class="text-center">
+            <p class="font-semibold">問卷</p>
+            <a href="https://forms.gle/LcBrCzUvLagm7R5Z8" target="_blank">
+              <img src="images/feedbackQR.jpg" alt="問卷連結" class="w-48 h-48 object-contain">
+            </a>
+          </div>
+          <div class="text-center">
+            <p class="font-semibold">好友＠035huiof</p>
+            <a href="https://lin.ee/seLphIC" target="_blank">
+              <img src="images/@035huiof.png" alt="好友" class="w-48 h-48 object-contain">
+            </a>
+          </div>
+          <div class="text-center">
+            <p class="font-semibold">社群</p>
+            <a href="https://line.me/ti/g2/1DKrqd7y118-txklw0DKV0XkdIqBmLKTDIiu8A?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank">
+              <img src="images/LINEgroup.jpg" alt="社群" class="w-48 h-48 object-contain">
+            </a>
+          </div>
+        </div>
+        <button @click="showLinksModal = false" class="mt-8 bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">關閉</button>
+      </div>
+    </div>
+
+    <!-- 加抽牌組選擇 Modal -->
+    <div v-if="isSelectingDeck" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click.self="endExtraDraw">
+      <div class="bg-white p-8 rounded-lg shadow-xl text-center transform transition-all scale-100 opacity-100">
+        <h3 class="text-2xl font-bold mb-6 text-gray-800">請選擇要加抽的牌組</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <button v-for="(deck, index) in rounds" :key="index"
+                  @click="selectDeckForExtra(index)"
+                  class="p-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-transform transform hover:scale-105">
+            第 {{ index + 1 }} 副牌
+          </button>
+        </div>
+        <button @click="endExtraDraw" class="mt-8 bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">取消</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, computed, onMounted } = Vue;
+    createApp({
+      setup() {
+        // --- 狀態管理 ---
+        const cards = ref([]);
+        const currentRound = ref(0);
+        const draggedCount = ref(0);
+        const roundStatus = ref("請填寫問題並按「儲存並開始」");
+        const operations = ref([]);
+        const hasStarted = ref(false);
+        const isGameFinished = ref(false);
+        const draggingCard = ref(null);
+        const selectedCardId = ref(null);
+        const isExtraDrawMode = ref(false);
+        const isSelectingDeck = ref(false);
+
+        // --- Info Modals ---
+        const showRulesModal = ref(false);
+        const showDrawInfoModal = ref(false);
+        const showLinksModal = ref(false);
+
+        // --- 表單相關 ---
+        const showModal = ref(true);
+        const formData = reactive({ gender: '', name: '', topic: '', description: '' });
+        const tempForm = reactive({ gender: '', name: '', topic: '', description: '' });
+
+        // --- 宮位資料 ---
+        const zodiacBoxes = reactive([
+            { id: '1', label: '巳', gridClass: 'col-start-1 row-start-1' }, { id: '2', label: '午', gridClass: 'col-start-2 row-start-1' },
+            { id: '3', label: '未', gridClass: 'col-start-3 row-start-1' }, { id: '4', label: '申', gridClass: 'col-start-4 row-start-1' },
+            { id: '5', label: '辰', gridClass: 'col-start-1 row-start-2' }, { id: '6', label: '酉', gridClass: 'col-start-4 row-start-2' },
+            { id: '7', label: '卯', gridClass: 'col-start-1 row-start-3' }, { id: '8', label: '戌', gridClass: 'col-start-4 row-start-3' },
+            { id: '9', label: '寅', gridClass: 'col-start-1 row-start-4' }, { id: '10', label: '丑', gridClass: 'col-start-2 row-start-4' },
+            { id: '11', label: '子', gridClass: 'col-start-3 row-start-4' }, { id: '12', label: '亥', gridClass: 'col-start-4 row-start-4' }
+        ]);
+        const locations = reactive({
+            '1':'巳', '2':'午', '3':'未', '4':'申', '5':'辰', '6':'酉', '7':'卯', '8':'戌', '9':'寅', '10':'丑', '11':'子', '12':'亥', 'center':'中央', 'bottom':'抽牌區'
+        });
+
+        // --- 回合定義 ---
+        const rounds = reactive([
+            { backImage:"images/back3.jpg", frontImage:"images/face10.jpg", totalCards: 14, drawCount: 2, texts: [
+                { "front": "紫微", "back": "主星" }, { "front": "天機", "back": "主星" }, { "front": "太陽", "back": "主星" }, { "front": "武曲", "back": "主星" },
+                { "front": "天同", "back": "主星" }, { "front": "廉貞", "back": "主星" }, { "front": "天府", "back": "主星" }, { "front": "太陰", "back": "主星" },
+                { "front": "貪狼", "back": "主星" }, { "front": "巨門", "back": "主星" }, { "front": "天相", "back": "主星" }, { "front": "天梁", "back": "主星" },
+                { "front": "七殺", "back": "主星" }, { "front": "破軍", "back": "主星" }
+            ]},
+            { backImage:"images/back2.jpg", frontImage:"images/face16.jpg", totalCards: 14, drawCount: 2, texts: [
+                { "front": "文昌", "back": "副星" }, { "front": "文曲", "back": "副星" }, { "front": "左輔", "back": "副星" }, { "front": "右弼", "back": "副星" },
+                { "front": "天魁", "back": "副星" }, { "front": "天鉞", "back": "副星" }, { "front": "地空", "back": "副星" }, { "front": "地劫", "back": "副星" },
+                { "front": "火星", "back": "副星" }, { "front": "鈴星", "back": "副星" }, { "front": "擎羊", "back": "副星" }, { "front": "陀羅", "back": "副星" },
+                { "front": "天馬", "back": "副星" }, { "front": "祿存", "back": "副星" }
+            ]},
+            { backImage:"images/back1.jpg", frontImage:"images/face17.jpg", totalCards: 32, drawCount: 3, texts: [
+                { "front": "天官", "back": "乙級星" }, { "front": "天福", "back": "乙級星" }, { "front": "天廚", "back": "乙級星" }, { "front": "天刑", "back": "乙級星" },
+                { "front": "天姚", "back": "乙級星" }, { "front": "解神", "back": "乙級星" }, { "front": "天巫", "back": "乙級星" }, { "front": "天月", "back": "乙級星" },
+                { "front": "陰煞", "back": "乙級星" }, { "front": "台輔", "back": "乙級星" }, { "front": "封誥", "back": "乙級星" }, { "front": "天空", "back": "乙級星" },
+                { "front": "天哭", "back": "乙級星" }, { "front": "天虛", "back": "乙級星" }, { "front": "龍池", "back": "乙級星" }, { "front": "鳳閣", "back": "乙級星" },
+                { "front": "紅鸞", "back": "乙級星" }, { "front": "天喜", "back": "乙級星" }, { "front": "孤辰", "back": "乙級星" }, { "front": "寡宿", "back": "乙級星" },
+                { "front": "蜚廉", "back": "乙級星" }, { "front": "破碎", "back": "乙級星" }, { "front": "華蓋", "back": "乙級星" }, { "front": "咸池", "back": "乙級星" },
+                { "front": "天德", "back": "乙級星" }, { "front": "月德", "back": "乙級星" }, { "front": "天才", "back": "乙級星" }, { "front": "天壽", "back": "乙級星" },
+                { "front": "三台", "back": "乙級星" }, { "front": "八座", "back": "乙級星" }, { "front": "恩光", "back": "乙級星" }, { "front": "天貴", "back": "乙級星" }
+            ]},
+            { backImage:"images/back4.jpg", frontImage:"images/face9.jpg", totalCards: 12, drawCount: 1, texts: [
+                { "front": "長生", "back": "宮位" }, { "front": "沐浴", "back": "宮位" }, { "front": "冠帶", "back": "宮位" }, { "front": "臨官", "back": "宮位" },
+                { "front": "帝旺", "back": "宮位" }, { "front": "衰", "back": "宮位" }, { "front": "病", "back": "宮位" }, { "front": "死", "back": "宮位" },
+                { "front": "墓", "back": "宮位" }, { "front": "絕", "back": "宮位" }, { "front": "胎", "back": "宮位" }, { "front": "養", "back": "宮位" }
+            ]}
+        ]);
+
+        // --- 方法 ---
+        const createCardObject = (deckData, number, deckIndex) => {
+            return {
+                id: `card-${Date.now()}-${Math.random()}`,
+                deckIndex,
+                number,
+                boxId: 'bottom',
+                isFlipped: false,
+                backImage: deckData.backImage,
+                frontImage: deckData.frontImage, // Use the generic front image for the deck
+                frontText: deckData.texts[number - 1]?.front || ``,
+                backText: deckData.texts[number - 1]?.back || ``,
+            };
+        };
+
+        const openModal = () => {
+          Object.assign(tempForm, formData);
+          showModal.value = true;
+        };
+
+        const saveForm = () => {
+          if (!tempForm.gender || !tempForm.name || !tempForm.topic || !tempForm.description) {
+              alert('請填寫所有欄位！');
+              return;
+          }
+          Object.assign(formData, tempForm);
+          showModal.value = false;
+          if (!hasStarted.value) {
+            hasStarted.value = true;
+            saveOperation(`提問資訊: 性別=${formData.gender}, 姓名=${formData.name}, 主題=${formData.topic}, 描述=${formData.description}`);
+            initRound();
+          }
+        };
+        
+        const shuffleArray = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        };
+
+        const initRound = () => {
+            if (currentRound.value >= rounds.length) return;
+            const roundData = rounds[currentRound.value];
+            draggedCount.value = 0;
+            
+            const newCards = [];
+            const texts = roundData.texts;
+            
+            for (let i = 0; i < roundData.totalCards; i++) {
+                newCards.push({
+                    id: `r${currentRound.value}-${i}`,
+                    number: i + 1,
+                    frontText: texts.length > 0 ? (texts[i]?.front || '') : `${i+1}`,
+                    backText: texts.length > 0 ? (texts[i]?.back || '') : '',
+                    isFlipped: false,
+                    boxId: 'bottom',
+                    frontImage: roundData.frontImage,
+                    backImage: roundData.backImage,
+                    deckIndex: currentRound.value
+                });
+            }
+            shuffleArray(newCards);
+            cards.value = newCards;
+            updateRoundStatus();
+        };
+
+        const nextRound = () => {
+            currentRound.value++;
+            if (currentRound.value < rounds.length) {
+                const placedCards = cards.value.filter(c => c.boxId !== 'bottom');
+                initRound();
+                cards.value.push(...placedCards);
+            } else {
+                roundStatus.value = "所有回合已完成！";
+                isGameFinished.value = true;
+                saveOperation("所有回合已完成！");
+            }
+        };
+
+        const updateRoundStatus = () => {
+            if (isGameFinished.value) return;
+            const roundData = rounds[currentRound.value];
+            const remaining = roundData.drawCount - draggedCount.value;
+            roundStatus.value = `第 ${currentRound.value + 1} 回合，請拖曳 ${remaining} 張牌到宮位。`;
+        };
+
+        const selectCard = (card) => {
+            if (!hasStarted.value || isGameFinished.value || card.boxId !== 'bottom') return;
+            if (selectedCardId.value === card.id) {
+                selectedCardId.value = null; // Deselect
+            } else {
+                selectedCardId.value = card.id; // Select
+            }
+        };
+
+        const onDragStart = (e, card) => {
+          if (!hasStarted.value || isGameFinished.value || card.boxId !== 'bottom' || card.id !== selectedCardId.value) {
+            e.preventDefault();
+            return;
+          }
+          draggingCard.value = card;
+          e.dataTransfer.setData('text/plain', card.id);
+        };
+
+        const dragOver = (e) => {
+            if (draggingCard.value) {
+                e.preventDefault();
+            }
+        };
+
+        const onDrop = (e, slotId) => {
+          e.preventDefault();
+          if (!draggingCard.value) return;
+
+          const cardId = e.dataTransfer.getData('text/plain');
+          const card = cards.value.find(c => c.id === cardId);
+
+          if (!card || card.boxId !== 'bottom') return;
+          
+          // 第四回合只能放到中間
+          if (currentRound.value === 3 && slotId !== 'center') {
+            alert('第四回合的牌只能放置在中間區域！');
+            draggingCard.value = null;
+            return;
+          }
+
+          if (slotId === 'bottom') {
+              draggingCard.value = null;
+              return;
+          }
+
+          const locationName = locations[slotId] || '中央';
+
+          if (isExtraDrawMode.value) {
+              card.boxId = slotId;
+              card.isFlipped = true; // 放置後翻牌
+              saveOperation(`加抽，將 ${card.number}號牌 放置到 ${locationName} 宮`);
+              draggingCard.value = null;
+              roundStatus.value = '加抽模式：可點擊「加抽」按鈕繼續抽牌，或點擊「結束加抽」。';
+          } else {
+              const roundData = rounds[currentRound.value];
+              if (draggedCount.value < roundData.drawCount) {
+                card.boxId = slotId;
+                card.isFlipped = true; // 放置後翻牌
+                draggedCount.value++;
+                saveOperation(`第 ${currentRound.value + 1} 回合，將 ${card.number}號牌 放置到 ${locationName} 宮`);
+                
+                if (draggedCount.value === roundData.drawCount) {
+                    setTimeout(nextRound, 1000);
+                } else {
+                    updateRoundStatus();
+                }
+              } else {
+                  alert(`第 ${currentRound.value + 1} 回合只能放 ${roundData.drawCount} 張牌！`);
+              }
+          }
+          draggingCard.value = null;
+          selectedCardId.value = null; // Reset selection after drop
+        };
+
+        const flipCard = (card) => {
+            if (isGameFinished.value && card.boxId !== 'bottom') {
+                card.isFlipped = !card.isFlipped;
+                const action = card.isFlipped ? '翻開' : '蓋上';
+                const locationName = card.boxId === 'center' ? '中央' : `${locations[card.boxId]} 宮`;
+                saveOperation(`將位於 ${locationName} 的 ${card.number}號牌 ${action} (${card.frontText})`);
+            }
+        };
+
+        const saveOperation = (op) => {
+            const time = new Date().toLocaleString('zh-TW');
+            operations.value.push(`[${time}] ${op}`);
+        };
+
+        const explorerNow = () => {
+            const textContent = operations.value.join('\n');
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `紫微牌操作紀錄_${new Date().toISOString().slice(0,10)}.txt`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        };
+
+        const refreshPage = () => {
+            window.location.reload();
+        };
+
+        const addExtraCards = () => {
+            if (!isGameFinished.value) {
+                return alert("所有牌局結束後，才能進行加抽。");
+            }
+            isExtraDrawMode.value = true;
+            isSelectingDeck.value = true;
+            roundStatus.value = "加抽模式：請選擇要從哪副牌加抽。";
+        };
+
+        const selectDeckForExtra = (deckIndex) => {
+            isSelectingDeck.value = false;
+
+            const deckData = rounds[deckIndex];
+            const usedNumbers = new Set(
+                cards.value
+                    .filter(c => c.deckIndex === deckIndex)
+                    .map(c => c.number)
+            );
+
+            const availableNumbers = Array.from({ length: deckData.totalCards }, (_, i) => i + 1)
+                                          .filter(n => !usedNumbers.has(n));
+
+            if (availableNumbers.length === 0) {
+                alert(`第 ${deckIndex + 1} 副牌的卡片已經全部使用完畢。`);
+                isSelectingDeck.value = true; // allow choosing another
+                return;
+            }
+
+            const numberToDraw = availableNumbers[Math.floor(Math.random() * availableNumbers.length)];
+            const newCard = createCardObject(deckData, numberToDraw, deckIndex);
+            cards.value.push(newCard);
+
+            roundStatus.value = "加抽模式：請將下方新抽出的卡片放置到宮位。";
+            saveOperation(`從第 ${deckIndex + 1} 副牌加抽了 1 張牌。`);
+        };
+
+        const endExtraDraw = () => {
+            isExtraDrawMode.value = false;
+            isSelectingDeck.value = false;
+            // remove unplaced extra cards
+            cards.value = cards.value.filter(c => {
+                const isExtra = c.deckIndex !== undefined;
+                const isPlaced = c.boxId !== 'bottom';
+                return !isExtra || isPlaced;
+            });
+            roundStatus.value = "牌局已結束，可匯出紀錄或重玩。";
+            saveOperation('結束加抽模式。');
+        };
+
+        // --- Computed Properties ---
+        const unassignedCards = computed(() => cards.value.filter(c => c.boxId === 'bottom'));
+
+        const getCardsInCell = (boxId) => {
+          return computed(() => cards.value.filter(c => c.boxId === boxId)).value;
+        };
+
+        return {
+          cards, roundStatus, showModal, formData, tempForm, zodiacBoxes, isGameFinished, isExtraDrawMode, isSelectingDeck, selectedCardId,
+          showRulesModal, showDrawInfoModal, showLinksModal,
+          openModal, saveForm, onDragStart, onDrop, dragOver, flipCard, selectCard,
+          unassignedCards, getCardsInCell,
+          explorerNow, refreshPage, addExtraCards, endExtraDraw, selectDeckForExtra
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
