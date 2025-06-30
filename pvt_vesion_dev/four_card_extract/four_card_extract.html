@@ -229,7 +229,7 @@
           <!-- Card Front (Visible Initially) -->
           <div class="card-face card-front">
             <div class="card-content" v-show="card.isDeck">
-              <div class="deck-title">{{ card.back }}</div>
+              <div class="deck-title">{{ getCategoryIcon(card.deckType) }} {{ card.back }}</div>
             </div>
           </div>
           <!-- Card Back (Visible on Flip) -->
