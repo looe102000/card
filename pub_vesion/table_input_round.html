@@ -8,35 +8,265 @@
     <!-- 引入 Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #64b5f6;
+            --secondary-color: #ffb74d;
+            --success-color: #81c784;
+            --warning-color: #ef5350;
+            --dark-color: #37474f;
+            --light-color: #ffffff;
+            --gold-color: #ffd700;
+            --purple-color: #ba68c8;
+            --shadow-light: 0 2px 15px rgba(0,0,0,0.3);
+            --shadow-medium: 0 4px 25px rgba(0,0,0,0.4);
+            --shadow-heavy: 0 8px 35px rgba(0,0,0,0.5);
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+            --text-shadow-light: 1px 1px 2px rgba(0,0,0,0.3);
+            --glow-effect: 0 0 20px rgba(255,255,255,0.3);
+        }
         
         html, body {
-            font-family: Arial, sans-serif !important;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', Arial, sans-serif !important;
             min-height: 100%;
             height: auto;
             color: #fff !important;
+            scroll-behavior: smooth;
         }
 
         html{
             /* 背景圖 */
             background-image: url("images/background1.jpg") !important;
-            background-size: cover;           /* 確保背景圖片覆蓋整個頁面 */
-            background-repeat: no-repeat;     /* 防止背景圖片重複 */
-            background-position: center;      /* 使背景圖保持居中 */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
         }
 
         body {
-            background: none !important; /* 覆蓋 Bootstrap 對 body 背景的設定 */
+            background: none !important;
+            line-height: 1.6;
+        }
+
+        /* 加強半透明遮罩提升可讀性 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+            pointer-events: none;
         }
 
         .container {
-            max-width: 800px; /* 調整容器的最大寬度，使其更窄 */
-            margin: 0 auto; /* 自動設定左右的 margin，使其置中 */
-            padding: 0 20px; /* 增加左右 padding，使內容離邊緣更遠 */
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
         @media screen and (max-width: 768px) {
             .container {
-                padding: 0 2px; /* 在較小的螢幕上減少 padding */
+                padding: 0 15px;
+            }
+        }
+
+        /* 卡片樣式優化 */
+        .card-enhanced {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-heavy);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            transition: var(--transition);
+        }
+
+        .card-enhanced:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* 頁面標題優化 */
+        .page-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, #ffffff, #64b5f6, #81c784);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @media screen and (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* 按鈕樣式統一優化 */
+        .btn-enhanced {
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-enhanced:hover::before {
+            left: 100%;
+        }
+
+        .btn-enhanced:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-outline-light.btn-enhanced {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-outline-light.btn-enhanced:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #fff;
+            color: #fff;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-outline-danger.btn-enhanced {
+            background: rgba(239, 83, 80, 0.2);
+            border-color: rgba(239, 83, 80, 0.7);
+            color: #fff;
+        }
+
+        .btn-outline-danger.btn-enhanced:hover {
+            background: rgba(239, 83, 80, 0.3);
+            border-color: #ef5350;
+            color: #fff;
+        }
+
+        .btn-outline-info.btn-enhanced {
+            background: rgba(100, 181, 246, 0.2);
+            border-color: rgba(100, 181, 246, 0.7);
+            color: #fff;
+        }
+
+        .btn-outline-info.btn-enhanced:hover {
+            background: rgba(100, 181, 246, 0.3);
+            border-color: #64b5f6;
+            color: #fff;
+        }
+
+        .btn-outline-warning.btn-enhanced {
+            background: rgba(255, 183, 77, 0.2);
+            border-color: rgba(255, 183, 77, 0.7);
+            color: #fff;
+        }
+
+        .btn-outline-warning.btn-enhanced:hover {
+            background: rgba(255, 183, 77, 0.3);
+            border-color: #ffb74d;
+            color: #fff;
+        }
+
+        .btn-primary.btn-enhanced {
+            background: linear-gradient(135deg, #64b5f6, #42a5f5);
+            border-color: #64b5f6;
+            color: #fff;
+        }
+
+        .btn-primary.btn-enhanced:hover {
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            border-color: #42a5f5;
+            color: #fff;
+        }
+
+        .btn-secondary.btn-enhanced {
+            background: linear-gradient(135deg, #90a4ae, #78909c);
+            border-color: #90a4ae;
+            color: #fff;
+        }
+
+        .btn-secondary.btn-enhanced:hover {
+            background: linear-gradient(135deg, #78909c, #607d8b);
+            border-color: #78909c;
+            color: #fff;
+        }
+
+        .btn-success.btn-enhanced {
+            background: linear-gradient(135deg, #81c784, #66bb6a);
+            border-color: #81c784;
+            color: #fff;
+        }
+
+        .btn-success.btn-enhanced:hover {
+            background: linear-gradient(135deg, #66bb6a, #4caf50);
+            border-color: #66bb6a;
+            color: #fff;
+        }
+
+        /* 導航按鈕組優化 */
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-buttons .btn {
+            flex-shrink: 0;
+        }
+
+        .time-display {
+            margin-left: auto;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        @media screen and (max-width: 768px) {
+            .nav-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .time-display {
+                margin-left: 0;
+                text-align: center;
+                order: -1;
+                margin-bottom: 10px;
+            }
+
+            .nav-buttons .btn {
+                margin-bottom: 8px;
             }
         }
 
@@ -45,34 +275,106 @@
             margin: 20px 0;
         }
 
-        table {
-            margin: 20px 0;
+        .table-enhanced {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-medium);
+            border: none;
+        }
+
+        .table-enhanced th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
             text-align: center;
+            padding: 15px 12px;
+            border: none;
+            font-size: 1.1rem;
         }
 
-        th,
-        td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            width: 33.33%;
+        .table-enhanced td {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 15px 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            text-align: center;
+            vertical-align: middle;
+            overflow: visible;
+            position: relative;
         }
 
-        th {
-            background-color: #f2f2f2;
+        .table-enhanced tr:hover td {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.02);
+            transition: var(--transition);
         }
 
-        .table-bordered{
-            border: 2px solid #ccc;
-            border-radius: 10px; /* 調整為更大的圓角 */
-            overflow: hidden; /* 確保表格內容不會超出圓角的邊框 */
-        }
-
-        input[type="text"],
-        select {
-            padding: 10px;
+        .form-control-enhanced, .form-select-enhanced {
+            border-radius: 8px;
+            border: 3px solid var(--primary-color);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
             font-size: 18px;
-            border: 1px solid #ddd;
-            width: 100%;
+            font-weight: 600;
+            padding: 15px 20px;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 10px rgba(100, 181, 246, 0.3);
+            min-height: 50px;
+        }
+
+        .form-control-enhanced:focus, .form-select-enhanced:focus {
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 0.3rem rgba(129, 199, 132, 0.4);
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.02);
+        }
+
+        .form-control-enhanced:disabled, .form-select-enhanced:disabled {
+            background: rgba(224, 224, 224, 0.9);
+            border-color: rgba(200, 200, 200, 0.5);
+            color: #666;
+        }
+
+        .form-control-enhanced:hover:not(:disabled), .form-select-enhanced:hover:not(:disabled) {
+            border-color: var(--secondary-color);
+            box-shadow: 0 4px 15px rgba(255, 183, 77, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* 添加輸入容器樣式防止溢出 */
+        .input-container {
+            position: relative;
+            overflow: visible;
+            padding: 2px;
+        }
+
+        /* 添加輸入提示樣式 */
+        .input-hint {
+            position: relative;
+        }
+
+        .input-hint::before {
+            content: '點擊輸入';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--warning-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .input-hint:hover::before {
+            opacity: 1;
         }
 
         .images {
@@ -86,46 +388,72 @@
         .results {
             margin-top: 20px;
             font-size: 18px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
         .number-range {
-            font-size: 14px;
-            color: #888;
+            font-size: 12px;
+            color: var(--primary-color);
             margin-top: 5px;
+            font-style: italic;
+            font-weight: 600;
+            background: rgba(100, 181, 246, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(100, 181, 246, 0.3);
         }
 
         .copy-button {
             margin-left: 10px;
             cursor: pointer;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 20px;
         }
 
         .textareaContent {
-            font-size: 20px;
-            padding: 5px;
-            border: 2px solid #ccc;
-            border-radius: 5px;
+            font-size: 16px;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--border-radius);
             resize: none;
             width: 100%;
-            height: 100%;
-            /* 調整高度以適應 RWD */
+            min-height: 120px;
             box-sizing: border-box;
-            /* 確保 padding 和 border 不會影響元素的總大小 */
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .textareaContent:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .textareaContent:disabled {
+            background: rgba(224, 224, 224, 0.9);
+            border-color: rgba(200, 200, 200, 0.5);
         }
 
         .summary_div_background {
-            background-color: #f8f9fa;
-            /*圖片*/
-            /*background-image: url('images/summary_div_background.jpg');*/
-            /*如果要換圖片就把這個註解*/
-            background: linear-gradient(to bottom right, #e0f7fa, #f1f8e9); /* 使用淡藍色到淡綠色的漸層背景 */
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
-            color: black;
+            background: linear-gradient(135deg, rgba(240, 248, 255, 0.95) 0%, rgba(241, 248, 233, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-medium);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #333;
+            padding: 25px;
         }
 
         .modal-result-text_style{
-            color:black; 
+            color: #333; 
             overflow-wrap: break-word;
         }
 
@@ -203,13 +531,13 @@
     <div id="app">
         <!-- 說明頁面 -->
         <div id="A_Page" class="page container introPage p-3" :class="{ visible: currentPage === 'A_Page' }">
-            <h1 class="mb-1 text-center" style="font-weight: bold;">歡迎來到抽牌系統</h1>
+            <h1 class="page-title mb-4">歡迎來到抽牌系統</h1>
             <div class="row">
                 <!-- 規則說明 -->
                 <div class="col-md-12 mt-2">
-                    <div class="p-2 border rounded shadow-sm summary_div_background">
-                        <h1 class="mb-3" style="color: #007bff;">規則說明</h2>
-                        <ol style="line-height: 1.8; color: #444;">
+                    <div class="card-enhanced p-4">
+                        <h2 class="mb-3" style="color: #007bff; font-weight: 600;">規則說明</h2>
+                        <ol style="line-height: 1.8; color: #444; font-size: 1.1rem;">
                             <li>每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</li>
                             <li>問題務必「清楚精準」，最好設定明確時間。<br>例如：「我在三個月內會不會有好桃花？」、「我半年內是否有升遷的可能？」</li>
                             <li>如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術）。</li>
@@ -218,8 +546,8 @@
                             <li>出國唸書和遊學打工，要先設定國家再問。</li>
                             <li>提問之前，自己最好先有想法，結果會更為精確。</li>
                         </ol>
-                        <p>例如：</p>
-                        <ul style="color: #444;">
+                        <h3 style="color: #007bff; margin-top: 2rem; margin-bottom: 1rem;">範例：</h3>
+                        <ul style="color: #444; font-size: 1.1rem;">
                             <li>我想知道是否可以在十月底前賣掉房子？</li>
                             <li>我是否可以在三個月內和某人發展感情？</li>
                             <li>我在七月有某個考試，想知道考運如何？</li>
@@ -228,18 +556,24 @@
                 </div>
             </div>
             <div class="text-center">
-                <button type="button" class="btn btn-outline-light btn-lg mt-3 mb-5 px-5" @click="navigateToPage('B_Page')">下一頁</button>
+                <button type="button" class="btn btn-outline-light btn-lg btn-enhanced mt-4 mb-5 px-5" @click="navigateToPage('B_Page')">
+                    <i class="fas fa-arrow-right me-2"></i>下一頁
+                </button>
             </div>
         </div>
         <!-- B頁面 -->
         <div id="B_Page" class="page container introPage p-3" :class="{ visible: currentPage === 'B_Page' }">
-            <button type="button" class="btn btn-outline-light" style="margin-right: 10px;" @click="navigateToPage('A_Page')">上一頁</button>
+            <div class="nav-buttons">
+                <button type="button" class="btn btn-outline-light btn-enhanced" @click="navigateToPage('A_Page')">
+                    <i class="fas fa-arrow-left me-2"></i>上一頁
+                </button>
+            </div>
             <div class="row">
                 <div class="col-md-12 mt-2">
-                    <div class="p-2 border rounded shadow-sm summary_div_background">
+                    <div class="card-enhanced p-4">
                         <!-- 抽牌說明 -->
-                        <h1 class="mb-3" style="color: #007bff;">抽牌說明</h2>
-                        <ol style="line-height: 1.8; color: #444;">
+                        <h2 class="mb-3" style="color: #007bff; font-weight: 600;">抽牌說明</h2>
+                        <ol style="line-height: 1.8; color: #444; font-size: 1.1rem;">
                             <li>總共4副牌，共抽8張牌。</li>
                             <li>第1輪共14張，抽2張，並選擇12宮位放置。例如：1放酉，8放亥。</li>
                             <li>卡片放置位置可以重覆。</li>
@@ -251,7 +585,9 @@
                 </div>
             </div>
             <div class="text-center">
-                <button type="button" class="btn btn-outline-light btn-lg mt-3 mb-5 px-5" @click="navigateToPage('C_Page')">下一頁</button>
+                <button type="button" class="btn btn-outline-light btn-lg btn-enhanced mt-4 mb-5 px-5" @click="navigateToPage('C_Page')">
+                    <i class="fas fa-arrow-right me-2"></i>下一頁
+                </button>
             </div>
         </div>
         <!-- 填問題 -->
@@ -259,101 +595,145 @@
             <div class="table-container row">
                 <div class="col-md-12">
                     <div class="center-text">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 5px;">
+                        <div class="nav-buttons mb-4">
                             <!-- Left side buttons -->
-                            <div class="button-container" style="display: flex;">
-                                <button id="returnButton" type="button" class="btn btn-outline-light" style="margin-right: 10px;" @click="navigateToPage('B_Page')">上一頁</button>
-                                <button type="button" class="btn btn-outline-danger" style="margin-right: 10px;"
+                            <div class="button-container" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button id="returnButton" type="button" class="btn btn-outline-light btn-enhanced" @click="navigateToPage('B_Page')">
+                                    <i class="fas fa-arrow-left me-2"></i>上一頁
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-enhanced"
                                     data-bs-toggle="modal" data-bs-target="#DirectionsModal" @click.stop>規則說明</button>
-                                <button type="button" class="btn btn-outline-info" style="margin-right: 10px;"
+                                <button type="button" class="btn btn-outline-info btn-enhanced"
                                     data-bs-toggle="modal" data-bs-target="#CardsModal" @click.stop>抽牌說明</button>
-                                <button type="button" class="btn btn-outline-warning" style="margin-right: 10px;"
+                                <button type="button" class="btn btn-outline-warning btn-enhanced"
                                      data-bs-toggle="modal" data-bs-target="#AllLinkModalLabel" @click.stop>連結資訊</button>
                             </div>
                             <!-- Right side time block -->
-                            <div style="margin-left: auto; font-weight: bold;">目前時間 : {{ currentTime }}</div>
+                            <div class="time-display">目前時間 : {{ currentTime }}</div>
                         </div>
-                        <div style="display: flex; margin-bottom: 10px; width: 100%; max-width: 100%;" @click.stop>
-                            <select class="form-select" style="width: 30%; margin-right: 10px;" v-model="gender">
-                                <option value="" hidden>性別</option>
-                                <option value="男">男</option>
-                                <option value="女">女</option>
-                            </select>
-                            <input type="text" class="form-control" style="width: 40%; margin-right: 10px;"
-                                v-model="cus_name" placeholder="姓名">
-                            <select id="selectSubject" ref="selectSubject" class="form-select" style="width: 30%;">
-                                <option value="" hidden>主題</option>
-                                <option value="工作">工作</option>
-                                <option value="感情">感情</option>
-                                <option value="財運">財運</option>
-                                <option value="其他">其他</option>
-                            </select>
-                        </div>
-                        <textarea v-model="questionContent" id="textareaContent" ref="textareaContent"
-                            class="textareaContent mt-1" required placeholder="問題描述，請詳述說明人、事、時。" @click.stop></textarea>
-                        <!--未抽牌前可以改題目, 抽牌後只能瀏覽-->
-                        <div style="display: flex;margin-top: 10px;">
-                            <button v-if="!allRoundsCompleted && !hasSelectedBox" type="button" class="btn btn-primary" style="margin-right: 10px;" @click="SubmitText()" 
-                                @click.stop>確認</button>
-                            <button v-if="!allRoundsCompleted && !hasSelectedBox" type="button" class="btn btn-primary"
-                                style="margin-right: 10px;" @click="ModifySubmitText()" @click.stop>編輯</button>
-                            <button v-if="allRoundsCompleted || hasSelectedBox" type="button" class="btn btn-primary"
-                                style="margin-right: 10px;" @click="gotoCardPage('E_Page')">返回抽牌頁</button>
+                        
+                        <div class="card-enhanced p-4 mb-4">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <select class="form-select form-select-enhanced" v-model="gender">
+                                        <option value="" hidden>性別</option>
+                                        <option value="男">男</option>
+                                        <option value="女">女</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control form-control-enhanced"
+                                        v-model="cus_name" placeholder="姓名">
+                                </div>
+                                <div class="col-md-4">
+                                    <select id="selectSubject" ref="selectSubject" class="form-select form-select-enhanced">
+                                        <option value="" hidden>主題</option>
+                                        <option value="工作">工作</option>
+                                        <option value="感情">感情</option>
+                                        <option value="財運">財運</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <textarea v-model="questionContent" id="textareaContent" ref="textareaContent"
+                                class="textareaContent mb-3" required placeholder="問題描述，請詳述說明人、事、時。" @click.stop></textarea>
+                            
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button v-if="!allRoundsCompleted && !hasSelectedBox" type="button" class="btn btn-primary btn-enhanced" @click="SubmitText()" 
+                                    @click.stop>確認</button>
+                                <button v-if="!allRoundsCompleted && !hasSelectedBox" type="button" class="btn btn-secondary btn-enhanced"
+                                    @click="ModifySubmitText()" @click.stop>編輯</button>
+                                <button v-if="allRoundsCompleted || hasSelectedBox" type="button" class="btn btn-success btn-enhanced"
+                                    @click="gotoCardPage('E_Page')">返回抽牌頁</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div id="D_Page" class="page container introPage p-3" :class="{ visible: currentPage === 'D_Page' }">
-            <button type="button" class="btn btn-outline-light" style="margin-right: 10px;" @click="navigateToPage('C_Page')">上一頁</button>
+            <div class="nav-buttons mb-4">
+                <button type="button" class="btn btn-outline-light btn-enhanced" @click="navigateToPage('C_Page')">
+                    <i class="fas fa-arrow-left me-2"></i>上一頁
+                </button>
+            </div>
             <div class="row">
                 <div class="col-md-12 mt-2">
-                    <div class="p-2 border rounded shadow-sm meditation_style">
-                        <p>請專心冥想您的問題，並點選下方的按鈕進行抽牌。</p>
+                    <div class="p-4 border rounded shadow-sm meditation_style">
+                        <h3 class="text-white mb-4">請專心冥想您的問題</h3>
+                        <p class="text-white">深呼吸，放鬆心情，專注於您想要詢問的問題</p>
                     </div>
                 </div>
             </div>
             <div class="text-center">
-                <button type="button" class="btn btn-outline-light btn-lg mt-3 mb-5 px-5" @click="navigateToPage('E_Page')">抽牌</button>
+                <button type="button" class="btn btn-outline-light btn-lg btn-enhanced mt-4 mb-5 px-5" @click="navigateToPage('E_Page')">
+                    <i class="fas fa-magic me-2"></i>開始抽牌
+                </button>
             </div>
         </div>
         <div id="E_Page" class="page container introPage p-3" :class="{ visible: currentPage === 'E_Page' }">
-            <button type="button" class="btn btn-outline-light" style="margin-right: 10px;" @click="navigateToPage('C_Page')">返回問題頁</button>
+            <div class="nav-buttons mb-4">
+                <button type="button" class="btn btn-outline-light btn-enhanced" @click="navigateToPage('C_Page')">
+                    <i class="fas fa-arrow-left me-2"></i>返回問題頁
+                </button>
+            </div>
              <!-- 表格區域 -->
              <div class="col-md-12" v-if="showTable">
-                <table class="table table-bordered">
-                    <tr>
-                        <th>回合</th>
-                        <th>數字</th>
-                        <th>區域</th>
-                    </tr>
-                    <template v-for="(row, index) in rows" :key="index">
-                        <tr v-if="canShow(index)">
-                            <td>{{ row.currentRound }}</td>
-                            <td>
-                                <!-- 數字輸入框 -->
-                                <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
-                                    :disabled="!canEdit(index) || isNextFilled(index)">
-                                <div class="number-range">可填數字: 1-{{ getMaxNumber(row.currentRound) }}</div>
-                            </td>
-                            <td>
-                                <!-- 區域選擇框 -->
-                                <select v-model="row.box">
-                                    <option v-for="option in getOptions(row.currentRound)" :value="option.value">
-                                        {{ option.text }}
-                                    </option>
-                                </select>
-                            </td>
-                        </tr>
-                    </template>
-                </table>
+                <div class="card-enhanced mb-4">
+                    <table class="table table-enhanced">
+                        <thead>
+                            <tr>
+                                <th>回合</th>
+                                <th>數字</th>
+                                <th>區域</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-for="(row, index) in rows" :key="index">
+                                <tr v-if="canShow(index)">
+                                    <td>{{ row.currentRound }}</td>
+                                    <td>
+                                        <!-- 數字輸入框 -->
+                                        <div class="input-container">
+                                            <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
+                                                :disabled="!canEdit(index) || isNextFilled(index)" 
+                                                class="form-control form-control-enhanced input-hint"
+                                                :placeholder="canEdit(index) && !isNextFilled(index) ? '點擊輸入數字' : ''"
+                                                style="text-align: center; font-size: 20px; font-weight: bold;">
+                                            <div class="number-range">可填數字: 1-{{ getMaxNumber(row.currentRound) }}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <!-- 區域選擇框 -->
+                                        <div class="input-container">
+                                            <select v-model="row.box" 
+                                                class="form-select form-select-enhanced input-hint"
+                                                :disabled="!canEdit(index) || isNextFilled(index)"
+                                                style="text-align: center; font-size: 18px; font-weight: bold;">
+                                                <option value="" hidden>選擇區域</option>
+                                                <option v-for="option in getOptions(row.currentRound)" :value="option.value">
+                                                    {{ option.text }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <!-- 結果區域，所有回合完成後顯示 -->
-            <div class="results col-12 col-md-6" v-if="allRoundsCompleted && showTable">
-                <p>本次操作序號為：</p>
-                <p style="white-space: normal;word-wrap: break-word;overflow-wrap: break-word;">{{ base64Output }}</p>
-                <!-- 複製按鈕 -->
-                <button class="btn btn-outline-light copy-button" @click="copyToClipboard(base64Output)">複製</button>
+            <div class="results col-12 col-md-12" v-if="allRoundsCompleted && showTable">
+                <div class="card-enhanced p-4">
+                    <h5 class="mb-3" style="color: #fff;">本次操作序號為：</h5>
+                    <p style="white-space: normal;word-wrap: break-word;overflow-wrap: break-word; color: #fff; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">{{ base64Output }}</p>
+                    <!-- 複製按鈕 -->
+                    <button class="btn btn-outline-light btn-enhanced copy-button" @click="copyToClipboard(base64Output)">
+                        <i class="fas fa-copy me-2"></i>複製
+                    </button>
+                </div>
             </div>
         </div>
 
