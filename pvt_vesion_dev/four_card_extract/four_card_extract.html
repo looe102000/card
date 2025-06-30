@@ -202,7 +202,6 @@
           <div class="card-face card-back" :class="['deck-' + card.deckType]">
             <div class="card-content" v-show="!card.isDeck">
               <div :class="['card-front-text', { 'vertical-text': card.front.length <= 3 }]">{{ card.front }}</div>
-              <div class="card-back-text">{{ card.back }}</div>
             </div>
           </div>
         </div>
