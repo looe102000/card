@@ -344,11 +344,192 @@
             transform: translateY(-2px);
         }
 
-        /* 添加輸入容器樣式防止溢出 */
-        .input-container {
-            position: relative;
-            overflow: visible;
-            padding: 2px;
+        /* 數字選擇器樣式 - 重新設計 */
+        .number-selector {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 3px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .selector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .selector-title {
+            color: #333;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .selector-close {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .selector-close:hover {
+            background: #c82333;
+        }
+
+        .numbers-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .number-option {
+            background: linear-gradient(135deg, var(--primary-color), #42a5f5);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .number-option:hover:not(:disabled) {
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .number-option:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .number-option:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 手機優化 */
+        @media screen and (max-width: 768px) {
+            .numbers-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+            
+            .number-option {
+                padding: 18px 8px;
+                font-size: 18px;
+                min-height: 55px;
+            }
+        }
+
+        /* 背景遮罩 */
+        .modal-backdrop-custom {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+        }
+
+        /* 區域選擇器樣式 - 和數字選擇器類似 */
+        .area-selector {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 3px solid var(--success-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .area-selector .selector-header {
+            border-bottom: 2px solid var(--success-color);
+        }
+
+        .area-selector .selector-title {
+            color: #333;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .areas-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .area-option {
+            background: linear-gradient(135deg, var(--success-color), #66bb6a);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .area-option:hover {
+            background: linear-gradient(135deg, #66bb6a, #4caf50);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 手機優化 */
+        @media screen and (max-width: 768px) {
+            .areas-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+            
+            .area-option {
+                padding: 18px 8px;
+                font-size: 16px;
+                min-height: 65px;
+            }
         }
 
         /* 添加輸入提示樣式 */
@@ -695,27 +876,27 @@
                                     <td>{{ row.currentRound }}</td>
                                     <td>
                                         <!-- 數字輸入框 -->
-                                        <div class="input-container">
-                                            <input type="text" v-model="row.card" @input="debouncedHandleInput(index, row)"
+                                        <div class="input-container" style="position: relative;">
+                                            <input type="text" v-model="row.card" 
                                                 :disabled="!canEdit(index) || isNextFilled(index)" 
                                                 class="form-control form-control-enhanced input-hint"
-                                                :placeholder="canEdit(index) && !isNextFilled(index) ? '點擊輸入數字' : ''"
-                                                style="text-align: center; font-size: 20px; font-weight: bold;">
+                                                :placeholder="canEdit(index) && !isNextFilled(index) ? '點擊選擇數字' : ''"
+                                                style="text-align: center; font-size: 20px; font-weight: bold; cursor: pointer;"
+                                                readonly
+                                                @click="openNumberSelector(index)">
                                             <div class="number-range">可填數字: 1-{{ getMaxNumber(row.currentRound) }}</div>
                                         </div>
                                     </td>
                                     <td>
                                         <!-- 區域選擇框 -->
                                         <div class="input-container">
-                                            <select v-model="row.box" 
-                                                class="form-select form-select-enhanced input-hint"
+                                            <input type="text" v-model="row.box" 
                                                 :disabled="!canEdit(index) || isNextFilled(index)"
-                                                style="text-align: center; font-size: 18px; font-weight: bold;">
-                                                <option value="" hidden>選擇區域</option>
-                                                <option v-for="option in getOptions(row.currentRound)" :value="option.value">
-                                                    {{ option.text }}
-                                                </option>
-                                            </select>
+                                                class="form-control form-control-enhanced input-hint"
+                                                :placeholder="canEdit(index) && !isNextFilled(index) ? '點擊選擇區域' : ''"
+                                                style="text-align: center; font-size: 18px; font-weight: bold; cursor: pointer;"
+                                                readonly
+                                                @click="openAreaSelector(index)">
                                         </div>
                                     </td>
                                 </tr>
@@ -732,6 +913,43 @@
                     <!-- 複製按鈕 -->
                     <button class="btn btn-outline-light btn-enhanced copy-button" @click="copyToClipboard(base64Output)">
                         <i class="fas fa-copy me-2"></i>複製
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 數字選擇器 -->
+        <div v-if="showNumberSelector" class="modal-backdrop-custom" @click="closeNumberSelector">
+            <div class="number-selector" @click.stop>
+                <div class="selector-header">
+                    <span class="selector-title">選擇數字 ({{ currentSelectorRound }}輪)</span>
+                    <button class="selector-close" @click="closeNumberSelector">×</button>
+                </div>
+                <div class="numbers-container">
+                    <button v-for="num in selectorNumbers" 
+                        :key="num"
+                        class="number-option"
+                        :disabled="isNumberUsed(currentSelectorIndex, num)"
+                        @click="selectNumber(num)">
+                        {{ num }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 區域選擇器 -->
+        <div v-if="showAreaSelector" class="modal-backdrop-custom" @click="closeAreaSelector">
+            <div class="area-selector" @click.stop>
+                <div class="selector-header">
+                    <span class="selector-title">選擇區域 ({{ currentAreaSelectorRound }}輪)</span>
+                    <button class="selector-close" @click="closeAreaSelector">×</button>
+                </div>
+                <div class="areas-container">
+                    <button v-for="area in selectorAreas" 
+                        :key="area.value"
+                        class="area-option"
+                        @click="selectArea(area)">
+                        {{ area.text }}
                     </button>
                 </div>
             </div>
@@ -917,6 +1135,74 @@
                 const cus_name = ref('');
 
                 const showTable = ref(false);
+
+                // 新的數字選擇器狀態
+                const showNumberSelector = ref(false);
+                const currentSelectorIndex = ref(null);
+                const currentSelectorRound = ref('');
+                const selectorNumbers = ref([]);
+
+                // 區域選擇器狀態
+                const showAreaSelector = ref(false);
+                const currentAreaSelectorIndex = ref(null);
+                const currentAreaSelectorRound = ref('');
+                const selectorAreas = ref([]);
+
+                // 數字選擇器相關函數
+                const openNumberSelector = (index) => {
+                    currentSelectorIndex.value = index;
+                    const row = rows.value[index];
+                    currentSelectorRound.value = row.currentRound;
+                    const maxNumber = getMaxNumber(row.currentRound);
+                    selectorNumbers.value = Array.from({ length: maxNumber }, (_, i) => i + 1);
+                    showNumberSelector.value = true;
+                };
+
+                const closeNumberSelector = () => {
+                    showNumberSelector.value = false;
+                    currentSelectorIndex.value = null;
+                    currentSelectorRound.value = '';
+                    selectorNumbers.value = [];
+                };
+
+                const selectNumber = (num) => {
+                    if (currentSelectorIndex.value !== null) {
+                        rows.value[currentSelectorIndex.value].card = num.toString();
+                        closeNumberSelector();
+                    }
+                };
+
+                const isNumberUsed = (currentIndex, num) => {
+                    const currentRound = rows.value[currentIndex].currentRound;
+                    return rows.value.some((row, index) => 
+                        index !== currentIndex && 
+                        row.currentRound === currentRound && 
+                        row.card === num.toString()
+                    );
+                };
+
+                // 區域選擇器相關函數
+                const openAreaSelector = (index) => {
+                    currentAreaSelectorIndex.value = index;
+                    const row = rows.value[index];
+                    currentAreaSelectorRound.value = row.currentRound;
+                    selectorAreas.value = getOptions(row.currentRound);
+                    showAreaSelector.value = true;
+                };
+
+                const closeAreaSelector = () => {
+                    showAreaSelector.value = false;
+                    currentAreaSelectorIndex.value = null;
+                    currentAreaSelectorRound.value = '';
+                    selectorAreas.value = [];
+                };
+
+                const selectArea = (area) => {
+                    if (currentAreaSelectorIndex.value !== null) {
+                        rows.value[currentAreaSelectorIndex.value].box = area.text;
+                        closeAreaSelector();
+                    }
+                };
 
                 // 定義是否可以編輯輸入框和選擇框
                 const canEdit = (index) => {
@@ -1360,7 +1646,24 @@
                     currentPage,
                     navigateToPage,
                     hasSelectedBox,
-                    gotoCardPage
+                    gotoCardPage,
+                    // 數字選擇器相關
+                    showNumberSelector,
+                    currentSelectorIndex,
+                    currentSelectorRound,
+                    selectorNumbers,
+                    openNumberSelector,
+                    closeNumberSelector,
+                    selectNumber,
+                    isNumberUsed,
+                    // 區域選擇器相關
+                    showAreaSelector,
+                    currentAreaSelectorIndex,
+                    currentAreaSelectorRound,
+                    selectorAreas,
+                    openAreaSelector,
+                    closeAreaSelector,
+                    selectArea
                 };
             }
         }).mount('#app');
