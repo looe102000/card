@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽牌系統 v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.27/dist/vue.global.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        html, body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', sans-serif;
+            scroll-behavior: smooth;
+        }
+        html {
+            background-image: url("images/background1.jpg");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: -1;
+        }
+        .page {
+            display: none;
+        }
+        .visible {
+            display: block;
+        }
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div id="app" v-cloak class="container mx-auto p-4 max-w-4xl">
+
+        <!-- Page A: Welcome/Rules -->
+        <div id="A_Page" class="page" :class="{ 'visible': currentPage === 'A_Page' }">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4">歡迎來到抽牌系統</h1>
+                <p class="text-sky-300">一個引導您探索內心的工具</p>
+            </div>
+            <div class="bg-slate-800/70 backdrop-blur-sm border border-slate-700 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-sky-400 border-b-2 border-sky-700 pb-2 mb-4">規則說明</h2>
+                <ol class="list-decimal list-inside space-y-3 text-gray-300">
+                    <li>每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</li>
+                    <li>問題務必「清楚精準」，最好設定明確時間。例如：「我在三個月內會不會有好桃花？」</li>
+                    <li>如果占問的事情有了結果，請不吝給予回饋，讓我能隨時修正或是更加精進。</li>
+                    <li>健康、失物、賭博、代問，將不予回答。</li>
+                    <li>不清楚不明確的問題，也將不予回答。</li>
+                    <li>出國唸書和遊學打工，要先設定國家再問。</li>
+                    <li>提問之前，自己最好先有想法，結果會更為精確。</li>
+                </ol>
+                <h3 class="text-xl font-bold text-sky-400 mt-6 mb-3">範例：</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li>我想知道是否可以在十月底前賣掉房子？</li>
+                    <li>我是否可以在三個月內和某人發展感情？</li>
+                    <li>我在七月有某個考試，想知道考運如何？</li>
+                </ul>
+            </div>
+            <div class="text-center mt-8">
+                <button @click="navigateToPage('B_Page')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg transform hover:scale-105">
+                    下一頁 <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Page B: Drawing Instructions -->
+        <div id="B_Page" class="page" :class="{ 'visible': currentPage === 'B_Page' }">
+            <div class="flex justify-start mb-6">
+                <button @click="navigateToPage('A_Page')" class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-6 rounded-full transition-all duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i> 上一頁
+                </button>
+            </div>
+            <div class="bg-slate-800/70 backdrop-blur-sm border border-slate-700 rounded-xl p-6 shadow-lg">
+                <h2 class="text-2xl font-bold text-amber-400 border-b-2 border-amber-700 pb-2 mb-4">抽牌說明</h2>
+                <ol class="list-decimal list-inside space-y-3 text-gray-300">
+                    <li>總共4副牌，共抽8張牌。</li>
+                    <li>第1輪共14張，抽2張，並選擇12宮位放置。例如：1放酉，8放亥。</li>
+                    <li>卡片放置位置可以重覆。</li>
+                    <li>第2輪共14張，抽2張，並選擇12宮位放置，與第1輪相同。例如：3放酉，12放申。</li>
+                    <li>第3輪共32張，抽3張，並選擇12宮位放置，放置位置可以重覆，與前二輪相同。</li>
+                    <li>最後1輪，數字1-12擇1即可。</li>
+                </ol>
+            </div>
+            <div class="text-center mt-8">
+                <button @click="navigateToPage('C_Page')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg transform hover:scale-105">
+                    我明白了，開始提問 <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Page C: User Input -->
+        <div id="C_Page" class="page" :class="{ 'visible': currentPage === 'C_Page' }">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <div class="flex gap-2 flex-wrap">
+                    <button @click="navigateToPage('B_Page')" class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-full text-sm transition">
+                        <i class="fas fa-arrow-left mr-1"></i> 上一頁
+                    </button>
+                    <button @click="showDirectionsModal = true" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-full text-sm transition">規則說明</button>
+                    <button @click="showCardsModal = true" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-full text-sm transition">抽牌說明</button>
+                    <button @click="showLinksModal = true" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-full text-sm transition">連結資訊</button>
+                </div>
+                <div class="bg-slate-900/80 text-sm text-cyan-300 font-mono py-2 px-4 rounded-full border border-slate-700">
+                    {{ currentTime }}
+                </div>
+            </div>
+
+            <div class="bg-slate-800/70 backdrop-blur-sm border border-slate-700 rounded-xl p-6 shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <select v-model="gender" :disabled="isSubmitted" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-sky-500 focus:border-sky-500 p-2.5 transition disabled:opacity-50">
+                        <option value="" hidden>選擇性別</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                    <input type="text" v-model="cus_name" placeholder="您的稱呼" :disabled="isSubmitted" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-sky-500 focus:border-sky-500 p-2.5 transition disabled:opacity-50">
+                    <select v-model="subject" :disabled="isSubmitted" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-sky-500 focus:border-sky-500 p-2.5 transition disabled:opacity-50">
+                        <option value="" hidden>選擇主題</option>
+                        <option value="工作">工作</option>
+                        <option value="感情">感情</option>
+                        <option value="財運">財運</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <textarea v-model="questionContent" :readonly="isSubmitted" placeholder="請在此詳述您的問題，包含人、事、時等細節..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-sky-500 focus:border-sky-500 p-2.5 transition h-32 resize-none disabled:opacity-50"></textarea>
+                <div class="flex gap-4 mt-4">
+                    <button v-if="!isSubmitted" @click="submitQuestion" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition">確認問題</button>
+                    <button v-if="isSubmitted" @click="editQuestion" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-full transition">編輯問題</button>
+                    <button v-if="hasSelectedBox || allRoundsCompleted" @click="navigateToPage('E_Page')" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-full transition">返回抽牌頁</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page D: Meditation -->
+        <div id="D_Page" class="page" :class="{ 'visible': currentPage === 'D_Page' }">
+             <div class="flex justify-start mb-6">
+                <button @click="navigateToPage('C_Page')" class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-6 rounded-full transition-all duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i> 返回問題頁
+                </button>
+            </div>
+            <div class="text-center">
+                <div class="h-[60vh] bg-cover bg-center rounded-xl shadow-2xl flex flex-col justify-center items-center p-6" style="background-image: url('images/img_meditation.jpg');">
+                    <div class="bg-black/60 p-8 rounded-xl">
+                        <h3 class="text-3xl font-bold text-white mb-4">請專心冥想您的問題</h3>
+                        <p class="text-gray-300">深呼吸，放鬆心情，專注於您想要詢問的事物。</p>
+                    </div>
+                </div>
+                <button @click="navigateToPage('E_Page')" class="mt-8 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg transform hover:scale-105">
+                    <i class="fas fa-magic mr-2"></i> 開始抽牌
+                </button>
+            </div>
+        </div>
+
+        <!-- Page E: Card Drawing -->
+        <div id="E_Page" class="page" :class="{ 'visible': currentPage === 'E_Page' }">
+            <div class="flex justify-start mb-6">
+                <button @click="navigateToPage('C_Page')" class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-6 rounded-full transition-all duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i> 返回問題頁
+                </button>
+            </div>
+            
+            <div v-if="isSubmitted" class="bg-slate-800/70 backdrop-blur-sm border border-slate-700 rounded-xl shadow-lg overflow-hidden">
+                <table class="w-full text-center">
+                    <thead class="bg-slate-900/50">
+                        <tr>
+                            <th class="p-3">回合</th>
+                            <th class="p-3">數字</th>
+                            <th class="p-3">區域</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700">
+                        <template v-for="(row, index) in rows" :key="index">
+                            <tr v-if="canShow(index)" class="hover:bg-slate-700/50 transition-colors duration-200">
+                                <td class="p-3 font-bold text-sky-400">{{ row.currentRound }}</td>
+                                <td class="p-3">
+                                    <div class="relative">
+                                        <input type="text" v-model="row.card" :disabled="!canEdit(index)"
+                                            class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 text-center font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                            :placeholder="canEdit(index) && !isNextFilled(index) ? '點擊選擇' : ''"
+                                            readonly @click="openNumberSelector(index)">
+                                        
+                                    </div>
+                                </td>
+                                <td class="p-3">
+                                    <input type="text" v-model="row.box" :disabled="!canEdit(index)"
+                                        class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 text-center font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                        :placeholder="canEdit(index) && !isNextFilled(index) ? '點擊選擇' : ''"
+                                        readonly @click="openAreaSelector(index)">
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <div v-if="allRoundsCompleted" class="mt-6 bg-emerald-800/70 backdrop-blur-sm border border-emerald-700 rounded-xl p-6 shadow-lg">
+                <h5 class="text-xl font-bold text-emerald-300 mb-3">抽牌完成！</h5>
+                <p class="text-gray-300 mb-2">本次操作序號為：</p>
+                <div class="bg-slate-900 p-3 rounded-lg text-amber-300 break-words font-mono text-sm">
+                    {{ base64Output }}
+                </div>
+                <button @click="copyToClipboard(base64Output)" class="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-full transition text-sm">
+                    <i class="fas fa-copy mr-2"></i> 複製序號
+                </button>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <!-- Number Selector Modal -->
+        <div v-if="showNumberSelector" @click="closeNumberSelector" class="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+            <div @click.stop class="bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col">
+                <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-sky-400">選擇數字 (第 {{ currentSelectorRound }} 回合)</h3>
+                    <button @click="closeNumberSelector" class="text-gray-400 hover:text-white">&times;</button>
+                </div>
+                <div class="p-4 overflow-y-auto">
+                    <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
+                        <button v-for="num in selectorNumbers" :key="num" @click="selectNumber(num)" :disabled="isNumberUsed(currentSelectorIndex, num)"
+                            class="p-3 rounded-lg font-bold text-white transition-all duration-200 disabled:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            :class="isNumberUsed(currentSelectorIndex, num) ? 'bg-red-800' : 'bg-sky-600 hover:bg-sky-700 transform hover:scale-110'">
+                            {{ num }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Area Selector Modal -->
+        <div v-if="showAreaSelector" @click="closeAreaSelector" class="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+            <div @click.stop class="bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col">
+                <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-amber-400">選擇區域 (第 {{ currentAreaSelectorRound }} 回合)</h3>
+                    <button @click="closeAreaSelector" class="text-gray-400 hover:text-white">&times;</button>
+                </div>
+                <div class="p-4 overflow-y-auto">
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        <button v-for="area in selectorAreas" :key="area.value" @click="selectArea(area)"
+                            class="p-3 rounded-lg font-bold text-white bg-amber-600 hover:bg-amber-700 transition-all duration-200 transform hover:scale-110">
+                            {{ area.text }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Generic Info Modal -->
+        <div v-if="showDirectionsModal || showCardsModal || showLinksModal" @click="closeAllModals" class="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+            <div @click.stop class="bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+                <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+                    <h3 v-if="showDirectionsModal" class="text-lg font-bold text-sky-400">規則說明</h3>
+                    <h3 v-if="showCardsModal" class="text-lg font-bold text-amber-400">抽牌說明</h3>
+                    <h3 v-if="showLinksModal" class="text-lg font-bold text-emerald-400">連結資訊</h3>
+                    <button @click="closeAllModals" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                </div>
+                <div class="p-6 overflow-y-auto text-gray-300">
+                    <!-- Directions Content -->
+                    <div v-if="showDirectionsModal" class="space-y-3">
+                        <p>1. 每一組牌只能問一個問題。如要問衍生問題，或其他問題，要再抽一組牌。</p>
+                        <p>2. 問題務必「清楚精準」，最好設定明確時間。Ex:我XXX"三個月內"會不會有好桃花？我XXX"半年內"是否有升遷的可能？</p>
+                        <p>3. 如果占問的事情有了結果，請不吝給予回饋（無論好壞，或是後續發展的回饋，讓我能隨時修正或是更加精進算牌技術。）</p>
+                        <p>4. 健康、失物、賭博、代問，將不予回答。</p>
+                        <p>5. 不清楚不明確的問題，也將不予回答。</p>
+                        <p>6. 出國唸書和遊學打工，要先設定國家再問。</p>
+                        <p>7. 提問之前，自己最好先有想法，結果會更為精確。</p>
+                        <p class="font-bold mt-4">例如：</p>
+                        <p>●我XXX想知道是否可以在十月底前賣掉房子？</p>
+                        <p>●我XXX是否可以在三個月內和XXX發展感情？</p>
+                        <p>●我XXX在七月有XXX的考試，想知道考運如何？</p>
+                    </div>
+                    <!-- Cards Content -->
+                    <div v-if="showCardsModal" class="space-y-3">
+                        <p>1. 總共4副牌，共抽8張牌。</p>
+                        <p>2. 第1輪共14張，抽2張，並選12宮位則一放。如1放酉，8放亥。</p>
+                        <p>3. 卡片放置位置可以重覆。</p>
+                        <p>4. 第2輪共14張，抽2張，並選12宮位則一放，與第1輪相同。如3放酉，12放申。</p>
+                        <p>5. 第3輪共32張，抽3張，並選12宮位則一放，放置位置可以重覆，與前二輪相同。</p>
+                        <p>6. 最後1輪‧，數字1-12擇1即可。</p>
+                    </div>
+                    <!-- Links Content -->
+                    <div v-if="showLinksModal">
+                        <div class="flex flex-col md:flex-row justify-around items-center text-center gap-6">
+                            <div class="flex flex-col items-center">
+                                <p class="font-bold mb-2">問卷</p>
+                                <a href="https://forms.gle/LcBrCzUvLagm7R5Z8" target="_blank">
+                                    <img src="images/feedbackQR.jpg" alt="問卷連結" class="w-40 h-40 object-contain rounded-lg">
+                                </a>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <p class="font-bold mb-2">好友＠035huiof</p>
+                                <a href="https://lin.ee/seLphIC" target="_blank">
+                                    <img src="images/@035huiof.png" alt="好友" class="w-40 h-40 object-contain rounded-lg">
+                                </a>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <p class="font-bold mb-2">社群</p>
+                                <a href="https://line.me/ti/g2/1DKrqd7y118-txklw0DKV0XkdIqBmLKTDIiu8A?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank">
+                                    <img src="images/LINEgroup.jpg" alt="社群" class="w-40 h-40 object-contain rounded-lg">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-slate-700 text-right">
+                    <button @click="closeAllModals" class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-6 rounded-full transition">關閉</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Modal -->
+        <div v-if="showResultModal" @click="showResultModal = false" class="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+            <div @click.stop class="bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-lg">
+                <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-emerald-400">回合結果</h3>
+                    <button @click="showResultModal = false" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-300 mb-2">本次操作序號為：</p>
+                    <div class="bg-slate-900 p-3 rounded-lg text-amber-300 break-words font-mono text-sm">
+                        {{ base64Output }}
+                    </div>
+                </div>
+                <div class="p-4 border-t border-slate-700 flex justify-end gap-4">
+                    <button @click="copyToClipboard(base64Output)" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-full transition">複製</button>
+                    <button @click="showResultModal = false" class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-full transition">關閉</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, onUnmounted, watch } = Vue;
+
+        createApp({
+            setup() {
+                // Page management
+                const currentPage = ref('A_Page');
+                const navigateToPage = (pageId) => {
+                    window.scrollTo(0, 0);
+                    currentPage.value = pageId;
+                };
+
+                // User input
+                const gender = ref('');
+                const cus_name = ref('');
+                const subject = ref('');
+                const questionContent = ref('');
+                const isSubmitted = ref(false);
+
+                const submitQuestion = () => {
+                    if (gender.value && cus_name.value && subject.value && questionContent.value) {
+                        isSubmitted.value = true;
+                        navigateToPage('D_Page');
+                    } else {
+                        alert('請填寫所有問題相關資訊！');
+                    }
+                };
+
+                const editQuestion = () => {
+                    isSubmitted.value = false;
+                };
+
+                // Time display
+                const currentTime = ref('');
+                let timeUpdater;
+                const updateTime = () => {
+                    const now = new Date();
+                    const options = {
+                        timeZone: 'Asia/Taipei',
+                        hour12: false,
+                        year: 'numeric', month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    };
+                    currentTime.value = new Intl.DateTimeFormat('zh-tw', options).format(now);
+                };
+
+                // Card drawing data
+                const rows = ref([
+                    { currentRound: '一', card: '', box: '' }, { currentRound: '一', card: '', box: '' },
+                    { currentRound: '二', card: '', box: '' }, { currentRound: '二', card: '', box: '' },
+                    { currentRound: '三', card: '', box: '' }, { currentRound: '三', card: '', box: '' }, { currentRound: '三', card: '', box: '' },
+                    { currentRound: '四', card: '', box: '' }
+                ]);
+
+                const locations = {
+                    '1': '巳', '2': '午', '3': '未', '4': '申', '5': '辰', '6': '酉',
+                    '7': '卯', '8': '戌', '9': '寅', '10': '丑', '11': '子', '12': '亥',
+                    'center': '中心區域'
+                };
+
+                const createKeys = (prefix, count) => {
+                    const keys = [];
+                    for (let i = 0; i < count; i++) {
+                        keys.push({ key: `${prefix}${String.fromCharCode(65 + i)}` });
+                    }
+                    return keys;
+                };
+
+                const createRound3Keys = () => {
+                    const keys = [];
+                    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    for (let i = 0; i < 26; i++) { keys.push({ key: `C${alphabet[i]}` }); }
+                    for (let i = 0; i < 6; i++) { keys.push({ key: `D${alphabet[i]}` }); }
+                    return keys;
+                };
+
+                const round_data = {
+                    ver: "2.0",
+                    rounds: [
+                        { round: "一", totalCards: 14, texts: createKeys('A', 14) },
+                        { round: "二", totalCards: 14, texts: createKeys('B', 14) },
+                        { round: "三", totalCards: 32, texts: createRound3Keys() },
+                        { round: "四", totalCards: 12, texts: createKeys('E', 12) }
+                    ]
+                };
+
+
+                const randomTexts = ref({});
+                const shuffleArray = (array) => {
+                    let shuffled = [...array];
+                    for (let i = shuffled.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    }
+                    return shuffled;
+                };
+
+                const getRandomTexts = (round) => {
+                    if (!randomTexts.value[round]) {
+                        const roundData = round_data.rounds.find(r => r.round === round);
+                        if (roundData) {
+                            randomTexts.value[round] = shuffleArray(roundData.texts);
+                        }
+                    }
+                    return randomTexts.value[round] || [];
+                };
+
+                round_data.rounds.forEach(round => getRandomTexts(round.round));
+
+                // Modal states
+                const showNumberSelector = ref(false);
+                const showAreaSelector = ref(false);
+                const showDirectionsModal = ref(false);
+                const showCardsModal = ref(false);
+                const showLinksModal = ref(false);
+                const showResultModal = ref(false);
+
+                const closeAllModals = () => {
+                    showDirectionsModal.value = false;
+                    showCardsModal.value = false;
+                    showLinksModal.value = false;
+                };
+
+                // Selector logic
+                const currentSelectorIndex = ref(null);
+                const currentSelectorRound = ref('');
+                const selectorNumbers = ref([]);
+                const openNumberSelector = (index) => {
+                    currentSelectorIndex.value = index;
+                    const row = rows.value[index];
+                    currentSelectorRound.value = row.currentRound;
+                    const maxNumber = getMaxNumber(row.currentRound);
+                    selectorNumbers.value = Array.from({ length: maxNumber }, (_, i) => i + 1);
+                    showNumberSelector.value = true;
+                };
+                const closeNumberSelector = () => showNumberSelector.value = false;
+                const selectNumber = (num) => {
+                    if (currentSelectorIndex.value !== null) {
+                        rows.value[currentSelectorIndex.value].card = num.toString();
+                        closeNumberSelector();
+                    }
+                };
+
+                const currentAreaSelectorIndex = ref(null);
+                const currentAreaSelectorRound = ref('');
+                const selectorAreas = ref([]);
+                const openAreaSelector = (index) => {
+                    currentAreaSelectorIndex.value = index;
+                    const row = rows.value[index];
+                    currentAreaSelectorRound.value = row.currentRound;
+                    selectorAreas.value = getOptions(row.currentRound);
+                    showAreaSelector.value = true;
+                };
+                const closeAreaSelector = () => showAreaSelector.value = false;
+                const selectArea = (area) => {
+                    if (currentAreaSelectorIndex.value !== null) {
+                        rows.value[currentAreaSelectorIndex.value].box = area.text;
+                        closeAreaSelector();
+                    }
+                };
+
+                // Computed properties and watchers
+                const allRoundsCompleted = computed(() => rows.value.every(row => row.card && row.box));
+                const hasSelectedBox = computed(() => rows.value.some(row => row.box));
+
+                const resultsTime = ref('');
+                watch(allRoundsCompleted, (isCompleted) => {
+                    if (isCompleted) {
+                        if (!resultsTime.value) {
+                            resultsTime.value = currentTime.value;
+                        }
+                        showResultModal.value = true;
+                    }
+                });
+
+                const getCardKey = (round, card) => {
+                    const texts = getRandomTexts(round);
+                    return texts[card - 1]?.key || 'N/A';
+                };
+
+                const formattedResults = computed(() => {
+                    if (!allRoundsCompleted.value) return {};
+                    const resultStr = rows.value.map(row => `${row.box}-${getCardKey(row.currentRound, row.card)}`).join('-');
+                    return {
+                        cus_info: {
+                            gender: encodeURIComponent(gender.value),
+                            cus_name: encodeURIComponent(cus_name.value),
+                            content: encodeURIComponent(questionContent.value),
+                            subject: encodeURIComponent(subject.value),
+                            divination_time: encodeURIComponent(resultsTime.value)
+                        },
+                        result: `${round_data.ver};${resultStr}`
+                    };
+                });
+
+                const base64Output = computed(() => {
+                    if (!allRoundsCompleted.value) return '';
+                    try {
+                        const jsonString = JSON.stringify(formattedResults.value);
+                        return btoa(unescape(encodeURIComponent(jsonString)));
+                    } catch (e) {
+                        console.error("Base64 encoding failed:", e);
+                        return "Encoding error";
+                    }
+                });
+
+                // UI logic
+                const canEdit = (index) => {
+                    if (allRoundsCompleted.value) return false;
+                    if (index === 0) return true;
+                    const prevRow = rows.value[index - 1];
+                    return prevRow.card && prevRow.box;
+                };
+                const canShow = (index) => {
+                    if (index === 0) return true;
+                    const prevRow = rows.value[index - 1];
+                    return prevRow.card && prevRow.box;
+                };
+                const isNextFilled = (index) => {
+                    const nextRow = rows.value[index + 1];
+                    return nextRow ? (nextRow.card && nextRow.box) : false;
+                };
+                const getMaxNumber = (round) => {
+                    const roundData = round_data.rounds.find(r => r.round === round);
+                    return roundData ? roundData.totalCards : 0;
+                };
+                const getOptions = (currentRound) => {
+                    if (currentRound === '四') {
+                        return [{ value: 'center', text: locations['center'] }];
+                    }
+                    return Object.keys(locations)
+                        .filter(key => key !== 'center')
+                        .map(key => ({ value: key, text: locations[key] }));
+                };
+                const isNumberUsed = (currentIndex, num) => {
+                    const currentRound = rows.value[currentIndex].currentRound;
+                    return rows.value.some((row, index) => 
+                        index !== currentIndex && 
+                        row.currentRound === currentRound && 
+                        row.card === num.toString()
+                    );
+                };
+
+                // Utility
+                const copyToClipboard = (text) => {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert("序號已複製到剪貼板！");
+                    }).catch(err => {
+                        console.error('複製失敗: ', err);
+                        alert("複製失敗，請手動複製。");
+                    });
+                };
+
+                // Lifecycle hooks
+                onMounted(() => {
+                    updateTime();
+                    timeUpdater = setInterval(updateTime, 1000);
+                });
+                onUnmounted(() => {
+                    clearInterval(timeUpdater);
+                });
+
+                return {
+                    currentPage, navigateToPage,
+                    gender, cus_name, subject, questionContent, isSubmitted, submitQuestion, editQuestion,
+                    currentTime,
+                    rows,
+                    canShow, canEdit, isNextFilled,
+                    allRoundsCompleted, hasSelectedBox,
+                    base64Output, copyToClipboard,
+                    // Modals
+                    showNumberSelector, showAreaSelector, showDirectionsModal, showCardsModal, showLinksModal, showResultModal,
+                    closeAllModals,
+                    // Number Selector
+                    openNumberSelector, closeNumberSelector, selectNumber, isNumberUsed,
+                    currentSelectorIndex, currentSelectorRound, selectorNumbers, getMaxNumber,
+                    // Area Selector
+                    openAreaSelector, closeAreaSelector, selectArea,
+                    currentAreaSelectorIndex, currentAreaSelectorRound, selectorAreas,
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
